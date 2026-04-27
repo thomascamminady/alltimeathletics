@@ -125,7 +125,7 @@ def test_wind_values_in_plausible_range() -> None:
     result = parse_page(html_text, event)
     winds = [r["wind"] for r in result.rows if r["wind"] is not None]
     assert winds, "expected at least some wind readings on a 100m page"
-    assert -10.0 < min(winds) and max(winds) < 10.0
+    assert min(winds) > -10.0 and max(winds) < 10.0
 
 
 def test_dates_are_parsed_to_date_objects() -> None:
