@@ -76,12 +76,17 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
         if counts.get(ev.slug, 0) > 0:
             events_by_sex[ev.sex].append(ev)
 
+    parquet_bytes = (out_data / PARQUET_NAME).stat().st_size
+
     # Index page
     (out_dir / "index.html").write_text(
         env.get_template("index.html").render(
             **common,
             events_by_sex=events_by_sex,
             counts=counts,
+            n_rows_total=manifest["n_rows"],
+            n_events_total=manifest["n_events"],
+            parquet_size_mb=f"{parquet_bytes / (1024 * 1024):.1f}",
         )
     )
 

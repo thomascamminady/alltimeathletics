@@ -1,55 +1,68 @@
 # alltimeathletics
 
-A data-analysis-friendly mirror of [Peter Larsson's all-time athletics lists](http://www.alltime-athletics.com).
+A data-analysis-friendly mirror of [Peter Larsson's all-time athletics
+lists](http://www.alltime-athletics.com), maintained as a private repo
+for now.
 
 > **All performance data is © Peter Larsson and is sourced from
-> [alltime-athletics.com](http://www.alltime-athletics.com).** This project is an unofficial
-> derivative view that re-formats the same lists into a parquet file and a sortable
-> table per event. Every event page links straight back to Larsson's canonical
-> source — please visit it for the authoritative lists.
+> [alltime-athletics.com](http://www.alltime-athletics.com).** This project
+> re-formats those lists into a parquet file for personal data-analysis use.
+> It is not yet authorised to publish the redistributed data; the repo is
+> private and there is no public site.
 
-## What this is
+## Status
 
-The Larsson site is the canonical track & field all-time database, but the
-HTML is fixed-width text inside `<pre>` tags — fine for reading, painful for
-filtering, sorting, or any data-science work. This repo:
+- ✅ Scraper, parser, parquet pipeline, static site renderer, local tests
+- ✅ ~371k rows across ~190 events; 0.034 % unparsed
+- ⏸️ Public hosting + weekly automation paused pending Larsson's OK
 
-1. Scrapes every event page once a week (polite, sequential, with cache)
-2. Parses each `<PRE>` block into a canonical row schema
-3. Writes one parquet file (`data/alltime_athletics.parquet`, ~5 MB, ~370k rows)
-4. Generates a static [GitHub Pages site](https://thomascamminady.github.io/alltimeathletics/) with one sortable, filterable table per event
+## Use the data locally
 
-The weekly refresh runs as a GitHub Action that opens a PR against `main`; if
-schema + sanity checks pass, the PR auto-merges and the Pages site
-re-deploys. No manual intervention.
-
-## Use the data
+The whole dataset is one parquet file (~5 MB):
 
 ```python
 import polars as pl
 
-df = pl.read_parquet(
-    "https://github.com/thomascamminady/alltimeathletics/raw/main/data/alltime_athletics.parquet"
-)
+df = pl.read_parquet("data/alltime_athletics.parquet")
 df.filter(pl.col("event") == "marathon").sort("mark_value").head(10)
 ```
 
-Schema: see `src/alltimeathletics/pipeline.py` — one row per performance with
-`event`, `sex`, `legality`, `family`, `rank`, `mark_raw`, `mark_value` (numeric),
-`wind`, `name`, `country`, `dob`, `position`, `venue`, `date`, `source_url`.
+Schema (one row per performance):
 
-## Develop locally
+| column        | type   | notes                                         |
+|---------------|--------|-----------------------------------------------|
+| `event`       | str    | e.g. "marathon", "100 metres"                 |
+| `event_slug`  | str    | Larsson's URL slug, also the join key         |
+| `sex`         | str    | "men" / "women" / "mixed"                     |
+| `legality`    | str    | "legal" / "non-legal"                         |
+| `family`      | str    | parser family (track_time, field_distance, …) |
+| `section`     | str    | sub-list heading from the source page         |
+| `rank`        | u32    | as printed by Larsson                         |
+| `mark_raw`    | str    | exact text of the mark                        |
+| `mark_value`  | f64    | seconds / metres / points                     |
+| `wind`        | f64?   | nullable (sprints/jumps only)                 |
+| `name`        | str    | athlete or team                               |
+| `country`     | str    | IOC 3-letter, uppercased                      |
+| `dob`         | date?  | nullable                                      |
+| `position`    | str    | finishing position in race                    |
+| `venue`       | str    |                                               |
+| `date`        | date   | event date                                    |
+| `source_url`  | str    | link back to the Larsson page                 |
+
+## Run it locally
 
 ```bash
-uv sync
-uv run python -m alltimeathletics.pipeline           # scrape + parse → data/
-uv run python -m alltimeathletics.site --out site/   # render the static site
-uv run pytest                                        # parser + schema tests
-python -m http.server -d site                        # preview on :8000
+make sync       # install deps via uv
+make scrape     # fetch + parse → data/alltime_athletics.parquet (~2 min cold)
+make site       # render the static site into ./site/
+make serve      # http://localhost:8766
+make test       # parser + schema + data-accessibility tests
+make ci-local   # lint + typecheck + test (mirrors CI)
+make all        # everything
 ```
 
-The pipeline caches HTML under `.cache/` so re-runs only re-fetch when
-something changed.
+`make help` lists every target. The HTML cache lives under `.cache/` so
+re-runs only re-fetch when something changed.
 
 ## Layout
 
@@ -58,27 +71,17 @@ src/alltimeathletics/
   events.py      # canonical catalogue of every event page (190 entries)
   scrape.py      # polite httpx fetcher with on-disk cache
   parse.py       # <PRE>-block parser, family-aware
-  pipeline.py    # scrape + parse → parquet + per-event JSON
-  site.py        # render the static site from the parquet
+  pipeline.py    # scrape + parse → parquet + manifest
+  site.py        # render the static site + per-event JSON from the parquet
 templates/       # base.html, index.html, event.html
 static/          # style.css + vendored Tabulator
-data/            # parquet, manifest.json, events/<slug>.json
-tests/           # parser smoke tests + parquet schema validation
-.github/workflows/
-  update-data.yml  # weekly cron → PR → auto-merge
-  deploy.yml       # main → Pages
-  ci.yml           # tests on every PR
+data/            # parquet, manifest.json (per-event JSON is generated, not committed)
+tests/           # parser + schema + data-accessibility tests
+.github/workflows/ci.yml  # tests on every push
 ```
 
 ## Credit
 
 All raw data: **Peter Larsson, [alltime-athletics.com](http://www.alltime-athletics.com)**.
 This project would not exist without the decades of work he has put into
-maintaining those lists. If you find this mirror useful, please also consider
-visiting the source.
-
-## License
-
-The code in this repository is MIT-licensed. The performance data is © Peter
-Larsson; this project redistributes it as fair use for non-commercial
-data-analysis purposes and links back to the source from every page.
+maintaining those lists.
