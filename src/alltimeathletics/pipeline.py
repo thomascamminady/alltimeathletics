@@ -26,7 +26,7 @@ from __future__ import annotations
 import json
 import sys
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -150,7 +150,7 @@ def _build_manifest(
 ) -> dict[str, Any]:
     global_steps = _step_counter(per_event_diagnostics.values())
     return {
-        "scraped_at": datetime.now(timezone.utc).isoformat(),
+        "scraped_at": datetime.now(UTC).isoformat(),
         "n_rows": int(len(df)),
         "n_events": len(per_event_counts),
         "unparsed_by_step": dict(global_steps),

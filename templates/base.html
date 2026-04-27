@@ -9,8 +9,9 @@
 </head>
 <body>
 <header>
-  <a class="home" href="{{ site_root }}index.html">All-Time Athletics</a>
-  <span class="tagline">a sortable, filterable view of <a href="https://www.alltime-athletics.com/">alltime-athletics.com</a></span>
+  <a href="{{ site_root }}index.html">All-Time Athletics</a>
+  &middot;
+  a sortable view of <a href="https://www.alltime-athletics.com/">alltime-athletics.com</a>
 </header>
 
 <main>
@@ -19,14 +20,14 @@
 
 <footer>
   <p>
-    All data &copy; <a href="https://www.alltime-athletics.com/">Peter Larsson, alltime-athletics.com</a>.
-    This site is an unofficial, automatically-generated derivative view —
-    please visit the source for canonical lists, contact information, and acknowledgements.
+    All performance data &copy;
+    <a href="https://www.alltime-athletics.com/">Peter Larsson, alltime-athletics.com</a>.
+    Unofficial derivative view; please visit the source for canonical lists.
   </p>
-  <p class="meta">
-    Last data refresh: {{ scraped_at }} &middot;
-    <a href="https://github.com/thomascamminady/alltimeathletics">source code</a>
-    &middot; <a href="{{ site_root }}data/alltime_athletics.parquet">download parquet</a>
+  <p>
+    Last refresh: {{ scraped_at }} &middot;
+    <a href="{{ site_root }}data/alltime_athletics.parquet">parquet</a> &middot;
+    <a href="{{ site_root }}data/manifest.json">manifest</a>
   </p>
 </footer>
 </body>
