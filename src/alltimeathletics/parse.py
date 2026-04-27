@@ -347,7 +347,7 @@ def _parse_individual_line(
     country, name_tokens, after_country = _extract_country(middle)
     dob_str, position = _classify_after_country(after_country)
     name = _assemble_name(name_tokens)
-    dob_value, dob_precision = _parse_dob_with_precision(dob_str)
+    dob_value, dob_precision = _parse_dob_with_precision(dob_str, parsed_date)
     mark_value, mark_annotation = _normalize_mark_with_annotation(mark_raw, event.family)
 
     return {
@@ -524,7 +524,9 @@ def _parse_date(s: str) -> date | None:
     return d
 
 
-def _parse_dob_with_precision(s: str) -> tuple[date | None, str | None]:
+def _parse_dob_with_precision(
+    s: str, performance_date: date | None = None
+) -> tuple[date | None, str | None]:
     """Parse 'dd.mm.yy' or year-only 'yy'; return (date, precision).
 
     ``precision`` is one of:
@@ -532,24 +534,40 @@ def _parse_dob_with_precision(s: str) -> tuple[date | None, str | None]:
     - ``"year"`` for year-only entries — month/day are fabricated as Jan 1
     - ``None``   when nothing parseable was provided
 
-    Larsson uses 2-digit years; we still pivot at 00-09 → 2000s, otherwise
-    19xx. Athletes born ≥ 2010 are currently miscoded as 19xx — that is
-    visible to consumers via ``dob_precision`` in combination with the
-    performance ``date``, and a stricter pivot can land in a follow-up.
+    Larsson uses 2-digit years (1900s OR 2000s — ambiguous). When the
+    performance date is known, we pick the century that yields a plausible
+    athlete age (5–100). Without it we fall back to a sliding cutoff anchored
+    on today's year so freshly-competing teens born after 2010 don't get
+    miscoded as 100-year-olds.
     """
     if not s or s == "??":
         return None, None
     try:
         if _DOB_YEAR_ONLY_RE.match(s):
             year = int(s)
-            century = 2000 if year < 10 else 1900
+            century = _pick_century(year, performance_date)
             return date(century + year, 1, 1), "year"
         d, m, y = s.split(".")
         year = int(y)
-        century = 2000 if year < 10 else 1900
+        century = _pick_century(year, performance_date)
         return date(century + year, int(m), int(d)), "day"
     except (ValueError, IndexError):
         return None, None
+
+
+def _pick_century(year_two_digit: int, performance_date: date | None) -> int:
+    """Choose 1900 or 2000 for a 2-digit year given an optional context date."""
+    if performance_date is not None:
+        cand_1900 = 1900 + year_two_digit
+        cand_2000 = 2000 + year_two_digit
+        age_1900 = performance_date.year - cand_1900
+        age_2000 = performance_date.year - cand_2000
+        if 5 <= age_1900 <= 100 and not (5 <= age_2000 <= 100):
+            return 1900
+        if 5 <= age_2000 <= 100 and not (5 <= age_1900 <= 100):
+            return 2000
+    cutoff = date.today().year % 100
+    return 2000 if year_two_digit <= cutoff else 1900
 
 
 _MARK_ANNOTATION_RE = re.compile(r"[A-Za-z+*]+$")
