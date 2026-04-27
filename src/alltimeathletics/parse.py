@@ -7,15 +7,25 @@ Strategy
    blocks; pair each block with the most recent preceding section header.
 3. Inside each block, treat each non-blank line as a candidate row.
 4. Split the line on runs of 2+ whitespace (Larsson's columns are fixed-width).
-5. Dispatch on event *family* to map tokens → canonical schema.
+5. Run the line through a fixed sequence of small extractors — one per logical
+   field — and record a ``ParseDiagnostic`` for the first step that fails.
 
 For relay events, rows alternate between a *team* line (has a leading rank) and
 1–N *member* lines (indented; no leading rank). Members are accumulated and
 attached to the preceding team row in a ``members`` list of dicts. We still
 emit one row per team performance so the schema stays flat.
 
-Unparseable lines are logged via the returned ``unparsed`` list — the caller
-(usually a test) decides whether to fail loudly.
+Failure surfaces
+----------------
+- ``ParseResult.rows``        successfully parsed rows
+- ``ParseResult.diagnostics`` per-line, per-step reason for every failure
+- ``ParseResult.unparsed``    backwards-compatible view of the failed line text
+
+Each step extractor either returns its value (possibly ``None`` for legitimate
+absences like a missing wind reading) or raises ``_StepError`` with a step name
+and a human-readable reason. ``_parse_block`` catches the error and turns it
+into a structured diagnostic so callers can aggregate failures by step name and
+spot drift before it pollutes the parquet.
 """
 
 from __future__ import annotations
@@ -52,10 +62,6 @@ _DOB_RE = re.compile(r"^\d{1,2}\.\d{1,2}\.\d{2}$")
 # the bare-letter forms are checked separately via _BARE_POSITIONS.
 _POSITION_RE = re.compile(r"^\d[\dA-Za-z=\-]*$")
 _BARE_POSITIONS = frozenset({"q", "h", "-", "Q"})
-
-
-def _is_position(s: str) -> bool:
-    return bool(_POSITION_RE.match(s)) or s in _BARE_POSITIONS
 # Year-only dob: "97" -> 1997, "00" -> 2000.
 _DOB_YEAR_ONLY_RE = re.compile(r"^\d{2}$")
 # Country: 2-3 letters + optional trailing digit (e.g. CIS-era "URS"); accept
@@ -65,17 +71,48 @@ _WIND_RE = re.compile(r"^[+\-±]\d+\.\d+$")
 _TOTAL_LINE_RE = re.compile(r"^\s*\d[\d\s,]*\s*total\s*$", re.IGNORECASE)
 
 
+def _is_position(s: str) -> bool:
+    return bool(_POSITION_RE.match(s)) or s in _BARE_POSITIONS
+
+
+# --- diagnostics + result --------------------------------------------------------------
+
+
+@dataclass(frozen=True, slots=True)
+class ParseDiagnostic:
+    """Why one line failed to parse, structured for aggregation by step name."""
+
+    section: str
+    line: str
+    step: str
+    reason: str
+
+
 @dataclass(frozen=True, slots=True)
 class ParseResult:
     rows: list[dict[str, Any]]
-    unparsed: list[str]
+    diagnostics: list[ParseDiagnostic]
+
+    @property
+    def unparsed(self) -> list[str]:
+        """Raw text of every line we couldn't read (back-compat with v0.1 callers)."""
+        return [d.line for d in self.diagnostics]
+
+
+class _StepError(Exception):
+    """Raised by an extractor; converted to a ``ParseDiagnostic`` by the orchestrator."""
+
+    def __init__(self, step: str, reason: str) -> None:
+        super().__init__(f"{step}: {reason}")
+        self.step = step
+        self.reason = reason
 
 
 # --- public entry point ----------------------------------------------------------------
 
 
 def parse_page(html_text: str, event: Event) -> ParseResult:
-    """Parse one event page into canonical rows + a list of lines we couldn't read."""
+    """Parse one event page into canonical rows + per-line diagnostics."""
     # Larsson uses '±' (HTML &plusmn;) for a zero-wind reading. Map it to '+'
     # so '±0.0' becomes '+0.0' and matches our wind regex. The sign distinction
     # at exactly zero has no physical meaning.
@@ -83,14 +120,14 @@ def parse_page(html_text: str, event: Event) -> ParseResult:
 
     sections = _extract_sections(text)
     rows: list[dict[str, Any]] = []
-    unparsed: list[str] = []
+    diagnostics: list[ParseDiagnostic] = []
 
     for section_name, block in sections:
-        block_rows, block_unparsed = _parse_block(block, event, section_name)
+        block_rows, block_diags = _parse_block(block, event, section_name)
         rows.extend(block_rows)
-        unparsed.extend(block_unparsed)
+        diagnostics.extend(block_diags)
 
-    return ParseResult(rows=rows, unparsed=unparsed)
+    return ParseResult(rows=rows, diagnostics=diagnostics)
 
 
 # --- section discovery -----------------------------------------------------------------
@@ -111,7 +148,6 @@ def _extract_sections(text: str) -> list[tuple[str, str]]:
     out: list[tuple[str, str]] = []
     for m in _PRE_RE.finditer(text):
         pre_start = m.start()
-        # find latest section marker that ends before this pre block
         section = "main"
         for marker_end, title in section_markers:
             if marker_end <= pre_start:
@@ -123,14 +159,14 @@ def _extract_sections(text: str) -> list[tuple[str, str]]:
     return out
 
 
-# --- row parsing -----------------------------------------------------------------------
+# --- block-level orchestrator ----------------------------------------------------------
 
 
 def _parse_block(
     block: str, event: Event, section: str
-) -> tuple[list[dict[str, Any]], list[str]]:
+) -> tuple[list[dict[str, Any]], list[ParseDiagnostic]]:
     rows: list[dict[str, Any]] = []
-    unparsed: list[str] = []
+    diagnostics: list[ParseDiagnostic] = []
     pending_relay_row: dict[str, Any] | None = None
 
     for raw in block.splitlines():
@@ -153,7 +189,7 @@ def _parse_block(
         tokens = _MULTISPACE_RE.split(line.strip())
 
         if event.family == "relay":
-            row = _parse_relay_line(tokens, event, section)
+            row = _try_parse_relay_line(tokens, event, section)
             if row is None:
                 # try as a member of the previous team line
                 if pending_relay_row is not None and _looks_like_relay_member(tokens):
@@ -165,7 +201,14 @@ def _parse_block(
                     # athlete name. Silently drop it.
                     pass
                 else:
-                    unparsed.append(line)
+                    diagnostics.append(
+                        ParseDiagnostic(
+                            section=section,
+                            line=line,
+                            step="relay_line",
+                            reason="line did not match team or member shape",
+                        )
+                    )
                 continue
             if pending_relay_row is not None:
                 rows.append(pending_relay_row)
@@ -174,95 +217,136 @@ def _parse_block(
 
         try:
             row = _parse_individual_line(tokens, event, section)
-        except _UnparseableRow:
-            unparsed.append(line)
+        except _StepError as exc:
+            diagnostics.append(
+                ParseDiagnostic(
+                    section=section, line=line, step=exc.step, reason=exc.reason,
+                )
+            )
             continue
         rows.append(row)
 
     if pending_relay_row is not None:
         rows.append(pending_relay_row)
 
-    return rows, unparsed
+    return rows, diagnostics
 
 
-class _UnparseableRow(Exception):
-    """Sentinel for lines we can't make sense of."""
+# --- step extractors (individual events) -----------------------------------------------
+#
+# Each extractor is a small, pure function that returns its value or raises a
+# _StepError with a (step, reason) pair. _parse_individual_line composes them
+# in a fixed order; that order documents the line layout from the leading rank
+# down to the trailing date.
+
+
+def _extract_rank(tokens: list[str]) -> int:
+    if not tokens:
+        raise _StepError("rank", "empty token list")
+    if not tokens[0].isdigit():
+        raise _StepError("rank", f"leading token {tokens[0]!r} is not a rank")
+    return int(tokens[0])
+
+
+def _extract_mark(tokens: list[str]) -> str:
+    if len(tokens) < 2:
+        raise _StepError("mark", "no mark token after rank")
+    return tokens[1]
+
+
+def _maybe_extract_wind(tokens: list[str], idx: int) -> tuple[float | None, int]:
+    """Optional wind reading at ``tokens[idx]``; returns (wind, new_cursor)."""
+    if idx < len(tokens) and _WIND_RE.match(tokens[idx]):
+        return _parse_wind(tokens[idx]), idx + 1
+    return None, idx
+
+
+def _extract_tail(
+    tokens: list[str], idx: int
+) -> tuple[list[str], date | None, str]:
+    """Pull the trailing date+venue off the line.
+
+    Returns (middle_tokens, parsed_date, venue). ``parsed_date`` may be None
+    if the date string matches the regex but ``strptime`` rejects it (e.g. a
+    typo'd day-of-month) — that mirrors v0.1 behaviour and lets the rest of
+    the row through.
+    """
+    if len(tokens) - idx < 3:
+        raise _StepError(
+            "tail",
+            f"only {len(tokens) - idx} tokens left, need ≥3 for name+venue+date",
+        )
+    date_str = tokens[-1]
+    if not _DATE_RE.match(date_str):
+        raise _StepError("date", f"last token {date_str!r} does not match dd.mm.yyyy")
+    venue = tokens[-2]
+    middle = tokens[idx:-2]
+    if not middle:
+        raise _StepError("name", "no tokens between mark/wind and venue")
+    return middle, _parse_date(date_str), venue
+
+
+def _extract_country(middle: list[str]) -> tuple[str, list[str], list[str]]:
+    """Locate the country code; return (country, name_tokens, after_country_tokens).
+
+    The country code is the rightmost IOC-shaped token in ``middle`` that is
+    not at index 0 (must come after at least one name token). Falls back to
+    splitting a name+country fused token by single-space gap.
+    """
+    for i in range(len(middle) - 1, 0, -1):
+        if _COUNTRY_RE.match(middle[i]):
+            return middle[i], middle[:i], middle[i + 1:]
+
+    country, name_tokens, after_country = _split_embedded_country(middle)
+    if country is None:
+        raise _StepError("country", "no IOC-shaped country code in middle tokens")
+    return country, name_tokens, after_country
+
+
+def _classify_after_country(after_country: list[str]) -> tuple[str, str]:
+    """Map the 0-N tokens after the country code to (dob_str, position).
+
+    Layout: ``[dob?] [position?]`` — either, both, or neither, plus a
+    fall-through for the rare 3+ token case where dob is at index 0 and the
+    rest is a multi-word position.
+    """
+    if len(after_country) == 2:
+        dob_str, position = after_country
+        return dob_str, position
+    if len(after_country) == 1:
+        only = after_country[0]
+        if _DOB_RE.match(only) or _DOB_YEAR_ONLY_RE.match(only):
+            return only, ""
+        return "", only
+    if len(after_country) > 2:
+        if _DOB_RE.match(after_country[0]) or _DOB_YEAR_ONLY_RE.match(after_country[0]):
+            return after_country[0], " ".join(after_country[1:])
+        return "", " ".join(after_country)
+    return "", ""
+
+
+def _assemble_name(name_tokens: list[str]) -> str:
+    if not name_tokens:
+        raise _StepError("name", "no tokens left for athlete name")
+    return " ".join(name_tokens).strip()
 
 
 def _parse_individual_line(
     tokens: list[str], event: Event, section: str
 ) -> dict[str, Any]:
-    # First token must be the rank.
-    if not tokens or not tokens[0].isdigit():
-        raise _UnparseableRow
+    rank = _extract_rank(tokens)
+    mark_raw = _extract_mark(tokens)
+    cursor = 2
 
     has_wind = event.family in ("track_time_wind", "field_distance_wind")
-    rank = int(tokens[0])
-    mark_raw = tokens[1]
-    idx = 2
-
     wind: float | None = None
-    if has_wind and idx < len(tokens) and _WIND_RE.match(tokens[idx]):
-        wind = _parse_wind(tokens[idx])
-        idx += 1
+    if has_wind:
+        wind, cursor = _maybe_extract_wind(tokens, cursor)
 
-    # Walk from the end. Date is always last and venue is always second-to-last.
-    if len(tokens) - idx < 3:
-        raise _UnparseableRow
-    date_str = tokens[-1]
-    if not _DATE_RE.match(date_str):
-        raise _UnparseableRow
-    venue = tokens[-2]
-
-    # `middle` = everything between mark/wind and venue/date.
-    # Layout: name(s) ... country [dob?] [position?]
-    middle = tokens[idx:-2]
-    if not middle:
-        raise _UnparseableRow
-
-    # Country: rightmost token matching the IOC pattern, but not at the very
-    # start (must come after at least one name token). Walk right→left.
-    country_idx: int | None = None
-    for i in range(len(middle) - 1, 0, -1):
-        if _COUNTRY_RE.match(middle[i]):
-            country_idx = i
-            break
-
-    if country_idx is None:
-        # Fallback for unusually long names where the column padding got eaten:
-        # the country code may be jammed onto the end of a name token (one
-        # space separation). Look for "<word> XYZ" inside any middle token.
-        country, name_tokens, after_country = _split_embedded_country(middle)
-        if country is None:
-            raise _UnparseableRow
-    else:
-        name_tokens = middle[:country_idx]
-        after_country = middle[country_idx + 1:]
-        country = middle[country_idx]
-
-    # After country we have 0–2 tokens: optional dob, optional position.
-    dob_str: str = ""
-    position: str = ""
-    if len(after_country) == 2:
-        dob_str, position = after_country
-    elif len(after_country) == 1:
-        only = after_country[0]
-        if _DOB_RE.match(only) or _DOB_YEAR_ONLY_RE.match(only):
-            dob_str = only
-        else:
-            position = only
-    elif len(after_country) > 2:
-        # Unexpected: try to interpret first as dob, rest as joined position
-        if _DOB_RE.match(after_country[0]) or _DOB_YEAR_ONLY_RE.match(after_country[0]):
-            dob_str = after_country[0]
-            position = " ".join(after_country[1:])
-        else:
-            position = " ".join(after_country)
-
-    if not name_tokens:
-        raise _UnparseableRow
-
-    name = " ".join(name_tokens).strip()
+    middle, parsed_date, venue = _extract_tail(tokens, cursor)
+    country, name_tokens, after_country = _extract_country(middle)
+    dob_str, position = _classify_after_country(after_country)
+    name = _assemble_name(name_tokens)
 
     return {
         "event": event.label,
@@ -280,18 +364,22 @@ def _parse_individual_line(
         "dob": _parse_dob(dob_str) if dob_str else None,
         "position": position,
         "venue": venue,
-        "date": _parse_date(date_str),
+        "date": parsed_date,
         "members": None,
         "source_url": event.url,
     }
 
 
-def _parse_relay_line(
+# --- relay extractors ------------------------------------------------------------------
+
+
+def _try_parse_relay_line(
     tokens: list[str], event: Event, section: str
 ) -> dict[str, Any] | None:
-    """Relay team rows: rank, time, team_name, [position?], venue, date.
+    """Return a relay team row, or ``None`` if this line is not a team line.
 
-    Returns ``None`` if this looks like a member follow-up line.
+    Returning None is a routing signal (try the line as a member-of-previous),
+    not a parse failure. True parse failures bubble up via the caller.
     """
     if not tokens or not tokens[0].isdigit():
         return None
@@ -365,7 +453,7 @@ def _split_embedded_country(
         if not head:
             continue
         name_tokens = middle[:i] + [head]
-        return candidate, name_tokens, middle[i + 1 :]
+        return candidate, name_tokens, middle[i + 1:]
     return None, [], []
 
 

@@ -14,7 +14,13 @@ from typing import Any
 import pytest
 
 from alltimeathletics.events import by_slug
-from alltimeathletics.parse import parse_page
+from alltimeathletics.parse import ParseDiagnostic, parse_page
+
+# Step names produced by the individual + relay extractors. New steps must be
+# added here so a typo in one of them is caught instead of silently flying.
+KNOWN_STEPS = frozenset(
+    {"rank", "mark", "wind", "tail", "date", "country", "name", "relay_line"}
+)
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures"
 
@@ -133,3 +139,17 @@ def test_dates_are_parsed_to_date_objects() -> None:
     result = parse_page(html_text, event)
     for r in result.rows[:100]:
         assert isinstance(r["date"], date), f"bad date: {r['date']!r}"
+
+
+@pytest.mark.parametrize("slug", [s for s, _, _ in FIXTURE_EXPECTATIONS])
+def test_diagnostics_are_well_formed(slug: str) -> None:
+    """Every parse failure carries a step name + reason we can aggregate by."""
+    html_text, event = _load(slug)
+    result = parse_page(html_text, event)
+    for d in result.diagnostics:
+        assert isinstance(d, ParseDiagnostic)
+        assert d.line, f"diagnostic with empty line: {d!r}"
+        assert d.reason, f"diagnostic with empty reason: {d!r}"
+        assert d.step in KNOWN_STEPS, f"unknown step name {d.step!r} in {slug}"
+    # Backward-compat view: unparsed lines == diagnostic lines, in order.
+    assert result.unparsed == [d.line for d in result.diagnostics]
