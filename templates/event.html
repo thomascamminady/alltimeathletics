@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ event.label }} ({{ event.sex }}, {{ event.legality }}) — All-Time Athletics{% endblock %}
+{% block main %}
+<nav class="crumbs"><a href="{{ site_root }}index.html">&larr; All events</a></nav>
+
+<h1>{{ event.label }} <span class="meta-tag">{{ event.sex }}</span> <span class="meta-tag">{{ event.legality }}</span></h1>
+
+<p class="source-link">
+  <strong>Source:</strong>
+  <a href="{{ event.url }}" rel="external">{{ event.url }}</a>
+  &middot; maintained by Peter Larsson
+</p>
+
+<p class="lede">
+  Showing <strong>{{ row_count }}</strong> performances. Click a column header to sort.
+  Type into the column headers to filter. Click an athlete or venue to filter by it.
+</p>
+
+{% if family == 'relay' %}
+<p class="note">Relay teams: click a row to view the team members and split times (where listed).</p>
+{% endif %}
+
+<div id="table"></div>
+
+<script src="{{ static_root }}tabulator.min.js"></script>
+<script>
+const event = {{ event_meta_json|safe }};
+const dataUrl = "{{ site_root }}data/events/{{ event.slug }}.json";
+
+const isRelay = event.family === 'relay';
+const hasWind = event.family === 'track_time_wind' || event.family === 'field_distance_wind';
+
+const columns = [
+  { title: "#", field: "rank", width: 70, hozAlign: "right", sorter: "number", headerFilter: false },
+  { title: "Mark", field: "mark_raw", width: 110, hozAlign: "right",
+    sorter: (a, b, ar, br) => (ar.getData().mark_value ?? 0) - (br.getData().mark_value ?? 0),
+    headerFilter: "input",
+  },
+];
+
+if (hasWind) {
+  columns.push({ title: "Wind", field: "wind", width: 80, hozAlign: "right", sorter: "number" });
+}
+
+if (!isRelay) {
+  columns.push(
+    { title: "Name", field: "name", headerFilter: "input", minWidth: 180 },
+    { title: "Country", field: "country", width: 90, headerFilter: "input" },
+    { title: "DOB", field: "dob", width: 110 },
+    { title: "Pos", field: "position", width: 70 },
+  );
+} else {
+  columns.push({ title: "Team", field: "name", headerFilter: "input", minWidth: 180 });
+  columns.push({ title: "Pos", field: "position", width: 70 });
+}
+
+columns.push(
+  { title: "Venue", field: "venue", headerFilter: "input", minWidth: 160 },
+  { title: "Date", field: "date", width: 120, sorter: "date", headerFilter: "input" },
+  { title: "Section", field: "section", visible: false, headerFilter: "input" },
+);
+
+new Tabulator("#table", {
+  ajaxURL: dataUrl,
+  layout: "fitDataStretch",
+  pagination: "local",
+  paginationSize: 100,
+  paginationSizeSelector: [50, 100, 250, 1000, true],
+  movableColumns: true,
+  columns: columns,
+  initialSort: [{ column: "mark_value", dir: event.family === 'field_distance' || event.family === 'field_distance_wind' || event.family === 'combined_points' ? 'desc' : 'asc' }],
+});
+</script>
+{% endblock %}

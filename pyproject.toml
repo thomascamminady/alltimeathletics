@@ -1,0 +1,28 @@
+[project]
+name = "alltimeathletics"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "Thomas Camminady", email = "thomas@camminady.dev" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "fire>=0.7.1",
+    "httpx>=0.28.1",
+    "jinja2>=3.1.6",
+    "polars>=1.40.1",
+]
+
+[project.scripts]
+alltimeathletics = "alltimeathletics:main"
+
+[build-system]
+requires = ["uv_build>=0.11.6,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "ruff>=0.15.12",
+    "ty>=0.0.32",
+]

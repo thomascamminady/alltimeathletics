@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Sync deps
+        run: uv sync --frozen
+
+      - name: Lint with ruff
+        run: uv run ruff check src tests
+
+      - name: Type check with ty
+        run: uv run ty check src
+        continue-on-error: true
+
+      - name: Parser fixture tests (no network)
+        run: uv run pytest tests/test_parse.py -v
+
+      - name: Schema tests (skipped if no data/)
+        run: uv run pytest tests/test_pipeline_schema.py -v

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}All-Time Athletics — data view{% endblock %}</title>
+<link rel="stylesheet" href="{{ static_root }}tabulator.min.css">
+<link rel="stylesheet" href="{{ static_root }}style.css">
+</head>
+<body>
+<header>
+  <a class="home" href="{{ site_root }}index.html">All-Time Athletics</a>
+  <span class="tagline">a sortable, filterable view of <a href="https://www.alltime-athletics.com/">alltime-athletics.com</a></span>
+</header>
+
+<main>
+{% block main %}{% endblock %}
+</main>
+
+<footer>
+  <p>
+    All data &copy; <a href="https://www.alltime-athletics.com/">Peter Larsson, alltime-athletics.com</a>.
+    This site is an unofficial, automatically-generated derivative view —
+    please visit the source for canonical lists, contact information, and acknowledgements.
+  </p>
+  <p class="meta">
+    Last data refresh: {{ scraped_at }} &middot;
+    <a href="https://github.com/thomascamminady/alltimeathletics">source code</a>
+    &middot; <a href="{{ site_root }}data/alltime_athletics.parquet">download parquet</a>
+  </p>
+</footer>
+</body>
+</html>

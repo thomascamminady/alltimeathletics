@@ -1,0 +1,1907 @@
+{
+  "scraped_at": "2026-04-27T12:13:00.506098+00:00",
+  "n_rows": 371018,
+  "n_events": 190,
+  "events": [
+    {
+      "slug": "m_100ok",
+      "label": "100 metres",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time_wind",
+      "n_rows": 4962,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_100ok.htm"
+    },
+    {
+      "slug": "m_200ok",
+      "label": "200 metres",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time_wind",
+      "n_rows": 5288,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_200ok.htm"
+    },
+    {
+      "slug": "m_110hok",
+      "label": "110m hurdles",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time_wind",
+      "n_rows": 10119,
+      "n_unparsed": 1,
+      "source_url": "https://www.alltime-athletics.com/m_110hok.htm"
+    },
+    {
+      "slug": "m60mok",
+      "label": "60 metres",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time_wind",
+      "n_rows": 3969,
+      "n_unparsed": 2,
+      "source_url": "https://www.alltime-athletics.com/m60mok.htm"
+    },
+    {
+      "slug": "m_60mhok",
+      "label": "60m hurdles",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time_wind",
+      "n_rows": 3982,
+      "n_unparsed": 4,
+      "source_url": "https://www.alltime-athletics.com/m_60mhok.htm"
+    },
+    {
+      "slug": "m_100yok",
+      "label": "100 yards",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time_wind",
+      "n_rows": 177,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_100yok.htm"
+    },
+    {
+      "slug": "m_200hok",
+      "label": "200m hurdles",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time_wind",
+      "n_rows": 86,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_200hok.htm"
+    },
+    {
+      "slug": "m100mno",
+      "label": "100 metres",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time_wind",
+      "n_rows": 2417,
+      "n_unparsed": 1,
+      "source_url": "https://www.alltime-athletics.com/m100mno.htm"
+    },
+    {
+      "slug": "m_200no",
+      "label": "200 metres",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time_wind",
+      "n_rows": 1266,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_200no.htm"
+    },
+    {
+      "slug": "m_110hno",
+      "label": "110m hurdles",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time_wind",
+      "n_rows": 1569,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_110hno.htm"
+    },
+    {
+      "slug": "m60mno",
+      "label": "60 metres",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time_wind",
+      "n_rows": 298,
+      "n_unparsed": 37,
+      "source_url": "https://www.alltime-athletics.com/m60mno.htm"
+    },
+    {
+      "slug": "m_60mhno",
+      "label": "60m hurdles",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time_wind",
+      "n_rows": 51,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_60mhno.htm"
+    },
+    {
+      "slug": "m_100yno",
+      "label": "100 yards",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time_wind",
+      "n_rows": 167,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_100yno.htm"
+    },
+    {
+      "slug": "m_200hno",
+      "label": "200m hurdles",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time_wind",
+      "n_rows": 7,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_200hno.htm"
+    },
+    {
+      "slug": "m_400ok",
+      "label": "400 metres",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 5327,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_400ok.htm"
+    },
+    {
+      "slug": "m_800ok",
+      "label": "800 metres",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 9698,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_800ok.htm"
+    },
+    {
+      "slug": "m_1500ok",
+      "label": "1500 metres",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 12455,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_1500ok.htm"
+    },
+    {
+      "slug": "m_mileok",
+      "label": "1 Mile",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 8682,
+      "n_unparsed": 4,
+      "source_url": "https://www.alltime-athletics.com/m_mileok.htm"
+    },
+    {
+      "slug": "m_3000ok",
+      "label": "3000 metres",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 6604,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_3000ok.htm"
+    },
+    {
+      "slug": "m_5000ok",
+      "label": "5000 metres",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 9995,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_5000ok.htm"
+    },
+    {
+      "slug": "m_10kok",
+      "label": "10000 metres",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 10970,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_10kok.htm"
+    },
+    {
+      "slug": "mhmaraok",
+      "label": "half-marathon",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 4181,
+      "n_unparsed": 1,
+      "source_url": "https://www.alltime-athletics.com/mhmaraok.htm"
+    },
+    {
+      "slug": "mmaraok",
+      "label": "marathon",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 6274,
+      "n_unparsed": 2,
+      "source_url": "https://www.alltime-athletics.com/mmaraok.htm"
+    },
+    {
+      "slug": "m3000hok",
+      "label": "3000m steeplechase",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 11053,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m3000hok.htm"
+    },
+    {
+      "slug": "m_400hok",
+      "label": "400m hurdles",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 4473,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_400hok.htm"
+    },
+    {
+      "slug": "m_300ok",
+      "label": "300 metres",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 900,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_300ok.htm"
+    },
+    {
+      "slug": "m_600ok",
+      "label": "600 metres",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 289,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_600ok.htm"
+    },
+    {
+      "slug": "m_1000ok",
+      "label": "1000 metres",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 313,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_1000ok.htm"
+    },
+    {
+      "slug": "m_2000ok",
+      "label": "2000 metres",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 352,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_2000ok.htm"
+    },
+    {
+      "slug": "m_2miok",
+      "label": "2 Miles",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 599,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_2miok.htm"
+    },
+    {
+      "slug": "m1hourok",
+      "label": "One hour run",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 221,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m1hourok.htm"
+    },
+    {
+      "slug": "m25kok",
+      "label": "25000m track",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 77,
+      "n_unparsed": 1,
+      "source_url": "https://www.alltime-athletics.com/m25kok.htm"
+    },
+    {
+      "slug": "m30kok",
+      "label": "30000m track",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 59,
+      "n_unparsed": 2,
+      "source_url": "https://www.alltime-athletics.com/m30kok.htm"
+    },
+    {
+      "slug": "m10kroad",
+      "label": "10km road",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 1255,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m10kroad.htm"
+    },
+    {
+      "slug": "m15kroad",
+      "label": "15km road",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 1545,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m15kroad.htm"
+    },
+    {
+      "slug": "m10milesroad",
+      "label": "10 miles road",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 231,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m10milesroad.htm"
+    },
+    {
+      "slug": "m20kroad",
+      "label": "20km road",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 2535,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m20kroad.htm"
+    },
+    {
+      "slug": "m30kroad",
+      "label": "30km road",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 3668,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m30kroad.htm"
+    },
+    {
+      "slug": "m100km",
+      "label": "100km road",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 197,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m100km.htm"
+    },
+    {
+      "slug": "m2000hok",
+      "label": "2000m steeplechase",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 521,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m2000hok.htm"
+    },
+    {
+      "slug": "m20kwok",
+      "label": "20km race walk",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 1911,
+      "n_unparsed": 6,
+      "source_url": "https://www.alltime-athletics.com/m20kwok.htm"
+    },
+    {
+      "slug": "mHalf-Marathonwok",
+      "label": "Half-marathon walk",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 126,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mHalf-Marathonwok.htm"
+    },
+    {
+      "slug": "m35kwok",
+      "label": "35km race walk",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 235,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m35kwok.htm"
+    },
+    {
+      "slug": "m50kwok",
+      "label": "50km race walk",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 1051,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m50kwok.htm"
+    },
+    {
+      "slug": "mMarathonwok",
+      "label": "Marathon walk",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 109,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mMarathonwok.htm"
+    },
+    {
+      "slug": "m10kwok",
+      "label": "10000m track walk",
+      "sex": "men",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 1059,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m10kwok.htm"
+    },
+    {
+      "slug": "m_400no",
+      "label": "400 metres",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 109,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_400no.htm"
+    },
+    {
+      "slug": "m_800no",
+      "label": "800 metres",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 98,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_800no.htm"
+    },
+    {
+      "slug": "m_1500no",
+      "label": "1500 metres",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 37,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_1500no.htm"
+    },
+    {
+      "slug": "m_mileno",
+      "label": "1 Mile",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 70,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_mileno.htm"
+    },
+    {
+      "slug": "m_3000no",
+      "label": "3000 metres",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 8,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_3000no.htm"
+    },
+    {
+      "slug": "m_5000no",
+      "label": "5000 metres",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 26,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_5000no.htm"
+    },
+    {
+      "slug": "m_10kno",
+      "label": "10000 metres",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 36,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_10kno.htm"
+    },
+    {
+      "slug": "mhmarano",
+      "label": "half-marathon",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 107,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mhmarano.htm"
+    },
+    {
+      "slug": "mmarano",
+      "label": "marathon",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 51,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mmarano.htm"
+    },
+    {
+      "slug": "m3000hno",
+      "label": "3000m steeplechase",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 75,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m3000hno.htm"
+    },
+    {
+      "slug": "m_400hno",
+      "label": "400m hurdles",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 26,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_400hno.htm"
+    },
+    {
+      "slug": "m_300no",
+      "label": "300 metres",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 546,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_300no.htm"
+    },
+    {
+      "slug": "m_600no",
+      "label": "600 metres",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 49,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_600no.htm"
+    },
+    {
+      "slug": "m_1000no",
+      "label": "1000 metres",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 1,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_1000no.htm"
+    },
+    {
+      "slug": "m1hourno",
+      "label": "One hour run",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 1,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m1hourno.htm"
+    },
+    {
+      "slug": "m10kroadno",
+      "label": "10km road",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 36,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m10kroadno.htm"
+    },
+    {
+      "slug": "m15kroadno",
+      "label": "15km road",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 13,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m15kroadno.htm"
+    },
+    {
+      "slug": "m10milesroadno",
+      "label": "10 miles road",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 7,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m10milesroadno.htm"
+    },
+    {
+      "slug": "m20kroadno",
+      "label": "20km road",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 6,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m20kroadno.htm"
+    },
+    {
+      "slug": "m30kroadno",
+      "label": "30km road",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 8,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m30kroadno.htm"
+    },
+    {
+      "slug": "m2000hno",
+      "label": "2000m steeplechase",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 422,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m2000hno.htm"
+    },
+    {
+      "slug": "m20kwno",
+      "label": "20km race walk",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 72,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m20kwno.htm"
+    },
+    {
+      "slug": "m50kwno",
+      "label": "50km race walk",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 52,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m50kwno.htm"
+    },
+    {
+      "slug": "m10kwno",
+      "label": "10000m track walk",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 403,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m10kwno.htm"
+    },
+    {
+      "slug": "mlongok",
+      "label": "Long jump",
+      "sex": "men",
+      "legality": "legal",
+      "family": "field_distance_wind",
+      "n_rows": 3368,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mlongok.htm"
+    },
+    {
+      "slug": "mtripok",
+      "label": "Triple jump",
+      "sex": "men",
+      "legality": "legal",
+      "family": "field_distance_wind",
+      "n_rows": 2378,
+      "n_unparsed": 5,
+      "source_url": "https://www.alltime-athletics.com/mtripok.htm"
+    },
+    {
+      "slug": "mlongno",
+      "label": "Long jump",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "field_distance_wind",
+      "n_rows": 971,
+      "n_unparsed": 3,
+      "source_url": "https://www.alltime-athletics.com/mlongno.htm"
+    },
+    {
+      "slug": "mtripno",
+      "label": "Triple jump",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "field_distance_wind",
+      "n_rows": 390,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mtripno.htm"
+    },
+    {
+      "slug": "mhighok",
+      "label": "High jump",
+      "sex": "men",
+      "legality": "legal",
+      "family": "field_distance",
+      "n_rows": 3663,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mhighok.htm"
+    },
+    {
+      "slug": "mpoleok",
+      "label": "Pole vault",
+      "sex": "men",
+      "legality": "legal",
+      "family": "field_distance",
+      "n_rows": 11007,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mpoleok.htm"
+    },
+    {
+      "slug": "mshotok",
+      "label": "Shot put",
+      "sex": "men",
+      "legality": "legal",
+      "family": "field_distance",
+      "n_rows": 7772,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mshotok.htm"
+    },
+    {
+      "slug": "mdiscok",
+      "label": "Discus throw",
+      "sex": "men",
+      "legality": "legal",
+      "family": "field_distance",
+      "n_rows": 2960,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mdiscok.htm"
+    },
+    {
+      "slug": "mhammok",
+      "label": "Hammer throw",
+      "sex": "men",
+      "legality": "legal",
+      "family": "field_distance",
+      "n_rows": 2510,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mhammok.htm"
+    },
+    {
+      "slug": "mjaveok",
+      "label": "Javelin throw",
+      "sex": "men",
+      "legality": "legal",
+      "family": "field_distance",
+      "n_rows": 2666,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mjaveok.htm"
+    },
+    {
+      "slug": "mjaveoldok",
+      "label": "Javelin throw (old specs)",
+      "sex": "men",
+      "legality": "legal",
+      "family": "field_distance",
+      "n_rows": 556,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mjaveoldok.htm"
+    },
+    {
+      "slug": "mhighno",
+      "label": "High jump",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "field_distance",
+      "n_rows": 53,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mhighno.htm"
+    },
+    {
+      "slug": "mpoleno",
+      "label": "Pole vault",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "field_distance",
+      "n_rows": 147,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mpoleno.htm"
+    },
+    {
+      "slug": "mshotno",
+      "label": "Shot put",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "field_distance",
+      "n_rows": 177,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mshotno.htm"
+    },
+    {
+      "slug": "mdiscno",
+      "label": "Discus throw",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "field_distance",
+      "n_rows": 75,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mdiscno.htm"
+    },
+    {
+      "slug": "mhammno",
+      "label": "Hammer throw",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "field_distance",
+      "n_rows": 48,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mhammno.htm"
+    },
+    {
+      "slug": "mjaveno",
+      "label": "Javelin throw",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "field_distance",
+      "n_rows": 83,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mjaveno.htm"
+    },
+    {
+      "slug": "mjaveoldno",
+      "label": "Javelin throw (old specs)",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "field_distance",
+      "n_rows": 7,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mjaveoldno.htm"
+    },
+    {
+      "slug": "mdecaok",
+      "label": "Decathlon",
+      "sex": "men",
+      "legality": "legal",
+      "family": "combined_points",
+      "n_rows": 2875,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mdecaok.htm"
+    },
+    {
+      "slug": "mdecano",
+      "label": "Decathlon",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "combined_points",
+      "n_rows": 129,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/mdecano.htm"
+    },
+    {
+      "slug": "m4x100ok",
+      "label": "4x100m relay",
+      "sex": "men",
+      "legality": "legal",
+      "family": "relay",
+      "n_rows": 3281,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m4x100ok.htm"
+    },
+    {
+      "slug": "m4x400ok",
+      "label": "4x400m relay",
+      "sex": "men",
+      "legality": "legal",
+      "family": "relay",
+      "n_rows": 2597,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m4x400ok.htm"
+    },
+    {
+      "slug": "m4x200ok",
+      "label": "4x200m relay",
+      "sex": "men",
+      "legality": "legal",
+      "family": "relay",
+      "n_rows": 658,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m4x200ok.htm"
+    },
+    {
+      "slug": "m4x800ok",
+      "label": "4x800m relay",
+      "sex": "men",
+      "legality": "legal",
+      "family": "relay",
+      "n_rows": 107,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m4x800ok.htm"
+    },
+    {
+      "slug": "m4x1500ok",
+      "label": "4x1500m relay",
+      "sex": "men",
+      "legality": "legal",
+      "family": "relay",
+      "n_rows": 92,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m4x1500ok.htm"
+    },
+    {
+      "slug": "m_4xmileok",
+      "label": "4x1 Mile relay",
+      "sex": "men",
+      "legality": "legal",
+      "family": "relay",
+      "n_rows": 159,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m_4xmileok.htm"
+    },
+    {
+      "slug": "m4x100no",
+      "label": "4x100m relay",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "relay",
+      "n_rows": 76,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m4x100no.htm"
+    },
+    {
+      "slug": "m4x400no",
+      "label": "4x400m relay",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "relay",
+      "n_rows": 77,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m4x400no.htm"
+    },
+    {
+      "slug": "m4x200no",
+      "label": "4x200m relay",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "relay",
+      "n_rows": 3,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m4x200no.htm"
+    },
+    {
+      "slug": "m4x800no",
+      "label": "4x800m relay",
+      "sex": "men",
+      "legality": "non-legal",
+      "family": "relay",
+      "n_rows": 1,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/m4x800no.htm"
+    },
+    {
+      "slug": "w_100ok",
+      "label": "100 metres",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time_wind",
+      "n_rows": 3472,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_100ok.htm"
+    },
+    {
+      "slug": "w_200ok",
+      "label": "200 metres",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time_wind",
+      "n_rows": 2900,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_200ok.htm"
+    },
+    {
+      "slug": "w_100hok",
+      "label": "100m hurdles",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time_wind",
+      "n_rows": 2442,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_100hok.htm"
+    },
+    {
+      "slug": "w60mok",
+      "label": "60 metres",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time_wind",
+      "n_rows": 3358,
+      "n_unparsed": 1,
+      "source_url": "https://www.alltime-athletics.com/w60mok.htm"
+    },
+    {
+      "slug": "w_60mhok",
+      "label": "60m hurdles",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time_wind",
+      "n_rows": 2454,
+      "n_unparsed": 1,
+      "source_url": "https://www.alltime-athletics.com/w_60mhok.htm"
+    },
+    {
+      "slug": "w_100no",
+      "label": "100 metres",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time_wind",
+      "n_rows": 1200,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_100no.htm"
+    },
+    {
+      "slug": "w_200no",
+      "label": "200 metres",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time_wind",
+      "n_rows": 528,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_200no.htm"
+    },
+    {
+      "slug": "w_100hno",
+      "label": "100m hurdles",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time_wind",
+      "n_rows": 401,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_100hno.htm"
+    },
+    {
+      "slug": "w60mno",
+      "label": "60 metres",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time_wind",
+      "n_rows": 329,
+      "n_unparsed": 1,
+      "source_url": "https://www.alltime-athletics.com/w60mno.htm"
+    },
+    {
+      "slug": "w_60mhno",
+      "label": "60m hurdles",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time_wind",
+      "n_rows": 24,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_60mhno.htm"
+    },
+    {
+      "slug": "w_400ok",
+      "label": "400 metres",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 4348,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_400ok.htm"
+    },
+    {
+      "slug": "w_800ok",
+      "label": "800 metres",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 2612,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_800ok.htm"
+    },
+    {
+      "slug": "w_1500ok",
+      "label": "1500 metres",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 4087,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_1500ok.htm"
+    },
+    {
+      "slug": "w_mileok",
+      "label": "1 Mile",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 615,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_mileok.htm"
+    },
+    {
+      "slug": "w_3000ok",
+      "label": "3000 metres",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 1949,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_3000ok.htm"
+    },
+    {
+      "slug": "w_5000ok",
+      "label": "5000 metres",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 5809,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_5000ok.htm"
+    },
+    {
+      "slug": "w_10kok",
+      "label": "10000 metres",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 2671,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_10kok.htm"
+    },
+    {
+      "slug": "whmaraok",
+      "label": "half-marathon",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 4175,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/whmaraok.htm"
+    },
+    {
+      "slug": "wmaraok",
+      "label": "marathon",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 5743,
+      "n_unparsed": 1,
+      "source_url": "https://www.alltime-athletics.com/wmaraok.htm"
+    },
+    {
+      "slug": "w3000hok",
+      "label": "3000m steeplechase",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 31539,
+      "n_unparsed": 1,
+      "source_url": "https://www.alltime-athletics.com/w3000hok.htm"
+    },
+    {
+      "slug": "w_400hok",
+      "label": "400m hurdles",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 3176,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_400hok.htm"
+    },
+    {
+      "slug": "w_300ok",
+      "label": "300 metres",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 744,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_300ok.htm"
+    },
+    {
+      "slug": "w_600ok",
+      "label": "600 metres",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 270,
+      "n_unparsed": 1,
+      "source_url": "https://www.alltime-athletics.com/w_600ok.htm"
+    },
+    {
+      "slug": "w_1000ok",
+      "label": "1000 metres",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 266,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_1000ok.htm"
+    },
+    {
+      "slug": "w_2000ok",
+      "label": "2000 metres",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 187,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_2000ok.htm"
+    },
+    {
+      "slug": "w2milesok",
+      "label": "2 Miles",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 462,
+      "n_unparsed": 1,
+      "source_url": "https://www.alltime-athletics.com/w2milesok.htm"
+    },
+    {
+      "slug": "w10kroad",
+      "label": "10km road",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 1621,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w10kroad.htm"
+    },
+    {
+      "slug": "w15kroad",
+      "label": "15km road",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 1384,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w15kroad.htm"
+    },
+    {
+      "slug": "w10milesroad",
+      "label": "10 miles road",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 292,
+      "n_unparsed": 1,
+      "source_url": "https://www.alltime-athletics.com/w10milesroad.htm"
+    },
+    {
+      "slug": "w20kroad",
+      "label": "20km road",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 3042,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w20kroad.htm"
+    },
+    {
+      "slug": "w30kroad",
+      "label": "30km road",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 4030,
+      "n_unparsed": 1,
+      "source_url": "https://www.alltime-athletics.com/w30kroad.htm"
+    },
+    {
+      "slug": "w2000hok",
+      "label": "2000m steeplechase",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 1112,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w2000hok.htm"
+    },
+    {
+      "slug": "w20kwok",
+      "label": "20km race walk",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 4330,
+      "n_unparsed": 16,
+      "source_url": "https://www.alltime-athletics.com/w20kwok.htm"
+    },
+    {
+      "slug": "wHalf-Marathonwok",
+      "label": "Half-marathon walk",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 57,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/wHalf-Marathonwok.htm"
+    },
+    {
+      "slug": "w35kwok",
+      "label": "35km race walk",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 306,
+      "n_unparsed": 2,
+      "source_url": "https://www.alltime-athletics.com/w35kwok.htm"
+    },
+    {
+      "slug": "w50kwok",
+      "label": "50km race walk",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 264,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w50kwok.htm"
+    },
+    {
+      "slug": "wMarathonwok",
+      "label": "Marathon walk",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 56,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/wMarathonwok.htm"
+    },
+    {
+      "slug": "w5kwok",
+      "label": "5000m track walk",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 499,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w5kwok.htm"
+    },
+    {
+      "slug": "w10kwok",
+      "label": "10km race walk",
+      "sex": "women",
+      "legality": "legal",
+      "family": "track_time",
+      "n_rows": 576,
+      "n_unparsed": 5,
+      "source_url": "https://www.alltime-athletics.com/w10kwok.htm"
+    },
+    {
+      "slug": "w_400no",
+      "label": "400 metres",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 70,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_400no.htm"
+    },
+    {
+      "slug": "w_800no",
+      "label": "800 metres",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 66,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_800no.htm"
+    },
+    {
+      "slug": "w_1500no",
+      "label": "1500 metres",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 108,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_1500no.htm"
+    },
+    {
+      "slug": "w_mileno",
+      "label": "1 Mile",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 21,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_mileno.htm"
+    },
+    {
+      "slug": "w_3000no",
+      "label": "3000 metres",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 8,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_3000no.htm"
+    },
+    {
+      "slug": "w_5000no",
+      "label": "5000 metres",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 74,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_5000no.htm"
+    },
+    {
+      "slug": "w_10kno",
+      "label": "10000 metres",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 49,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_10kno.htm"
+    },
+    {
+      "slug": "whmarano",
+      "label": "half-marathon",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 65,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/whmarano.htm"
+    },
+    {
+      "slug": "wmarano",
+      "label": "marathon",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 50,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/wmarano.htm"
+    },
+    {
+      "slug": "w3000hno",
+      "label": "3000m steeplechase",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 161,
+      "n_unparsed": 1,
+      "source_url": "https://www.alltime-athletics.com/w3000hno.htm"
+    },
+    {
+      "slug": "w_400hno",
+      "label": "400m hurdles",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 16,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_400hno.htm"
+    },
+    {
+      "slug": "w_300no",
+      "label": "300 metres",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 595,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_300no.htm"
+    },
+    {
+      "slug": "w_1000no",
+      "label": "1000 metres",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 6,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_1000no.htm"
+    },
+    {
+      "slug": "w_2000no",
+      "label": "2000 metres",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 4,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w_2000no.htm"
+    },
+    {
+      "slug": "w2milesno",
+      "label": "2 Miles",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 3,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w2milesno.htm"
+    },
+    {
+      "slug": "w10kroadno",
+      "label": "10km road",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 8,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w10kroadno.htm"
+    },
+    {
+      "slug": "w15kroadno",
+      "label": "15km road",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 3,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w15kroadno.htm"
+    },
+    {
+      "slug": "w20kroadno",
+      "label": "20km road",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 12,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w20kroadno.htm"
+    },
+    {
+      "slug": "w30kroadno",
+      "label": "30km road",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 30,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w30kroadno.htm"
+    },
+    {
+      "slug": "w2000hno",
+      "label": "2000m steeplechase",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 993,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w2000hno.htm"
+    },
+    {
+      "slug": "w20kwno",
+      "label": "20km race walk",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 69,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w20kwno.htm"
+    },
+    {
+      "slug": "w5kwno",
+      "label": "5000m track walk",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 180,
+      "n_unparsed": 1,
+      "source_url": "https://www.alltime-athletics.com/w5kwno.htm"
+    },
+    {
+      "slug": "w10kwno",
+      "label": "10km race walk",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "track_time",
+      "n_rows": 91,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w10kwno.htm"
+    },
+    {
+      "slug": "wlongok",
+      "label": "Long jump",
+      "sex": "women",
+      "legality": "legal",
+      "family": "field_distance_wind",
+      "n_rows": 2013,
+      "n_unparsed": 1,
+      "source_url": "https://www.alltime-athletics.com/wlongok.htm"
+    },
+    {
+      "slug": "wtripleok",
+      "label": "Triple jump",
+      "sex": "women",
+      "legality": "legal",
+      "family": "field_distance_wind",
+      "n_rows": 4138,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/wtripleok.htm"
+    },
+    {
+      "slug": "wlongno",
+      "label": "Long jump",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "field_distance_wind",
+      "n_rows": 424,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/wlongno.htm"
+    },
+    {
+      "slug": "wtripleno",
+      "label": "Triple jump",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "field_distance_wind",
+      "n_rows": 470,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/wtripleno.htm"
+    },
+    {
+      "slug": "whighok",
+      "label": "High jump",
+      "sex": "women",
+      "legality": "legal",
+      "family": "field_distance",
+      "n_rows": 2274,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/whighok.htm"
+    },
+    {
+      "slug": "wpoleok",
+      "label": "Pole vault",
+      "sex": "women",
+      "legality": "legal",
+      "family": "field_distance",
+      "n_rows": 25453,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/wpoleok.htm"
+    },
+    {
+      "slug": "wshotok",
+      "label": "Shot put",
+      "sex": "women",
+      "legality": "legal",
+      "family": "field_distance",
+      "n_rows": 2827,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/wshotok.htm"
+    },
+    {
+      "slug": "wdiscok",
+      "label": "Discus throw",
+      "sex": "women",
+      "legality": "legal",
+      "family": "field_distance",
+      "n_rows": 4011,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/wdiscok.htm"
+    },
+    {
+      "slug": "whammok",
+      "label": "Hammer throw",
+      "sex": "women",
+      "legality": "legal",
+      "family": "field_distance",
+      "n_rows": 17674,
+      "n_unparsed": 6,
+      "source_url": "https://www.alltime-athletics.com/whammok.htm"
+    },
+    {
+      "slug": "wjaveok",
+      "label": "Javelin throw",
+      "sex": "women",
+      "legality": "legal",
+      "family": "field_distance",
+      "n_rows": 3497,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/wjaveok.htm"
+    },
+    {
+      "slug": "wjaveoldok",
+      "label": "Javelin throw (old specs)",
+      "sex": "women",
+      "legality": "legal",
+      "family": "field_distance",
+      "n_rows": 1201,
+      "n_unparsed": 8,
+      "source_url": "https://www.alltime-athletics.com/wjaveoldok.htm"
+    },
+    {
+      "slug": "whighno",
+      "label": "High jump",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "field_distance",
+      "n_rows": 42,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/whighno.htm"
+    },
+    {
+      "slug": "wpoleno",
+      "label": "Pole vault",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "field_distance",
+      "n_rows": 213,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/wpoleno.htm"
+    },
+    {
+      "slug": "wshotno",
+      "label": "Shot put",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "field_distance",
+      "n_rows": 125,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/wshotno.htm"
+    },
+    {
+      "slug": "wdiscno",
+      "label": "Discus throw",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "field_distance",
+      "n_rows": 67,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/wdiscno.htm"
+    },
+    {
+      "slug": "whammno",
+      "label": "Hammer throw",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "field_distance",
+      "n_rows": 728,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/whammno.htm"
+    },
+    {
+      "slug": "wjaveno",
+      "label": "Javelin throw",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "field_distance",
+      "n_rows": 153,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/wjaveno.htm"
+    },
+    {
+      "slug": "whepaok",
+      "label": "Heptathlon",
+      "sex": "women",
+      "legality": "legal",
+      "family": "combined_points",
+      "n_rows": 2422,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/whepaok.htm"
+    },
+    {
+      "slug": "whepano",
+      "label": "Heptathlon",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "combined_points",
+      "n_rows": 83,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/whepano.htm"
+    },
+    {
+      "slug": "w4x100ok",
+      "label": "4x100m relay",
+      "sex": "women",
+      "legality": "legal",
+      "family": "relay",
+      "n_rows": 1243,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w4x100ok.htm"
+    },
+    {
+      "slug": "w4x400ok",
+      "label": "4x400m relay",
+      "sex": "women",
+      "legality": "legal",
+      "family": "relay",
+      "n_rows": 2493,
+      "n_unparsed": 2,
+      "source_url": "https://www.alltime-athletics.com/w4x400ok.htm"
+    },
+    {
+      "slug": "w4x800ok",
+      "label": "4x800m relay",
+      "sex": "women",
+      "legality": "legal",
+      "family": "relay",
+      "n_rows": 194,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w4x800ok.htm"
+    },
+    {
+      "slug": "w4x1500ok",
+      "label": "4x1500m relay",
+      "sex": "women",
+      "legality": "legal",
+      "family": "relay",
+      "n_rows": 201,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w4x1500ok.htm"
+    },
+    {
+      "slug": "w4x100no",
+      "label": "4x100m relay",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "relay",
+      "n_rows": 30,
+      "n_unparsed": 5,
+      "source_url": "https://www.alltime-athletics.com/w4x100no.htm"
+    },
+    {
+      "slug": "w4x400no",
+      "label": "4x400m relay",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "relay",
+      "n_rows": 64,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w4x400no.htm"
+    },
+    {
+      "slug": "w4x800no",
+      "label": "4x800m relay",
+      "sex": "women",
+      "legality": "non-legal",
+      "family": "relay",
+      "n_rows": 2,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/w4x800no.htm"
+    },
+    {
+      "slug": "x4x400ok",
+      "label": "4x400m relay",
+      "sex": "mixed",
+      "legality": "legal",
+      "family": "relay",
+      "n_rows": 491,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/x4x400ok.htm"
+    },
+    {
+      "slug": "x4x400no",
+      "label": "4x400m relay",
+      "sex": "mixed",
+      "legality": "non-legal",
+      "family": "relay",
+      "n_rows": 5,
+      "n_unparsed": 0,
+      "source_url": "https://www.alltime-athletics.com/x4x400no.htm"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Local scrape cache
+.cache/
+
+# Rendered site (built in CI)
+site/
+
+# Per-event JSON is derived from the parquet at site-render time.
+# Keeping it out of git means a weekly data refresh diff is ~5 MB of parquet,
+# not ~80 MB of JSON.
+data/events/
