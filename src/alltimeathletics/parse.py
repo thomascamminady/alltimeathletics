@@ -331,7 +331,9 @@ def _parse_relay_line(
         "mark_value": _normalize_mark(mark_raw, event.family),
         "wind": None,
         "name": team,
-        "country": team,  # team name doubles as country for relays
+        # Country is intentionally null for relays so it stays a clean IOC
+        # 2-3-char code across the whole parquet. The team name lives in `name`.
+        "country": None,
         "dob": None,
         "position": position,
         "venue": venue,
@@ -411,9 +413,14 @@ def _parse_wind(s: str) -> float | None:
 
 def _parse_date(s: str) -> date | None:
     try:
-        return datetime.strptime(s, "%d.%m.%Y").date()
+        d = datetime.strptime(s, "%d.%m.%Y").date()
     except ValueError:
         return None
+    # Larsson's pages occasionally have typos like '09.08.2925' for 2025;
+    # drop anything outside the plausible window rather than poison filters.
+    if d.year < 1900 or d.year > date.today().year + 1:
+        return None
+    return d
 
 
 def _parse_dob(s: str) -> date | None:
