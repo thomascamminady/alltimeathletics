@@ -347,6 +347,8 @@ def _parse_individual_line(
     country, name_tokens, after_country = _extract_country(middle)
     dob_str, position = _classify_after_country(after_country)
     name = _assemble_name(name_tokens)
+    dob_value, dob_precision = _parse_dob_with_precision(dob_str)
+    mark_value, mark_annotation = _normalize_mark_with_annotation(mark_raw, event.family)
 
     return {
         "event": event.label,
@@ -357,11 +359,13 @@ def _parse_individual_line(
         "section": section,
         "rank": rank,
         "mark_raw": mark_raw,
-        "mark_value": _normalize_mark(mark_raw, event.family),
+        "mark_value": mark_value,
+        "mark_annotation": mark_annotation,
         "wind": wind,
         "name": name,
         "country": country,
-        "dob": _parse_dob(dob_str) if dob_str else None,
+        "dob": dob_value,
+        "dob_precision": dob_precision,
         "position": position,
         "venue": venue,
         "date": parsed_date,
@@ -407,6 +411,7 @@ def _try_parse_relay_line(
         return None
     team = " ".join(team_tokens).strip()
 
+    mark_value, mark_annotation = _normalize_mark_with_annotation(mark_raw, event.family)
     return {
         "event": event.label,
         "event_slug": event.slug,
@@ -416,11 +421,13 @@ def _try_parse_relay_line(
         "section": section,
         "rank": rank,
         "mark_raw": mark_raw,
-        "mark_value": _normalize_mark(mark_raw, event.family),
+        "mark_value": mark_value,
+        "mark_annotation": mark_annotation,
         "wind": None,
         "name": team,
         "country": team,  # team name doubles as country for relays
         "dob": None,
+        "dob_precision": None,
         "position": position,
         "venue": venue,
         "date": _parse_date(date_str),
@@ -469,13 +476,19 @@ def _looks_like_relay_member(tokens: list[str]) -> bool:
 
 
 def _parse_relay_member(tokens: list[str]) -> dict[str, Any]:
-    member: dict[str, Any] = {"name": "", "split": None, "dob": None, "country": None}
+    member: dict[str, Any] = {
+        "name": "",
+        "split": None,
+        "dob": None,
+        "dob_precision": None,
+        "country": None,
+    }
     name_parts: list[str] = []
     for t in tokens:
         if t.startswith("(") and t.endswith(")"):
             member["split"] = t.strip("()")
         elif _DOB_RE.match(t):
-            member["dob"] = _parse_dob(t)
+            member["dob"], member["dob_precision"] = _parse_dob_with_precision(t)
         elif _COUNTRY_RE.match(t):
             member["country"] = t
         else:
@@ -504,64 +517,96 @@ def _parse_date(s: str) -> date | None:
         return None
 
 
-def _parse_dob(s: str) -> date | None:
-    """Parse 'dd.mm.yy' with a sensible century pivot.
+def _parse_dob_with_precision(s: str) -> tuple[date | None, str | None]:
+    """Parse 'dd.mm.yy' or year-only 'yy'; return (date, precision).
 
-    Year-only entries ('97') become Jan 1 of that year. Larsson uses 2-digit
-    years; we assume 00-09 → 2000s, otherwise 19xx. Athletes born ≥ 2010 are
-    currently miscoded as 19xx — we'll fix when (if) it matters.
+    ``precision`` is one of:
+    - ``"day"``  for full ``dd.mm.yy`` entries — the date is real
+    - ``"year"`` for year-only entries — month/day are fabricated as Jan 1
+    - ``None``   when nothing parseable was provided
+
+    Larsson uses 2-digit years; we still pivot at 00-09 → 2000s, otherwise
+    19xx. Athletes born ≥ 2010 are currently miscoded as 19xx — that is
+    visible to consumers via ``dob_precision`` in combination with the
+    performance ``date``, and a stricter pivot can land in a follow-up.
     """
     if not s or s == "??":
-        return None
+        return None, None
     try:
         if _DOB_YEAR_ONLY_RE.match(s):
             year = int(s)
             century = 2000 if year < 10 else 1900
-            return date(century + year, 1, 1)
+            return date(century + year, 1, 1), "year"
         d, m, y = s.split(".")
         year = int(y)
         century = 2000 if year < 10 else 1900
-        return date(century + year, int(m), int(d))
+        return date(century + year, int(m), int(d)), "day"
     except (ValueError, IndexError):
-        return None
+        return None, None
 
 
-def _normalize_mark(raw: str, family: str) -> float | None:
-    """Convert a printed mark to a numeric sort key.
+_MARK_ANNOTATION_RE = re.compile(r"[A-Za-z+*]+$")
+
+
+def _split_mark_annotation(raw: str) -> tuple[str, str | None]:
+    """Strip trailing annotation letters/symbols from a mark string.
+
+    Examples:
+    - ``"9.79A"``     → (``"9.79"``,    ``"A"``)    altitude-aided
+    - ``"9.78*"``     → (``"9.78"``,    ``"*"``)    later disqualified
+    - ``"10.10h"``    → (``"10.10"``,   ``"h"``)    hand-timed
+    - ``"2:00:35"``   → (``"2:00:35"``, ``None``)
+    """
+    s = raw.strip()
+    m = _MARK_ANNOTATION_RE.search(s)
+    if m is None:
+        return s, None
+    return s[: m.start()], m.group(0)
+
+
+def _normalize_mark_with_annotation(
+    raw: str, family: str
+) -> tuple[float | None, str | None]:
+    """Convert a printed mark to ``(numeric_value, annotation)``.
 
     - track_time / track_time_wind: seconds (floats; supports h:mm:ss, m:ss.cc, ss.cc)
     - field_distance / field_distance_wind: metres (float)
     - combined_points: integer points → float
     - relay: seconds
+
+    The annotation (e.g. ``"A"`` for altitude, ``"h"`` for hand-timed,
+    ``"*"`` for later DQ) is preserved as a separate column so consumers
+    can filter or weight on it instead of having to re-parse ``mark_raw``.
     """
-    s = raw.strip()
-    # strip trailing annotations like 'a', 'd', '+', 'h', 'A', 'm'
-    core = re.sub(r"[A-Za-z+*]+$", "", s)
+    core, annotation = _split_mark_annotation(raw)
     core = core.rstrip(".")
     if not core:
-        return None
+        return None, annotation
 
     if family in ("field_distance", "field_distance_wind"):
         try:
-            return float(core)
+            return float(core), annotation
         except ValueError:
-            return None
+            return None, annotation
 
     if family == "combined_points":
         try:
-            return float(core)
+            return float(core), annotation
         except ValueError:
-            return None
+            return None, annotation
 
     # track-style time
     parts = core.split(":")
     try:
         if len(parts) == 1:
-            return float(parts[0])
+            return float(parts[0]), annotation
         if len(parts) == 2:
-            return int(parts[0]) * 60 + float(parts[1])
+            return int(parts[0]) * 60 + float(parts[1]), annotation
         if len(parts) == 3:
-            return int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2])
+            return (
+                int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2]),
+                annotation,
+            )
     except ValueError:
-        return None
-    return None
+        return None, annotation
+    return None, annotation
