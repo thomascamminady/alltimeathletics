@@ -15,12 +15,17 @@ this parquet; we don't write it here so the committed repo stays small.
 The script exits non-zero if more than ``MAX_UNPARSED_RATIO`` of the rows fail
 to parse, so a CI run will turn red rather than silently overwrite the parquet
 with truncated data.
+
+The manifest carries per-event and global ``unparsed_by_step`` counters so a
+parser drift (e.g. a layout change that breaks date extraction on one family)
+is visible at a glance instead of being averaged into a single number.
 """
 
 from __future__ import annotations
 
 import json
 import sys
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -29,7 +34,7 @@ import fire
 import polars as pl
 
 from alltimeathletics.events import EVENTS
-from alltimeathletics.parse import parse_page
+from alltimeathletics.parse import ParseDiagnostic, parse_page
 from alltimeathletics.scrape import fetch_all
 
 # Hard ceiling on the fraction of rows we tolerate failing to parse before the
@@ -53,21 +58,29 @@ def run(
 
     rows: list[dict[str, Any]] = []
     per_event_counts: dict[str, int] = {}
-    per_event_warnings: dict[str, int] = {}
+    per_event_diagnostics: dict[str, list[ParseDiagnostic]] = {}
 
     for ev in EVENTS:
         result = parse_page(htmls[ev.slug], ev)
         rows.extend(result.rows)
         per_event_counts[ev.slug] = len(result.rows)
-        per_event_warnings[ev.slug] = len(result.unparsed)
+        per_event_diagnostics[ev.slug] = result.diagnostics
 
     total_rows = len(rows)
-    total_unparsed = sum(per_event_warnings.values())
+    total_unparsed = sum(len(d) for d in per_event_diagnostics.values())
     ratio = total_unparsed / max(1, total_rows + total_unparsed)
     print(f"Parsed {total_rows} rows; {total_unparsed} unparsed ({ratio:.4%}).", flush=True)
 
+    by_step = _step_counter(per_event_diagnostics.values())
+    if by_step:
+        summary = ", ".join(f"{step}={n}" for step, n in by_step.most_common())
+        print(f"  failure steps: {summary}", flush=True)
+
     if ratio > MAX_UNPARSED_RATIO:
-        worst = sorted(per_event_warnings.items(), key=lambda kv: -kv[1])[:10]
+        worst = sorted(
+            ((slug, len(d)) for slug, d in per_event_diagnostics.items()),
+            key=lambda kv: -kv[1],
+        )[:10]
         print(
             f"FAIL: parser dropped {ratio:.2%} of rows (max {MAX_UNPARSED_RATIO:.2%}).",
             file=sys.stderr,
@@ -82,9 +95,13 @@ def run(
     df.write_parquet(output_parquet_path, compression="zstd")
     print(f"Wrote {len(df)} rows to {output_parquet_path}", flush=True)
 
-    manifest = _build_manifest(df, per_event_counts, per_event_warnings)
+    manifest = _build_manifest(df, per_event_counts, per_event_diagnostics)
     Path(output_manifest).write_text(json.dumps(manifest, indent=2, default=str))
     print(f"Wrote manifest to {output_manifest}", flush=True)
+
+
+def _step_counter(diag_lists: Any) -> Counter[str]:
+    return Counter(d.step for diags in diag_lists for d in diags)
 
 
 def _to_dataframe(rows: list[dict[str, Any]]) -> pl.DataFrame:
@@ -129,12 +146,14 @@ def _to_dataframe(rows: list[dict[str, Any]]) -> pl.DataFrame:
 def _build_manifest(
     df: pl.DataFrame,
     per_event_counts: dict[str, int],
-    per_event_warnings: dict[str, int],
+    per_event_diagnostics: dict[str, list[ParseDiagnostic]],
 ) -> dict[str, Any]:
+    global_steps = _step_counter(per_event_diagnostics.values())
     return {
         "scraped_at": datetime.now(timezone.utc).isoformat(),
         "n_rows": int(len(df)),
         "n_events": len(per_event_counts),
+        "unparsed_by_step": dict(global_steps),
         "events": [
             {
                 "slug": ev.slug,
@@ -143,7 +162,10 @@ def _build_manifest(
                 "legality": ev.legality,
                 "family": ev.family,
                 "n_rows": per_event_counts.get(ev.slug, 0),
-                "n_unparsed": per_event_warnings.get(ev.slug, 0),
+                "n_unparsed": len(per_event_diagnostics.get(ev.slug, [])),
+                "unparsed_by_step": dict(
+                    Counter(d.step for d in per_event_diagnostics.get(ev.slug, []))
+                ),
                 "source_url": ev.url,
             }
             for ev in EVENTS
