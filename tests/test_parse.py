@@ -63,12 +63,14 @@ def test_men_100m_top_mark_is_bolt() -> None:
     assert top["rank"] == 1
     assert top["mark_raw"] == "9.58"
     assert top["mark_value"] == pytest.approx(9.58)
+    assert top["mark_annotation"] is None
     assert top["name"] == "Usain Bolt"
     assert top["country"] == "JAM"
     assert top["wind"] == pytest.approx(0.9)
     assert top["venue"] == "Berlin"
     assert top["date"] == date(2009, 8, 16)
     assert top["dob"] == date(1986, 8, 21)
+    assert top["dob_precision"] == "day"
 
 
 def test_men_high_jump_top_mark_is_sotomayor() -> None:

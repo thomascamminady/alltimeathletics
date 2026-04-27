@@ -27,10 +27,12 @@ EXPECTED_SCHEMA: dict[str, pl.DataType] = {
     "rank": pl.UInt32,
     "mark_raw": pl.Utf8,
     "mark_value": pl.Float64,
+    "mark_annotation": pl.Utf8,
     "wind": pl.Float64,
     "name": pl.Utf8,
     "country": pl.Utf8,
     "dob": pl.Date,
+    "dob_precision": pl.Utf8,
     "position": pl.Utf8,
     "venue": pl.Utf8,
     "date": pl.Date,
@@ -108,6 +110,47 @@ def test_dob_within_human_range(df: pl.DataFrame) -> None:
     latest = dobs.max().item()
     assert date(1900, 1, 1) <= earliest, f"earliest dob too old: {earliest}"
     assert latest <= date.today(), f"future dob: {latest}"
+
+
+def test_dob_precision_values_are_known(df: pl.DataFrame) -> None:
+    """Every non-null dob_precision is either "day" or "year"."""
+    distinct = (
+        df.filter(pl.col("dob_precision").is_not_null())
+        .select("dob_precision")
+        .unique()
+        .to_series()
+        .to_list()
+    )
+    assert set(distinct) <= {"day", "year"}, f"unexpected dob_precision: {distinct}"
+
+
+def test_dob_precision_is_consistent_with_dob(df: pl.DataFrame) -> None:
+    """dob_precision is set iff dob is set; year-only entries land on Jan 1."""
+    has_dob = df.filter(pl.col("dob").is_not_null())
+    has_prec = df.filter(pl.col("dob_precision").is_not_null())
+    assert len(has_dob) == len(has_prec), (
+        f"{len(has_dob)} dob values vs {len(has_prec)} dob_precision values"
+    )
+    # Every "year"-precision row must be Jan 1 of its year (the synthetic
+    # day/month we fabricate when only `yy` is given).
+    year_only = df.filter(pl.col("dob_precision") == "year").select("dob")
+    if len(year_only) > 0:
+        bad = year_only.filter(
+            (pl.col("dob").dt.month() != 1) | (pl.col("dob").dt.day() != 1)
+        )
+        assert len(bad) == 0, f"{len(bad)} year-precision rows are not Jan 1"
+
+
+def test_mark_annotation_carries_real_signal(df: pl.DataFrame) -> None:
+    """At least some marks should carry annotations like A (altitude), h, or *."""
+    annotated = df.filter(pl.col("mark_annotation").is_not_null())
+    # Larsson's pages routinely have hundreds of altitude/hand-timed/DQ marks
+    # across all events. A floor of 100 is well below what we see in practice
+    # but high enough to fail loudly if we ever stop populating the column.
+    assert len(annotated) >= 100, (
+        f"only {len(annotated)} rows have a mark_annotation — "
+        "did the extractor break?"
+    )
 
 
 def test_manifest_matches_parquet(df: pl.DataFrame) -> None:

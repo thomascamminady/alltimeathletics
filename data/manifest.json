@@ -1,7 +1,13 @@
 {
-  "scraped_at": "2026-04-27T17:33:14.260371+00:00",
+  "scraped_at": "2026-04-27T18:05:25.656511+00:00",
   "n_rows": 371018,
   "n_events": 190,
+  "unparsed_by_step": {
+    "date": 59,
+    "rank": 26,
+    "country": 33,
+    "relay_line": 7
+  },
   "events": [
     {
       "slug": "m_100ok",
@@ -11,6 +17,7 @@
       "family": "track_time_wind",
       "n_rows": 4962,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_100ok.htm"
     },
     {
@@ -21,6 +28,7 @@
       "family": "track_time_wind",
       "n_rows": 5288,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_200ok.htm"
     },
     {
@@ -31,6 +39,9 @@
       "family": "track_time_wind",
       "n_rows": 10119,
       "n_unparsed": 1,
+      "unparsed_by_step": {
+        "date": 1
+      },
       "source_url": "https://www.alltime-athletics.com/m_110hok.htm"
     },
     {
@@ -41,6 +52,9 @@
       "family": "track_time_wind",
       "n_rows": 3969,
       "n_unparsed": 2,
+      "unparsed_by_step": {
+        "date": 2
+      },
       "source_url": "https://www.alltime-athletics.com/m60mok.htm"
     },
     {
@@ -51,6 +65,9 @@
       "family": "track_time_wind",
       "n_rows": 3982,
       "n_unparsed": 4,
+      "unparsed_by_step": {
+        "date": 4
+      },
       "source_url": "https://www.alltime-athletics.com/m_60mhok.htm"
     },
     {
@@ -61,6 +78,7 @@
       "family": "track_time_wind",
       "n_rows": 177,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_100yok.htm"
     },
     {
@@ -71,6 +89,7 @@
       "family": "track_time_wind",
       "n_rows": 86,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_200hok.htm"
     },
     {
@@ -81,6 +100,9 @@
       "family": "track_time_wind",
       "n_rows": 2417,
       "n_unparsed": 1,
+      "unparsed_by_step": {
+        "date": 1
+      },
       "source_url": "https://www.alltime-athletics.com/m100mno.htm"
     },
     {
@@ -91,6 +113,7 @@
       "family": "track_time_wind",
       "n_rows": 1266,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_200no.htm"
     },
     {
@@ -101,6 +124,7 @@
       "family": "track_time_wind",
       "n_rows": 1569,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_110hno.htm"
     },
     {
@@ -111,6 +135,9 @@
       "family": "track_time_wind",
       "n_rows": 298,
       "n_unparsed": 37,
+      "unparsed_by_step": {
+        "date": 37
+      },
       "source_url": "https://www.alltime-athletics.com/m60mno.htm"
     },
     {
@@ -121,6 +148,7 @@
       "family": "track_time_wind",
       "n_rows": 51,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_60mhno.htm"
     },
     {
@@ -131,6 +159,7 @@
       "family": "track_time_wind",
       "n_rows": 167,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_100yno.htm"
     },
     {
@@ -141,6 +170,7 @@
       "family": "track_time_wind",
       "n_rows": 7,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_200hno.htm"
     },
     {
@@ -151,6 +181,7 @@
       "family": "track_time",
       "n_rows": 5327,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_400ok.htm"
     },
     {
@@ -161,6 +192,7 @@
       "family": "track_time",
       "n_rows": 9698,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_800ok.htm"
     },
     {
@@ -171,6 +203,7 @@
       "family": "track_time",
       "n_rows": 12455,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_1500ok.htm"
     },
     {
@@ -181,6 +214,9 @@
       "family": "track_time",
       "n_rows": 8682,
       "n_unparsed": 4,
+      "unparsed_by_step": {
+        "rank": 4
+      },
       "source_url": "https://www.alltime-athletics.com/m_mileok.htm"
     },
     {
@@ -191,6 +227,7 @@
       "family": "track_time",
       "n_rows": 6604,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_3000ok.htm"
     },
     {
@@ -201,6 +238,7 @@
       "family": "track_time",
       "n_rows": 9995,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_5000ok.htm"
     },
     {
@@ -211,6 +249,7 @@
       "family": "track_time",
       "n_rows": 10970,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_10kok.htm"
     },
     {
@@ -221,6 +260,9 @@
       "family": "track_time",
       "n_rows": 4181,
       "n_unparsed": 1,
+      "unparsed_by_step": {
+        "country": 1
+      },
       "source_url": "https://www.alltime-athletics.com/mhmaraok.htm"
     },
     {
@@ -231,6 +273,9 @@
       "family": "track_time",
       "n_rows": 6274,
       "n_unparsed": 2,
+      "unparsed_by_step": {
+        "rank": 2
+      },
       "source_url": "https://www.alltime-athletics.com/mmaraok.htm"
     },
     {
@@ -241,6 +286,7 @@
       "family": "track_time",
       "n_rows": 11053,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m3000hok.htm"
     },
     {
@@ -251,6 +297,7 @@
       "family": "track_time",
       "n_rows": 4473,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_400hok.htm"
     },
     {
@@ -261,6 +308,7 @@
       "family": "track_time",
       "n_rows": 900,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_300ok.htm"
     },
     {
@@ -271,6 +319,7 @@
       "family": "track_time",
       "n_rows": 289,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_600ok.htm"
     },
     {
@@ -281,6 +330,7 @@
       "family": "track_time",
       "n_rows": 313,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_1000ok.htm"
     },
     {
@@ -291,6 +341,7 @@
       "family": "track_time",
       "n_rows": 352,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_2000ok.htm"
     },
     {
@@ -301,6 +352,7 @@
       "family": "track_time",
       "n_rows": 599,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_2miok.htm"
     },
     {
@@ -311,6 +363,7 @@
       "family": "track_time",
       "n_rows": 221,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m1hourok.htm"
     },
     {
@@ -321,6 +374,9 @@
       "family": "track_time",
       "n_rows": 77,
       "n_unparsed": 1,
+      "unparsed_by_step": {
+        "country": 1
+      },
       "source_url": "https://www.alltime-athletics.com/m25kok.htm"
     },
     {
@@ -331,6 +387,9 @@
       "family": "track_time",
       "n_rows": 59,
       "n_unparsed": 2,
+      "unparsed_by_step": {
+        "country": 2
+      },
       "source_url": "https://www.alltime-athletics.com/m30kok.htm"
     },
     {
@@ -341,6 +400,7 @@
       "family": "track_time",
       "n_rows": 1255,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m10kroad.htm"
     },
     {
@@ -351,6 +411,7 @@
       "family": "track_time",
       "n_rows": 1545,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m15kroad.htm"
     },
     {
@@ -361,6 +422,7 @@
       "family": "track_time",
       "n_rows": 231,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m10milesroad.htm"
     },
     {
@@ -371,6 +433,7 @@
       "family": "track_time",
       "n_rows": 2535,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m20kroad.htm"
     },
     {
@@ -381,6 +444,7 @@
       "family": "track_time",
       "n_rows": 3668,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m30kroad.htm"
     },
     {
@@ -391,6 +455,7 @@
       "family": "track_time",
       "n_rows": 197,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m100km.htm"
     },
     {
@@ -401,6 +466,7 @@
       "family": "track_time",
       "n_rows": 521,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m2000hok.htm"
     },
     {
@@ -411,6 +477,9 @@
       "family": "track_time",
       "n_rows": 1911,
       "n_unparsed": 6,
+      "unparsed_by_step": {
+        "country": 6
+      },
       "source_url": "https://www.alltime-athletics.com/m20kwok.htm"
     },
     {
@@ -421,6 +490,7 @@
       "family": "track_time",
       "n_rows": 126,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mHalf-Marathonwok.htm"
     },
     {
@@ -431,6 +501,7 @@
       "family": "track_time",
       "n_rows": 235,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m35kwok.htm"
     },
     {
@@ -441,6 +512,7 @@
       "family": "track_time",
       "n_rows": 1051,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m50kwok.htm"
     },
     {
@@ -451,6 +523,7 @@
       "family": "track_time",
       "n_rows": 109,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mMarathonwok.htm"
     },
     {
@@ -461,6 +534,7 @@
       "family": "track_time",
       "n_rows": 1059,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m10kwok.htm"
     },
     {
@@ -471,6 +545,7 @@
       "family": "track_time",
       "n_rows": 109,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_400no.htm"
     },
     {
@@ -481,6 +556,7 @@
       "family": "track_time",
       "n_rows": 98,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_800no.htm"
     },
     {
@@ -491,6 +567,7 @@
       "family": "track_time",
       "n_rows": 37,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_1500no.htm"
     },
     {
@@ -501,6 +578,7 @@
       "family": "track_time",
       "n_rows": 70,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_mileno.htm"
     },
     {
@@ -511,6 +589,7 @@
       "family": "track_time",
       "n_rows": 8,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_3000no.htm"
     },
     {
@@ -521,6 +600,7 @@
       "family": "track_time",
       "n_rows": 26,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_5000no.htm"
     },
     {
@@ -531,6 +611,7 @@
       "family": "track_time",
       "n_rows": 36,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_10kno.htm"
     },
     {
@@ -541,6 +622,7 @@
       "family": "track_time",
       "n_rows": 107,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mhmarano.htm"
     },
     {
@@ -551,6 +633,7 @@
       "family": "track_time",
       "n_rows": 51,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mmarano.htm"
     },
     {
@@ -561,6 +644,7 @@
       "family": "track_time",
       "n_rows": 75,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m3000hno.htm"
     },
     {
@@ -571,6 +655,7 @@
       "family": "track_time",
       "n_rows": 26,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_400hno.htm"
     },
     {
@@ -581,6 +666,7 @@
       "family": "track_time",
       "n_rows": 546,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_300no.htm"
     },
     {
@@ -591,6 +677,7 @@
       "family": "track_time",
       "n_rows": 49,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_600no.htm"
     },
     {
@@ -601,6 +688,7 @@
       "family": "track_time",
       "n_rows": 1,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_1000no.htm"
     },
     {
@@ -611,6 +699,7 @@
       "family": "track_time",
       "n_rows": 1,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m1hourno.htm"
     },
     {
@@ -621,6 +710,7 @@
       "family": "track_time",
       "n_rows": 36,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m10kroadno.htm"
     },
     {
@@ -631,6 +721,7 @@
       "family": "track_time",
       "n_rows": 13,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m15kroadno.htm"
     },
     {
@@ -641,6 +732,7 @@
       "family": "track_time",
       "n_rows": 7,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m10milesroadno.htm"
     },
     {
@@ -651,6 +743,7 @@
       "family": "track_time",
       "n_rows": 6,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m20kroadno.htm"
     },
     {
@@ -661,6 +754,7 @@
       "family": "track_time",
       "n_rows": 8,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m30kroadno.htm"
     },
     {
@@ -671,6 +765,7 @@
       "family": "track_time",
       "n_rows": 422,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m2000hno.htm"
     },
     {
@@ -681,6 +776,7 @@
       "family": "track_time",
       "n_rows": 72,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m20kwno.htm"
     },
     {
@@ -691,6 +787,7 @@
       "family": "track_time",
       "n_rows": 52,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m50kwno.htm"
     },
     {
@@ -701,6 +798,7 @@
       "family": "track_time",
       "n_rows": 403,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m10kwno.htm"
     },
     {
@@ -711,6 +809,7 @@
       "family": "field_distance_wind",
       "n_rows": 3368,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mlongok.htm"
     },
     {
@@ -721,6 +820,9 @@
       "family": "field_distance_wind",
       "n_rows": 2378,
       "n_unparsed": 5,
+      "unparsed_by_step": {
+        "rank": 5
+      },
       "source_url": "https://www.alltime-athletics.com/mtripok.htm"
     },
     {
@@ -731,6 +833,9 @@
       "family": "field_distance_wind",
       "n_rows": 971,
       "n_unparsed": 3,
+      "unparsed_by_step": {
+        "date": 3
+      },
       "source_url": "https://www.alltime-athletics.com/mlongno.htm"
     },
     {
@@ -741,6 +846,7 @@
       "family": "field_distance_wind",
       "n_rows": 390,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mtripno.htm"
     },
     {
@@ -751,6 +857,7 @@
       "family": "field_distance",
       "n_rows": 3663,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mhighok.htm"
     },
     {
@@ -761,6 +868,7 @@
       "family": "field_distance",
       "n_rows": 11007,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mpoleok.htm"
     },
     {
@@ -771,6 +879,7 @@
       "family": "field_distance",
       "n_rows": 7772,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mshotok.htm"
     },
     {
@@ -781,6 +890,7 @@
       "family": "field_distance",
       "n_rows": 2960,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mdiscok.htm"
     },
     {
@@ -791,6 +901,7 @@
       "family": "field_distance",
       "n_rows": 2510,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mhammok.htm"
     },
     {
@@ -801,6 +912,7 @@
       "family": "field_distance",
       "n_rows": 2666,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mjaveok.htm"
     },
     {
@@ -811,6 +923,7 @@
       "family": "field_distance",
       "n_rows": 556,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mjaveoldok.htm"
     },
     {
@@ -821,6 +934,7 @@
       "family": "field_distance",
       "n_rows": 53,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mhighno.htm"
     },
     {
@@ -831,6 +945,7 @@
       "family": "field_distance",
       "n_rows": 147,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mpoleno.htm"
     },
     {
@@ -841,6 +956,7 @@
       "family": "field_distance",
       "n_rows": 177,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mshotno.htm"
     },
     {
@@ -851,6 +967,7 @@
       "family": "field_distance",
       "n_rows": 75,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mdiscno.htm"
     },
     {
@@ -861,6 +978,7 @@
       "family": "field_distance",
       "n_rows": 48,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mhammno.htm"
     },
     {
@@ -871,6 +989,7 @@
       "family": "field_distance",
       "n_rows": 83,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mjaveno.htm"
     },
     {
@@ -881,6 +1000,7 @@
       "family": "field_distance",
       "n_rows": 7,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mjaveoldno.htm"
     },
     {
@@ -891,6 +1011,7 @@
       "family": "combined_points",
       "n_rows": 2875,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mdecaok.htm"
     },
     {
@@ -901,6 +1022,7 @@
       "family": "combined_points",
       "n_rows": 129,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mdecano.htm"
     },
     {
@@ -911,6 +1033,7 @@
       "family": "relay",
       "n_rows": 3281,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m4x100ok.htm"
     },
     {
@@ -921,6 +1044,7 @@
       "family": "relay",
       "n_rows": 2597,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m4x400ok.htm"
     },
     {
@@ -931,6 +1055,7 @@
       "family": "relay",
       "n_rows": 658,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m4x200ok.htm"
     },
     {
@@ -941,6 +1066,7 @@
       "family": "relay",
       "n_rows": 107,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m4x800ok.htm"
     },
     {
@@ -951,6 +1077,7 @@
       "family": "relay",
       "n_rows": 92,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m4x1500ok.htm"
     },
     {
@@ -961,6 +1088,7 @@
       "family": "relay",
       "n_rows": 159,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_4xmileok.htm"
     },
     {
@@ -971,6 +1099,7 @@
       "family": "relay",
       "n_rows": 76,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m4x100no.htm"
     },
     {
@@ -981,6 +1110,7 @@
       "family": "relay",
       "n_rows": 77,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m4x400no.htm"
     },
     {
@@ -991,6 +1121,7 @@
       "family": "relay",
       "n_rows": 3,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m4x200no.htm"
     },
     {
@@ -1001,6 +1132,7 @@
       "family": "relay",
       "n_rows": 1,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m4x800no.htm"
     },
     {
@@ -1011,6 +1143,7 @@
       "family": "track_time_wind",
       "n_rows": 3472,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_100ok.htm"
     },
     {
@@ -1021,6 +1154,7 @@
       "family": "track_time_wind",
       "n_rows": 2900,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_200ok.htm"
     },
     {
@@ -1031,6 +1165,7 @@
       "family": "track_time_wind",
       "n_rows": 2442,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_100hok.htm"
     },
     {
@@ -1041,6 +1176,9 @@
       "family": "track_time_wind",
       "n_rows": 3358,
       "n_unparsed": 1,
+      "unparsed_by_step": {
+        "country": 1
+      },
       "source_url": "https://www.alltime-athletics.com/w60mok.htm"
     },
     {
@@ -1051,6 +1189,9 @@
       "family": "track_time_wind",
       "n_rows": 2454,
       "n_unparsed": 1,
+      "unparsed_by_step": {
+        "date": 1
+      },
       "source_url": "https://www.alltime-athletics.com/w_60mhok.htm"
     },
     {
@@ -1061,6 +1202,7 @@
       "family": "track_time_wind",
       "n_rows": 1200,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_100no.htm"
     },
     {
@@ -1071,6 +1213,7 @@
       "family": "track_time_wind",
       "n_rows": 528,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_200no.htm"
     },
     {
@@ -1081,6 +1224,7 @@
       "family": "track_time_wind",
       "n_rows": 401,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_100hno.htm"
     },
     {
@@ -1091,6 +1235,9 @@
       "family": "track_time_wind",
       "n_rows": 329,
       "n_unparsed": 1,
+      "unparsed_by_step": {
+        "date": 1
+      },
       "source_url": "https://www.alltime-athletics.com/w60mno.htm"
     },
     {
@@ -1101,6 +1248,7 @@
       "family": "track_time_wind",
       "n_rows": 24,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_60mhno.htm"
     },
     {
@@ -1111,6 +1259,7 @@
       "family": "track_time",
       "n_rows": 4348,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_400ok.htm"
     },
     {
@@ -1121,6 +1270,7 @@
       "family": "track_time",
       "n_rows": 2612,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_800ok.htm"
     },
     {
@@ -1131,6 +1281,7 @@
       "family": "track_time",
       "n_rows": 4087,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_1500ok.htm"
     },
     {
@@ -1141,6 +1292,7 @@
       "family": "track_time",
       "n_rows": 615,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_mileok.htm"
     },
     {
@@ -1151,6 +1303,7 @@
       "family": "track_time",
       "n_rows": 1949,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_3000ok.htm"
     },
     {
@@ -1161,6 +1314,7 @@
       "family": "track_time",
       "n_rows": 5809,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_5000ok.htm"
     },
     {
@@ -1171,6 +1325,7 @@
       "family": "track_time",
       "n_rows": 2671,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_10kok.htm"
     },
     {
@@ -1181,6 +1336,7 @@
       "family": "track_time",
       "n_rows": 4175,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/whmaraok.htm"
     },
     {
@@ -1191,6 +1347,9 @@
       "family": "track_time",
       "n_rows": 5743,
       "n_unparsed": 1,
+      "unparsed_by_step": {
+        "country": 1
+      },
       "source_url": "https://www.alltime-athletics.com/wmaraok.htm"
     },
     {
@@ -1201,6 +1360,9 @@
       "family": "track_time",
       "n_rows": 31539,
       "n_unparsed": 1,
+      "unparsed_by_step": {
+        "rank": 1
+      },
       "source_url": "https://www.alltime-athletics.com/w3000hok.htm"
     },
     {
@@ -1211,6 +1373,7 @@
       "family": "track_time",
       "n_rows": 3176,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_400hok.htm"
     },
     {
@@ -1221,6 +1384,7 @@
       "family": "track_time",
       "n_rows": 744,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_300ok.htm"
     },
     {
@@ -1231,6 +1395,9 @@
       "family": "track_time",
       "n_rows": 270,
       "n_unparsed": 1,
+      "unparsed_by_step": {
+        "country": 1
+      },
       "source_url": "https://www.alltime-athletics.com/w_600ok.htm"
     },
     {
@@ -1241,6 +1408,7 @@
       "family": "track_time",
       "n_rows": 266,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_1000ok.htm"
     },
     {
@@ -1251,6 +1419,7 @@
       "family": "track_time",
       "n_rows": 187,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_2000ok.htm"
     },
     {
@@ -1261,6 +1430,9 @@
       "family": "track_time",
       "n_rows": 462,
       "n_unparsed": 1,
+      "unparsed_by_step": {
+        "country": 1
+      },
       "source_url": "https://www.alltime-athletics.com/w2milesok.htm"
     },
     {
@@ -1271,6 +1443,7 @@
       "family": "track_time",
       "n_rows": 1621,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w10kroad.htm"
     },
     {
@@ -1281,6 +1454,7 @@
       "family": "track_time",
       "n_rows": 1384,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w15kroad.htm"
     },
     {
@@ -1291,6 +1465,9 @@
       "family": "track_time",
       "n_rows": 292,
       "n_unparsed": 1,
+      "unparsed_by_step": {
+        "date": 1
+      },
       "source_url": "https://www.alltime-athletics.com/w10milesroad.htm"
     },
     {
@@ -1301,6 +1478,7 @@
       "family": "track_time",
       "n_rows": 3042,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w20kroad.htm"
     },
     {
@@ -1311,6 +1489,9 @@
       "family": "track_time",
       "n_rows": 4030,
       "n_unparsed": 1,
+      "unparsed_by_step": {
+        "country": 1
+      },
       "source_url": "https://www.alltime-athletics.com/w30kroad.htm"
     },
     {
@@ -1321,6 +1502,7 @@
       "family": "track_time",
       "n_rows": 1112,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w2000hok.htm"
     },
     {
@@ -1331,6 +1513,9 @@
       "family": "track_time",
       "n_rows": 4330,
       "n_unparsed": 16,
+      "unparsed_by_step": {
+        "country": 16
+      },
       "source_url": "https://www.alltime-athletics.com/w20kwok.htm"
     },
     {
@@ -1341,6 +1526,7 @@
       "family": "track_time",
       "n_rows": 57,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wHalf-Marathonwok.htm"
     },
     {
@@ -1351,6 +1537,9 @@
       "family": "track_time",
       "n_rows": 306,
       "n_unparsed": 2,
+      "unparsed_by_step": {
+        "country": 2
+      },
       "source_url": "https://www.alltime-athletics.com/w35kwok.htm"
     },
     {
@@ -1361,6 +1550,7 @@
       "family": "track_time",
       "n_rows": 264,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w50kwok.htm"
     },
     {
@@ -1371,6 +1561,7 @@
       "family": "track_time",
       "n_rows": 56,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wMarathonwok.htm"
     },
     {
@@ -1381,6 +1572,7 @@
       "family": "track_time",
       "n_rows": 499,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w5kwok.htm"
     },
     {
@@ -1391,6 +1583,9 @@
       "family": "track_time",
       "n_rows": 576,
       "n_unparsed": 5,
+      "unparsed_by_step": {
+        "rank": 5
+      },
       "source_url": "https://www.alltime-athletics.com/w10kwok.htm"
     },
     {
@@ -1401,6 +1596,7 @@
       "family": "track_time",
       "n_rows": 70,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_400no.htm"
     },
     {
@@ -1411,6 +1607,7 @@
       "family": "track_time",
       "n_rows": 66,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_800no.htm"
     },
     {
@@ -1421,6 +1618,7 @@
       "family": "track_time",
       "n_rows": 108,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_1500no.htm"
     },
     {
@@ -1431,6 +1629,7 @@
       "family": "track_time",
       "n_rows": 21,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_mileno.htm"
     },
     {
@@ -1441,6 +1640,7 @@
       "family": "track_time",
       "n_rows": 8,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_3000no.htm"
     },
     {
@@ -1451,6 +1651,7 @@
       "family": "track_time",
       "n_rows": 74,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_5000no.htm"
     },
     {
@@ -1461,6 +1662,7 @@
       "family": "track_time",
       "n_rows": 49,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_10kno.htm"
     },
     {
@@ -1471,6 +1673,7 @@
       "family": "track_time",
       "n_rows": 65,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/whmarano.htm"
     },
     {
@@ -1481,6 +1684,7 @@
       "family": "track_time",
       "n_rows": 50,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wmarano.htm"
     },
     {
@@ -1491,6 +1695,9 @@
       "family": "track_time",
       "n_rows": 161,
       "n_unparsed": 1,
+      "unparsed_by_step": {
+        "date": 1
+      },
       "source_url": "https://www.alltime-athletics.com/w3000hno.htm"
     },
     {
@@ -1501,6 +1708,7 @@
       "family": "track_time",
       "n_rows": 16,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_400hno.htm"
     },
     {
@@ -1511,6 +1719,7 @@
       "family": "track_time",
       "n_rows": 595,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_300no.htm"
     },
     {
@@ -1521,6 +1730,7 @@
       "family": "track_time",
       "n_rows": 6,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_1000no.htm"
     },
     {
@@ -1531,6 +1741,7 @@
       "family": "track_time",
       "n_rows": 4,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_2000no.htm"
     },
     {
@@ -1541,6 +1752,7 @@
       "family": "track_time",
       "n_rows": 3,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w2milesno.htm"
     },
     {
@@ -1551,6 +1763,7 @@
       "family": "track_time",
       "n_rows": 8,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w10kroadno.htm"
     },
     {
@@ -1561,6 +1774,7 @@
       "family": "track_time",
       "n_rows": 3,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w15kroadno.htm"
     },
     {
@@ -1571,6 +1785,7 @@
       "family": "track_time",
       "n_rows": 12,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w20kroadno.htm"
     },
     {
@@ -1581,6 +1796,7 @@
       "family": "track_time",
       "n_rows": 30,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w30kroadno.htm"
     },
     {
@@ -1591,6 +1807,7 @@
       "family": "track_time",
       "n_rows": 993,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w2000hno.htm"
     },
     {
@@ -1601,6 +1818,7 @@
       "family": "track_time",
       "n_rows": 69,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w20kwno.htm"
     },
     {
@@ -1611,6 +1829,9 @@
       "family": "track_time",
       "n_rows": 180,
       "n_unparsed": 1,
+      "unparsed_by_step": {
+        "date": 1
+      },
       "source_url": "https://www.alltime-athletics.com/w5kwno.htm"
     },
     {
@@ -1621,6 +1842,7 @@
       "family": "track_time",
       "n_rows": 91,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w10kwno.htm"
     },
     {
@@ -1631,6 +1853,9 @@
       "family": "field_distance_wind",
       "n_rows": 2013,
       "n_unparsed": 1,
+      "unparsed_by_step": {
+        "date": 1
+      },
       "source_url": "https://www.alltime-athletics.com/wlongok.htm"
     },
     {
@@ -1641,6 +1866,7 @@
       "family": "field_distance_wind",
       "n_rows": 4138,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wtripleok.htm"
     },
     {
@@ -1651,6 +1877,7 @@
       "family": "field_distance_wind",
       "n_rows": 424,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wlongno.htm"
     },
     {
@@ -1661,6 +1888,7 @@
       "family": "field_distance_wind",
       "n_rows": 470,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wtripleno.htm"
     },
     {
@@ -1671,6 +1899,7 @@
       "family": "field_distance",
       "n_rows": 2274,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/whighok.htm"
     },
     {
@@ -1681,6 +1910,7 @@
       "family": "field_distance",
       "n_rows": 25453,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wpoleok.htm"
     },
     {
@@ -1691,6 +1921,7 @@
       "family": "field_distance",
       "n_rows": 2827,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wshotok.htm"
     },
     {
@@ -1701,6 +1932,7 @@
       "family": "field_distance",
       "n_rows": 4011,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wdiscok.htm"
     },
     {
@@ -1711,6 +1943,10 @@
       "family": "field_distance",
       "n_rows": 17674,
       "n_unparsed": 6,
+      "unparsed_by_step": {
+        "date": 1,
+        "rank": 5
+      },
       "source_url": "https://www.alltime-athletics.com/whammok.htm"
     },
     {
@@ -1721,6 +1957,7 @@
       "family": "field_distance",
       "n_rows": 3497,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wjaveok.htm"
     },
     {
@@ -1731,6 +1968,10 @@
       "family": "field_distance",
       "n_rows": 1201,
       "n_unparsed": 8,
+      "unparsed_by_step": {
+        "date": 4,
+        "rank": 4
+      },
       "source_url": "https://www.alltime-athletics.com/wjaveoldok.htm"
     },
     {
@@ -1741,6 +1982,7 @@
       "family": "field_distance",
       "n_rows": 42,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/whighno.htm"
     },
     {
@@ -1751,6 +1993,7 @@
       "family": "field_distance",
       "n_rows": 213,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wpoleno.htm"
     },
     {
@@ -1761,6 +2004,7 @@
       "family": "field_distance",
       "n_rows": 125,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wshotno.htm"
     },
     {
@@ -1771,6 +2015,7 @@
       "family": "field_distance",
       "n_rows": 67,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wdiscno.htm"
     },
     {
@@ -1781,6 +2026,7 @@
       "family": "field_distance",
       "n_rows": 728,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/whammno.htm"
     },
     {
@@ -1791,6 +2037,7 @@
       "family": "field_distance",
       "n_rows": 153,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wjaveno.htm"
     },
     {
@@ -1801,6 +2048,7 @@
       "family": "combined_points",
       "n_rows": 2422,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/whepaok.htm"
     },
     {
@@ -1811,6 +2059,7 @@
       "family": "combined_points",
       "n_rows": 83,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/whepano.htm"
     },
     {
@@ -1821,6 +2070,7 @@
       "family": "relay",
       "n_rows": 1243,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w4x100ok.htm"
     },
     {
@@ -1831,6 +2081,9 @@
       "family": "relay",
       "n_rows": 2493,
       "n_unparsed": 2,
+      "unparsed_by_step": {
+        "relay_line": 2
+      },
       "source_url": "https://www.alltime-athletics.com/w4x400ok.htm"
     },
     {
@@ -1841,6 +2094,7 @@
       "family": "relay",
       "n_rows": 194,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w4x800ok.htm"
     },
     {
@@ -1851,6 +2105,7 @@
       "family": "relay",
       "n_rows": 201,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w4x1500ok.htm"
     },
     {
@@ -1861,6 +2116,9 @@
       "family": "relay",
       "n_rows": 30,
       "n_unparsed": 5,
+      "unparsed_by_step": {
+        "relay_line": 5
+      },
       "source_url": "https://www.alltime-athletics.com/w4x100no.htm"
     },
     {
@@ -1871,6 +2129,7 @@
       "family": "relay",
       "n_rows": 64,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w4x400no.htm"
     },
     {
@@ -1881,6 +2140,7 @@
       "family": "relay",
       "n_rows": 2,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w4x800no.htm"
     },
     {
@@ -1891,6 +2151,7 @@
       "family": "relay",
       "n_rows": 491,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/x4x400ok.htm"
     },
     {
@@ -1901,6 +2162,7 @@
       "family": "relay",
       "n_rows": 5,
       "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/x4x400no.htm"
     }
   ]
