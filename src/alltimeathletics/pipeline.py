@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -132,7 +132,7 @@ def _build_manifest(
     per_event_warnings: dict[str, int],
 ) -> dict[str, Any]:
     return {
-        "scraped_at": datetime.now(timezone.utc).isoformat(),
+        "scraped_at": datetime.now(UTC).isoformat(),
         "n_rows": int(len(df)),
         "n_events": len(per_event_counts),
         "events": [

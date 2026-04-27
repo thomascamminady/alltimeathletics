@@ -105,7 +105,8 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
             )
         )
 
-    print(f"Rendered {len(events_by_sex['men']) + len(events_by_sex['women']) + len(events_by_sex['mixed'])} event pages to {out_dir}")
+    n_pages = sum(len(events_by_sex[s]) for s in ("men", "women", "mixed"))
+    print(f"Rendered {n_pages} event pages to {out_dir}")
 
 
 def _write_per_event_json(df: pl.DataFrame, out_dir: Path) -> None:

@@ -41,7 +41,10 @@ EXPECTED_SCHEMA: dict[str, pl.DataType] = {
 @pytest.fixture(scope="module")
 def df() -> pl.DataFrame:
     if not PARQUET.exists():
-        pytest.skip(f"{PARQUET} not present; run `uv run python -m alltimeathletics.pipeline` first")
+        pytest.skip(
+            f"{PARQUET} not present; "
+            "run `uv run python -m alltimeathletics.pipeline` first"
+        )
     return pl.read_parquet(PARQUET)
 
 
@@ -75,7 +78,7 @@ def test_wind_values_in_range(df: pl.DataFrame) -> None:
     hi = winds.max().item()
     # Non-legal pages include marks with strong tailwinds; +20 m/s is the
     # highest ever recorded in the database. Outside [-15, +25] is a parser bug.
-    assert -15.0 <= lo and hi <= 25.0, f"wind out of range: [{lo}, {hi}]"
+    assert lo >= -15.0 and hi <= 25.0, f"wind out of range: [{lo}, {hi}]"
 
 
 def test_men_100m_top_mark(df: pl.DataFrame) -> None:

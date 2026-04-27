@@ -33,7 +33,15 @@ const hasWind = event.family === 'track_time_wind' || event.family === 'field_di
 const columns = [
   { title: "#", field: "rank", width: 70, hozAlign: "right", sorter: "number", headerFilter: false },
   { title: "Mark", field: "mark_raw", width: 110, hozAlign: "right",
-    sorter: (a, b, ar, br) => (ar.getData().mark_value ?? 0) - (br.getData().mark_value ?? 0),
+    sorter: (a, b, ar, br, _col, dir) => {
+      const av = ar.getData().mark_value;
+      const bv = br.getData().mark_value;
+      // Push null marks to the end regardless of sort direction.
+      if (av == null && bv == null) return 0;
+      if (av == null) return dir === "desc" ? -1 : 1;
+      if (bv == null) return dir === "desc" ? 1 : -1;
+      return av - bv;
+    },
     headerFilter: "input",
   },
 ];
