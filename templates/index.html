@@ -3,13 +3,23 @@
 {% block main %}
 <h1>All-Time Athletics</h1>
 <p class="lede">
-  An automatically-generated, data-analysis-friendly view of every all-time
-  performance list maintained by <a href="https://www.alltime-athletics.com/">Peter Larsson</a>.
-  Each event below opens to a sortable, filterable table; the original Larsson
-  page is one click away from the top of every event page.
+  A data-analysis-friendly view of every all-time performance list maintained by
+  <a href="https://www.alltime-athletics.com/">Peter Larsson</a>.
+  All {{ n_rows_total }} performances live in one parquet file. Each event has a
+  sortable, filterable table; the original Larsson page is one click away from
+  the top of every event page.
 </p>
 
-<input id="filter" type="search" placeholder="Filter events…" autofocus>
+<section class="download-bar" aria-labelledby="dl-heading">
+  <strong id="dl-heading">Get the data</strong> &mdash;
+  <a href="{{ site_root }}data/alltime_athletics.parquet">alltime_athletics.parquet</a>
+  ({{ parquet_size_mb }} MB, {{ n_rows_total }} rows, {{ n_events_total }} events).
+  <code>import polars as pl
+df = pl.read_parquet("alltime_athletics.parquet")
+df.filter(pl.col("event") == "marathon").sort("mark_value").head(10)</code>
+</section>
+
+<input id="filter" type="search" placeholder="Filter events…" autofocus aria-label="Filter events">
 
 <section class="event-grid">
 {% for sex, label in [('men','Men'), ('women','Women'), ('mixed','Mixed')] %}
@@ -17,9 +27,9 @@
   {% if events_for_sex %}
     <div class="sex-block" data-sex="{{ sex }}">
       <h2>{{ label }}</h2>
-      <div class="legality-tabs">
-        <button class="tab active" data-legality="legal">Wind-legal</button>
-        <button class="tab" data-legality="non-legal">All marks</button>
+      <div class="legality-tabs" role="tablist">
+        <button class="tab" type="button" data-legality="legal" aria-pressed="true">Wind-legal</button>
+        <button class="tab" type="button" data-legality="non-legal" aria-pressed="false">All marks</button>
       </div>
       {% for legality in ['legal', 'non-legal'] %}
         <ul class="event-list" data-legality="{{ legality }}" {% if legality != 'legal' %}hidden{% endif %}>
@@ -51,7 +61,7 @@ document.querySelectorAll('.legality-tabs').forEach(tabs => {
   tabs.addEventListener('click', e => {
     if (!e.target.matches('.tab')) return;
     const block = tabs.closest('.sex-block');
-    tabs.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === e.target));
+    tabs.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-pressed', t === e.target ? 'true' : 'false'));
     block.querySelectorAll('.event-list').forEach(ul => {
       ul.hidden = ul.dataset.legality !== e.target.dataset.legality;
     });

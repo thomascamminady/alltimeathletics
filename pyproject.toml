@@ -1,7 +1,7 @@
 [project]
 name = "alltimeathletics"
 version = "0.1.0"
-description = "Add your description here"
+description = "A data-analysis-friendly mirror of Peter Larsson's all-time athletics lists."
 authors = [
     { name = "Thomas Camminady", email = "thomas@camminady.dev" }
 ]
@@ -13,16 +13,26 @@ dependencies = [
     "polars>=1.40.1",
 ]
 
-[project.scripts]
-alltimeathletics = "alltimeathletics:main"
-
 [build-system]
 requires = ["uv_build>=0.11.6,<0.12.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "pandas>=3.0.2",
+    "pyarrow>=24.0.0",
     "pytest>=9.0.3",
     "ruff>=0.15.12",
     "ty>=0.0.32",
 ]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
