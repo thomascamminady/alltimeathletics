@@ -82,6 +82,9 @@ h2 { font-size: 1.1rem; margin: 1.25rem 0 0.5rem; }
   justify-content: space-between;
   padding: 0.2rem 0;
 }
+/* The [hidden] attribute's default display:none loses to display:flex above
+   without this, so the search filter visibly does nothing. */
+.event-list li[hidden] { display: none; }
 .row-count { font-variant-numeric: tabular-nums; color: #666; }
 
 #table { margin: 1rem 0; }

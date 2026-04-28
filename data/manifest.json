@@ -1,11 +1,11 @@
 {
-  "scraped_at": "2026-04-28T03:53:49.812225+00:00",
-  "n_rows": 371018,
+  "scraped_at": "2026-04-28T13:41:58.828729+00:00",
+  "n_rows": 371060,
   "n_events": 190,
   "unparsed_by_step": {
-    "date": 59,
-    "rank": 26,
-    "country": 33,
+    "date": 48,
+    "country": 2,
+    "rank": 6,
     "relay_line": 7
   },
   "events": [
@@ -37,11 +37,9 @@
       "sex": "men",
       "legality": "legal",
       "family": "track_time_wind",
-      "n_rows": 10119,
-      "n_unparsed": 1,
-      "unparsed_by_step": {
-        "date": 1
-      },
+      "n_rows": 10120,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_110hok.htm"
     },
     {
@@ -98,11 +96,9 @@
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time_wind",
-      "n_rows": 2417,
-      "n_unparsed": 1,
-      "unparsed_by_step": {
-        "date": 1
-      },
+      "n_rows": 2418,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m100mno.htm"
     },
     {
@@ -213,10 +209,8 @@
       "legality": "legal",
       "family": "track_time",
       "n_rows": 8682,
-      "n_unparsed": 4,
-      "unparsed_by_step": {
-        "rank": 4
-      },
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_mileok.htm"
     },
     {
@@ -272,10 +266,8 @@
       "legality": "legal",
       "family": "track_time",
       "n_rows": 6274,
-      "n_unparsed": 2,
-      "unparsed_by_step": {
-        "rank": 2
-      },
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mmaraok.htm"
     },
     {
@@ -372,11 +364,9 @@
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 77,
-      "n_unparsed": 1,
-      "unparsed_by_step": {
-        "country": 1
-      },
+      "n_rows": 78,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m25kok.htm"
     },
     {
@@ -385,11 +375,9 @@
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 59,
-      "n_unparsed": 2,
-      "unparsed_by_step": {
-        "country": 2
-      },
+      "n_rows": 61,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m30kok.htm"
     },
     {
@@ -475,11 +463,9 @@
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 1911,
-      "n_unparsed": 6,
-      "unparsed_by_step": {
-        "country": 6
-      },
+      "n_rows": 1917,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m20kwok.htm"
     },
     {
@@ -819,10 +805,8 @@
       "legality": "legal",
       "family": "field_distance_wind",
       "n_rows": 2378,
-      "n_unparsed": 5,
-      "unparsed_by_step": {
-        "rank": 5
-      },
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mtripok.htm"
     },
     {
@@ -831,11 +815,9 @@
       "sex": "men",
       "legality": "non-legal",
       "family": "field_distance_wind",
-      "n_rows": 971,
-      "n_unparsed": 3,
-      "unparsed_by_step": {
-        "date": 3
-      },
+      "n_rows": 974,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mlongno.htm"
     },
     {
@@ -1174,11 +1156,9 @@
       "sex": "women",
       "legality": "legal",
       "family": "track_time_wind",
-      "n_rows": 3358,
-      "n_unparsed": 1,
-      "unparsed_by_step": {
-        "country": 1
-      },
+      "n_rows": 3359,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w60mok.htm"
     },
     {
@@ -1233,11 +1213,9 @@
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time_wind",
-      "n_rows": 329,
-      "n_unparsed": 1,
-      "unparsed_by_step": {
-        "date": 1
-      },
+      "n_rows": 330,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w60mno.htm"
     },
     {
@@ -1345,11 +1323,9 @@
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 5743,
-      "n_unparsed": 1,
-      "unparsed_by_step": {
-        "country": 1
-      },
+      "n_rows": 5744,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wmaraok.htm"
     },
     {
@@ -1393,11 +1369,9 @@
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 270,
-      "n_unparsed": 1,
-      "unparsed_by_step": {
-        "country": 1
-      },
+      "n_rows": 271,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_600ok.htm"
     },
     {
@@ -1463,11 +1437,9 @@
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 292,
-      "n_unparsed": 1,
-      "unparsed_by_step": {
-        "date": 1
-      },
+      "n_rows": 293,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w10milesroad.htm"
     },
     {
@@ -1487,11 +1459,9 @@
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 4030,
-      "n_unparsed": 1,
-      "unparsed_by_step": {
-        "country": 1
-      },
+      "n_rows": 4031,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w30kroad.htm"
     },
     {
@@ -1511,11 +1481,9 @@
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 4330,
-      "n_unparsed": 16,
-      "unparsed_by_step": {
-        "country": 16
-      },
+      "n_rows": 4346,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w20kwok.htm"
     },
     {
@@ -1535,11 +1503,9 @@
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 306,
-      "n_unparsed": 2,
-      "unparsed_by_step": {
-        "country": 2
-      },
+      "n_rows": 308,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w35kwok.htm"
     },
     {
@@ -1582,9 +1548,9 @@
       "legality": "legal",
       "family": "track_time",
       "n_rows": 576,
-      "n_unparsed": 5,
+      "n_unparsed": 1,
       "unparsed_by_step": {
-        "rank": 5
+        "rank": 1
       },
       "source_url": "https://www.alltime-athletics.com/w10kwok.htm"
     },
@@ -1693,11 +1659,9 @@
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
-      "n_rows": 161,
-      "n_unparsed": 1,
-      "unparsed_by_step": {
-        "date": 1
-      },
+      "n_rows": 162,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w3000hno.htm"
     },
     {
@@ -1827,11 +1791,9 @@
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
-      "n_rows": 180,
-      "n_unparsed": 1,
-      "unparsed_by_step": {
-        "date": 1
-      },
+      "n_rows": 181,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w5kwno.htm"
     },
     {
@@ -1851,11 +1813,9 @@
       "sex": "women",
       "legality": "legal",
       "family": "field_distance_wind",
-      "n_rows": 2013,
-      "n_unparsed": 1,
-      "unparsed_by_step": {
-        "date": 1
-      },
+      "n_rows": 2014,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wlongok.htm"
     },
     {
@@ -1941,12 +1901,9 @@
       "sex": "women",
       "legality": "legal",
       "family": "field_distance",
-      "n_rows": 17674,
-      "n_unparsed": 6,
-      "unparsed_by_step": {
-        "date": 1,
-        "rank": 5
-      },
+      "n_rows": 17675,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/whammok.htm"
     },
     {
