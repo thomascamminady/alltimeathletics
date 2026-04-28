@@ -44,6 +44,17 @@ _SECTION_RE = re.compile(
     r'<a\s+name="(\d+)"[^>]*>\s*<h[13][^>]*>(.*?)</h[13]>',
     re.IGNORECASE | re.DOTALL,
 )
+# Larsson's "Jump to:" nav block at the top of every page lists each section's
+# canonical title alongside its anchor number, e.g.
+#   <A HREF="#1">main list</a>      <A HREF="#2">indoors</a>
+# This is a more reliable source of section names than the inline H1/H3 tags,
+# which are inconsistently placed (sometimes before, sometimes after, sometimes
+# missing for the main list entirely).
+_JUMP_NAV_RE = re.compile(r"jump to:.*?</td>", re.IGNORECASE | re.DOTALL)
+_JUMP_LINK_RE = re.compile(
+    r'href=["]?#(\d+)["]?[^>]*>([^<]+)</a>', re.IGNORECASE
+)
+_ANAME_RE = re.compile(r'<a\s+name="(\d+)"', re.IGNORECASE)
 _PRE_RE = re.compile(
     # Larsson's HTML occasionally drops the '<' on the closing tag (see mmaraok.htm:6348).
     # Stop at any close-pre variant, the next section anchor, or end of document.
@@ -67,7 +78,7 @@ _DOB_YEAR_ONLY_RE = re.compile(r"^\d{2}$")
 # Country: 2-3 letters + optional trailing digit (e.g. CIS-era "URS"); accept
 # mixed case to tolerate Larsson typos like 'BEl' for 'BEL'.
 _COUNTRY_RE = re.compile(r"^[A-Za-z]{2,3}\d?$")
-_WIND_RE = re.compile(r"^[+\-±]\d+\.\d+$")
+_WIND_RE = re.compile(r"^[+\-±]\d+[.,]\d+$")
 _TOTAL_LINE_RE = re.compile(r"^\s*\d[\d\s,]*\s*total\s*$", re.IGNORECASE)
 
 
@@ -122,8 +133,8 @@ def parse_page(html_text: str, event: Event) -> ParseResult:
     rows: list[dict[str, Any]] = []
     diagnostics: list[ParseDiagnostic] = []
 
-    for section_name, block in sections:
-        block_rows, block_diags = _parse_block(block, event, section_name)
+    for section_name, anchor, block in sections:
+        block_rows, block_diags = _parse_block(block, event, section_name, anchor)
         rows.extend(block_rows)
         diagnostics.extend(block_diags)
 
@@ -133,41 +144,78 @@ def parse_page(html_text: str, event: Event) -> ParseResult:
 # --- section discovery -----------------------------------------------------------------
 
 
-def _extract_sections(text: str) -> list[tuple[str, str]]:
-    """Return [(section_name, pre_block_text), …] in document order.
+def _extract_sections(text: str) -> list[tuple[str, str | None, str]]:
+    """Return ``[(section_name, anchor_number, pre_block_text), …]`` in document order.
 
-    A PRE block is attributed to the most recent ``<A name="N">`` marker that
-    appears before it. If no such marker exists (rare), it gets the section
-    name "main".
+    Section names come from the page's "Jump to:" navigation block when
+    present (every modern Larsson page has one); inline ``<A name="N"><H1>``
+    markers are used as a fallback for older pages or unlinked sections.
+
+    Each PRE block is attributed to the most recent ``<A name="N">`` anchor
+    that appears before it; that anchor number resolves to a title via the
+    Jump-to map and is also returned so callers can build a deep link of the
+    form ``<page>.htm#<anchor>``. Blocks before the first anchor get the
+    "main list" title (and anchor "1" if present in Jump-to, else None).
     """
-    section_markers: list[tuple[int, str]] = []
-    for m in _SECTION_RE.finditer(text):
-        title = _TAGS_RE.sub("", m.group(2)).strip()
-        section_markers.append((m.end(), title or "main"))
+    jump_titles = _parse_jump_nav(text)
 
-    out: list[tuple[str, str]] = []
+    section_markers: list[tuple[int, str, str]] = []
+    for m in _ANAME_RE.finditer(text):
+        anchor = m.group(1)
+        title = jump_titles.get(anchor)
+        if title is None:
+            title = _inline_title_for_anchor(text, m.end()) or f"section {anchor}"
+        section_markers.append((m.end(), title, anchor))
+
+    default_title = jump_titles.get("1", "main")
+    default_anchor: str | None = "1" if "1" in jump_titles else None
+    out: list[tuple[str, str | None, str]] = []
     for m in _PRE_RE.finditer(text):
         pre_start = m.start()
-        section = "main"
-        for marker_end, title in section_markers:
+        section = default_title
+        anchor: str | None = default_anchor
+        for marker_end, title, marker_anchor in section_markers:
             if marker_end <= pre_start:
                 section = title
+                anchor = marker_anchor
             else:
                 break
         body = m.group(1)
-        out.append((section, body))
+        out.append((section, anchor, body))
     return out
+
+
+def _parse_jump_nav(text: str) -> dict[str, str]:
+    """Extract ``{anchor_number: title}`` from the page's Jump-to navigation."""
+    nav = _JUMP_NAV_RE.search(text)
+    if nav is None:
+        return {}
+    return {
+        anchor: title.strip()
+        for anchor, title in _JUMP_LINK_RE.findall(nav.group())
+        if title.strip()
+    }
+
+
+def _inline_title_for_anchor(text: str, anchor_end: int) -> str | None:
+    """Return the H1/H3 title that immediately follows an ``<A name>`` anchor."""
+    tail = text[anchor_end : anchor_end + 200]
+    m = re.match(r'\s*<h[13][^>]*>(.*?)</h[13]>', tail, re.IGNORECASE | re.DOTALL)
+    if m is None:
+        return None
+    return _TAGS_RE.sub("", m.group(1)).strip() or None
 
 
 # --- block-level orchestrator ----------------------------------------------------------
 
 
 def _parse_block(
-    block: str, event: Event, section: str
+    block: str, event: Event, section: str, anchor: str | None
 ) -> tuple[list[dict[str, Any]], list[ParseDiagnostic]]:
     rows: list[dict[str, Any]] = []
     diagnostics: list[ParseDiagnostic] = []
     pending_relay_row: dict[str, Any] | None = None
+    source_url = f"{event.url}#{anchor}" if anchor else event.url
 
     for raw in block.splitlines():
         # Strip stray inline tags (e.g. '</Font>' that leaks into a row body
@@ -189,7 +237,7 @@ def _parse_block(
         tokens = _MULTISPACE_RE.split(line.strip())
 
         if event.family == "relay":
-            row = _try_parse_relay_line(tokens, event, section)
+            row = _try_parse_relay_line(tokens, event, section, source_url)
             if row is None:
                 # try as a member of the previous team line
                 if pending_relay_row is not None and _looks_like_relay_member(tokens):
@@ -216,7 +264,7 @@ def _parse_block(
             continue
 
         try:
-            row = _parse_individual_line(tokens, event, section)
+            row = _parse_individual_line(tokens, event, section, source_url)
         except _StepError as exc:
             diagnostics.append(
                 ParseDiagnostic(
@@ -332,7 +380,7 @@ def _assemble_name(name_tokens: list[str]) -> str:
 
 
 def _parse_individual_line(
-    tokens: list[str], event: Event, section: str
+    tokens: list[str], event: Event, section: str, source_url: str
 ) -> dict[str, Any]:
     rank = _extract_rank(tokens)
     mark_raw = _extract_mark(tokens)
@@ -370,7 +418,7 @@ def _parse_individual_line(
         "venue": venue,
         "date": parsed_date,
         "members": None,
-        "source_url": event.url,
+        "source_url": source_url,
     }
 
 
@@ -378,7 +426,7 @@ def _parse_individual_line(
 
 
 def _try_parse_relay_line(
-    tokens: list[str], event: Event, section: str
+    tokens: list[str], event: Event, section: str, source_url: str
 ) -> dict[str, Any] | None:
     """Return a relay team row, or ``None`` if this line is not a team line.
 
@@ -434,7 +482,7 @@ def _try_parse_relay_line(
         "venue": venue,
         "date": _parse_date(date_str),
         "members": [],
-        "source_url": event.url,
+        "source_url": source_url,
     }
 
 
@@ -506,8 +554,10 @@ def _parse_wind(s: str) -> float | None:
     s = s.strip()
     if s in ("", "?"):
         return None
+    # Larsson sometimes uses European decimals: '+1,4' instead of '+1.4'.
+    s = s.replace("±", "").replace(",", ".")
     try:
-        return float(s.replace("±", ""))
+        return float(s)
     except ValueError:
         return None
 
@@ -570,7 +620,7 @@ def _pick_century(year_two_digit: int, performance_date: date | None) -> int:
     return 2000 if year_two_digit <= cutoff else 1900
 
 
-_MARK_ANNOTATION_RE = re.compile(r"[A-Za-z+*]+$")
+_MARK_ANNOTATION_RE = re.compile(r"[A-Za-z+*#'´@\-]+$")
 
 
 def _split_mark_annotation(raw: str) -> tuple[str, str | None]:
@@ -580,6 +630,11 @@ def _split_mark_annotation(raw: str) -> tuple[str, str | None]:
     - ``"9.79A"``     → (``"9.79"``,    ``"A"``)    altitude-aided
     - ``"9.78*"``     → (``"9.78"``,    ``"*"``)    later disqualified
     - ``"10.10h"``    → (``"10.10"``,   ``"h"``)    hand-timed
+    - ``"20.24#"``    → (``"20.24"``,   ``"#"``)
+    - ``"7:14.9'"``   → (``"7:14.9"``,  ``"'"``)
+    - ``"13.44´"``    → (``"13.44"``,   ``"´"``)
+    - ``"60:31@"``    → (``"60:31"``,   ``"@"``)
+    - ``"3:00.79-"``  → (``"3:00.79"``, ``"-"``)
     - ``"2:00:35"``   → (``"2:00:35"``, ``None``)
     """
     s = raw.strip()
@@ -604,7 +659,8 @@ def _normalize_mark_with_annotation(
     can filter or weight on it instead of having to re-parse ``mark_raw``.
     """
     core, annotation = _split_mark_annotation(raw)
-    core = core.rstrip(".")
+    # Larsson occasionally uses European decimals (e.g. '39:26,71').
+    core = core.replace(",", ".").rstrip(".")
     if not core:
         return None, annotation
 
