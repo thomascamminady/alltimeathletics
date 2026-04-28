@@ -54,7 +54,15 @@ _JUMP_NAV_RE = re.compile(r"jump to:.*?</td>", re.IGNORECASE | re.DOTALL)
 _JUMP_LINK_RE = re.compile(
     r'href=["]?#(\d+)["]?[^>]*>([^<]+)</a>', re.IGNORECASE
 )
-_ANAME_RE = re.compile(r'<a\s+name="(\d+)"', re.IGNORECASE)
+_ANAME_ALL_RE = re.compile(r'<a\s+name="(\d+)"[^>]*>', re.IGNORECASE)
+# Used to classify each <A name> match. Three Larsson patterns:
+#   <A name="N"><H1>...        section (H1)
+#   <A name="N"><H3>...        section (H3)
+#   <A name="N"><H5>...        footnote legend, NOT a section
+#   <A name="N">title</h3>     section with malformed/missing opening H3
+# The classifier is a small function below; the regex above just locates
+# every candidate.
+_NEXT_TAG_RE = re.compile(r"<(/?)h(\d)", re.IGNORECASE)
 _PRE_RE = re.compile(
     # Larsson's HTML occasionally drops the '<' on the closing tag (see mmaraok.htm:6348).
     # Stop at any close-pre variant, the next section anchor, or end of document.
@@ -80,6 +88,10 @@ _DOB_YEAR_ONLY_RE = re.compile(r"^\d{2}$")
 _COUNTRY_RE = re.compile(r"^[A-Za-z]{2,3}\d?$")
 _WIND_RE = re.compile(r"^[+\-±]\d+[.,]\d+$")
 _TOTAL_LINE_RE = re.compile(r"^\s*\d[\d\s,]*\s*total\s*$", re.IGNORECASE)
+# A "pure" mark token: digits, colons, dots, commas, optional trailing
+# annotation char. Used to detect when a long athlete name has been fused
+# into the mark token by a single-space gap (e.g. '1:12:46.49 Sondre').
+_MARK_ONLY_RE = re.compile(r"^[\d:.,]+[A-Za-z+*#'´@\-]?$")
 
 
 def _is_position(s: str) -> bool:
@@ -160,11 +172,20 @@ def _extract_sections(text: str) -> list[tuple[str, str | None, str]]:
     jump_titles = _parse_jump_nav(text)
 
     section_markers: list[tuple[int, str, str]] = []
-    for m in _ANAME_RE.finditer(text):
+    seen_anchors: set[str] = set()
+    for m in _ANAME_ALL_RE.finditer(text):
+        if not _is_section_anchor(text, m.end()):
+            continue
         anchor = m.group(1)
-        title = jump_titles.get(anchor)
+        # Prefer the inline ``<H1>``/``<H3>`` title that lives next to the
+        # section's data. The Jump-to nav at the top is sometimes stale —
+        # m_110hok adds a new "indoors" section and bumps "manual timing"
+        # from anchor #3 to #4, but the nav still lists #3 = manual timing.
+        # The inline H3 is the source of truth.
+        title = _inline_title_for_anchor(text, m.end())
         if title is None:
-            title = _inline_title_for_anchor(text, m.end()) or f"section {anchor}"
+            title = jump_titles.get(anchor) or f"section {anchor}"
+        seen_anchors.add(anchor)
         section_markers.append((m.end(), title, anchor))
 
     default_title = jump_titles.get("1", "main")
@@ -182,6 +203,28 @@ def _extract_sections(text: str) -> list[tuple[str, str | None, str]]:
                 break
         body = m.group(1)
         out.append((section, anchor, body))
+    return _disambiguate_section_names(out)
+
+
+def _disambiguate_section_names(
+    sections: list[tuple[str, str | None, str]],
+) -> list[tuple[str, str | None, str]]:
+    """Suffix duplicate section names with their anchor to keep them distinct.
+
+    Two PRE blocks with the same inline title (Larsson sometimes copy-pastes
+    'mixed competition' for two different anchors) would otherwise collapse
+    in any group_by('section') downstream, hiding a real distinction. We
+    rename collisions to ``"<title> (#N)"`` so the rows stay separable.
+    """
+    title_anchors: dict[str, set[str | None]] = {}
+    for title, anchor, _body in sections:
+        title_anchors.setdefault(title, set()).add(anchor)
+    out: list[tuple[str, str | None, str]] = []
+    for title, anchor, body in sections:
+        if len(title_anchors[title]) > 1 and anchor is not None:
+            out.append((f"{title} (#{anchor})", anchor, body))
+        else:
+            out.append((title, anchor, body))
     return out
 
 
@@ -198,12 +241,37 @@ def _parse_jump_nav(text: str) -> dict[str, str]:
 
 
 def _inline_title_for_anchor(text: str, anchor_end: int) -> str | None:
-    """Return the H1/H3 title that immediately follows an ``<A name>`` anchor."""
-    tail = text[anchor_end : anchor_end + 200]
-    m = re.match(r'\s*<h[13][^>]*>(.*?)</h[13]>', tail, re.IGNORECASE | re.DOTALL)
+    """Return the H1/H3 title that immediately follows an ``<A name>`` anchor.
+
+    Tolerates Larsson's broken markup where the opening ``<H3>`` is missing,
+    leaving e.g. ``<A name="3">indoor performances</h3></a>``.
+    """
+    tail = text[anchor_end : anchor_end + 300]
+    m = re.match(
+        r'\s*<h[13][^>]*>(.*?)</h[13]>', tail, re.IGNORECASE | re.DOTALL
+    )
+    if m is not None:
+        return _TAGS_RE.sub("", m.group(1)).strip() or None
+    # Fallback for missing opening tag: take everything up to </h3>.
+    m = re.match(r"\s*([^<]+?)\s*</h[13]>", tail, re.IGNORECASE | re.DOTALL)
+    if m is not None:
+        return m.group(1).strip() or None
+    return None
+
+
+def _is_section_anchor(text: str, anchor_end: int) -> bool:
+    """Decide whether an ``<A name="N">`` is a section header or a footnote.
+
+    Larsson's pages reuse ``<A name="1">`` for footnote legends rendered with
+    ``<H5>``. Only treat the anchor as a section if the next H tag we hit is
+    ``H1`` or ``H3`` (either an opening tag or — for malformed markup — a
+    closing tag with no matching open).
+    """
+    tail = text[anchor_end : anchor_end + 400]
+    m = _NEXT_TAG_RE.search(tail)
     if m is None:
-        return None
-    return _TAGS_RE.sub("", m.group(1)).strip() or None
+        return False
+    return m.group(2) in ("1", "3")
 
 
 # --- block-level orchestrator ----------------------------------------------------------
@@ -218,6 +286,13 @@ def _parse_block(
     source_url = f"{event.url}#{anchor}" if anchor else event.url
 
     for raw in block.splitlines():
+        # Skip the Jump-to nav anchors that leak into PRE blocks on some
+        # pages (whammok has the nav both above AND below the data, and the
+        # tail one falls inside the last PRE because </pre> is missing).
+        # These lines are tab-indented and contain HREF attributes BEFORE
+        # we strip tags, so detect them on the raw text.
+        if "href=" in raw.lower() and raw.lstrip().startswith("<"):
+            continue
         # Strip stray inline tags (e.g. '</Font>' that leaks into a row body
         # when Larsson forgets to close a font tag earlier on the page).
         line = _TAGS_RE.sub("", raw).rstrip()
@@ -302,6 +377,26 @@ def _extract_mark(tokens: list[str]) -> str:
     return tokens[1]
 
 
+def _heal_mark_name_fusion(tokens: list[str]) -> list[str]:
+    """Split ``tokens[1]`` if a long name leaked into the mark column.
+
+    Larsson's columns are fixed-width; very long athlete names like
+    'Sondre Nordstad Moen' or 'Kelly Ann Maevane Doualla Edimo' overflow
+    the name column and end up with only ONE space between the mark and
+    the name. Our 2+-space tokenizer then fuses them ('1:12:46.49 Sondre…').
+
+    Detects: tokens[1] contains a space AND the part before the first space
+    looks like a pure mark (digits/colons/dots/optional annotation char).
+    Splits the leaked name fragment back into tokens[2].
+    """
+    if len(tokens) < 2 or " " not in tokens[1]:
+        return tokens
+    head, rest = tokens[1].split(" ", 1)
+    if not _MARK_ONLY_RE.match(head):
+        return tokens
+    return [tokens[0], head, rest, *tokens[2:]]
+
+
 def _maybe_extract_wind(tokens: list[str], idx: int) -> tuple[float | None, int]:
     """Optional wind reading at ``tokens[idx]``; returns (wind, new_cursor)."""
     if idx < len(tokens) and _WIND_RE.match(tokens[idx]):
@@ -318,12 +413,42 @@ def _extract_tail(
     if the date string matches the regex but ``strptime`` rejects it (e.g. a
     typo'd day-of-month) — that mirrors v0.1 behaviour and lets the rest of
     the row through.
+
+    Also heals fixed-width overflow on the venue column: very long venue
+    names like 'Vila Real de Santo António' or 'Castiglione della Pesccaia'
+    only have a single space before the trailing date, so our 2+-space
+    tokenizer fuses them ('Vila Real de Santo António 27.05.2012').
     """
     if len(tokens) - idx < 3:
         raise _StepError(
             "tail",
             f"only {len(tokens) - idx} tokens left, need ≥3 for name+venue+date",
         )
+    # Strip HTML pollution like '11.01.2026(/Font>' or '31.01.2026<' that
+    # leaks in when Larsson's hand-written tags are malformed enough to
+    # survive _TAGS_RE removal.
+    last = tokens[-1]
+    if not _DATE_RE.match(last):
+        m = re.match(r"^(\d{1,2}\.\d{1,2}\.\d{4})", last)
+        if m is not None:
+            tokens = [*tokens[:-1], m.group(1)]
+    # Drop a trailing junk column after a real date (whammok rank 1 has a
+    # spurious '69.4' field after the date; w5kwno rank 1 has '21.00').
+    # If the second-to-last token is a real date and the last isn't, the
+    # last is editorial debris.
+    if (
+        len(tokens) >= 2
+        and not _DATE_RE.match(tokens[-1])
+        and _DATE_RE.match(tokens[-2])
+    ):
+        tokens = tokens[:-1]
+    # Heal venue+date fusion: if the last token ends with a date but has
+    # extra text in front, peel the date off and treat the rest as venue.
+    last = tokens[-1]
+    if not _DATE_RE.match(last):
+        m = re.search(r"\s(\d{1,2}\.\d{1,2}\.\d{4})$", last)
+        if m is not None:
+            tokens = [*tokens[:-1], last[: m.start()].rstrip(), m.group(1)]
     date_str = tokens[-1]
     if not _DATE_RE.match(date_str):
         raise _StepError("date", f"last token {date_str!r} does not match dd.mm.yyyy")
@@ -383,6 +508,7 @@ def _parse_individual_line(
     tokens: list[str], event: Event, section: str, source_url: str
 ) -> dict[str, Any]:
     rank = _extract_rank(tokens)
+    tokens = _heal_mark_name_fusion(tokens)
     mark_raw = _extract_mark(tokens)
     cursor = 2
 
@@ -489,26 +615,34 @@ def _try_parse_relay_line(
 def _split_embedded_country(
     middle: list[str],
 ) -> tuple[str | None, list[str], list[str]]:
-    """Recover from name+country fused into one token by single-space gaps.
+    """Recover from name+country fused into one token (with or without space).
 
-    Walk the middle tokens; if any token ends with a space-separated 2-3 letter
-    code (e.g. 'Hallgrímsdottír ISL'), peel that code off as the country and
-    return (country, name_tokens, after_country).
+    Two cases:
+
+    1. Single-space gap (e.g. 'Hallgrímsdottír ISL'): the country is
+       space-separated but the spacing isn't wide enough for the 2+-space
+       tokenizer to split.
+    2. Zero-space gap (e.g. 'Kelly Ann Maevane Doualla EdimoITA'): a very
+       long name overflows so far it bumps right into the country with no
+       gap. We peel off any trailing 3-letter ALL-CAPS suffix.
     """
     for i, tok in enumerate(middle):
-        # Country code is at most 3 letters + an optional digit.
+        # Case 1: space-separated 2-3 letter code at end of token.
         m = re.search(r"\s([A-Za-z]{2,3}\d?)$", tok)
-        if not m:
-            continue
-        candidate = m.group(1)
-        # Don't peel off short uppercase fragments unless they're really IOC-shaped
-        if not _COUNTRY_RE.match(candidate):
-            continue
-        head = tok[: m.start()].strip()
-        if not head:
-            continue
-        name_tokens = middle[:i] + [head]
-        return candidate, name_tokens, middle[i + 1:]
+        if m is not None:
+            candidate = m.group(1)
+            if _COUNTRY_RE.match(candidate):
+                head = tok[: m.start()].strip()
+                if head:
+                    return candidate, [*middle[:i], head], middle[i + 1 :]
+        # Case 2: zero-space — trailing ALL-CAPS 3-letter code glued to a
+        # mixed-case name. We require uppercase and 3 letters because shorter
+        # or mixed-case suffixes risk peeling off real name fragments.
+        m = re.search(r"([a-z])([A-Z]{3})$", tok)
+        if m is not None:
+            candidate = m.group(2)
+            head = tok[: m.start() + 1]  # keep the lowercase boundary char on the head
+            return candidate, [*middle[:i], head], middle[i + 1 :]
     return None, [], []
 
 

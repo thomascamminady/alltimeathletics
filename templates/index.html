@@ -14,9 +14,6 @@
   <strong id="dl-heading">Get the data</strong> &mdash;
   <a href="{{ site_root }}data/alltime_athletics.parquet">alltime_athletics.parquet</a>
   ({{ parquet_size_mb }} MB, {{ n_rows_total }} rows, {{ n_events_total }} events).
-  <code>import polars as pl
-df = pl.read_parquet("alltime_athletics.parquet")
-df.filter(pl.col("event") == "marathon").sort("mark_value").head(10)</code>
 </section>
 
 <input id="filter" type="search" placeholder="Filter events…" autofocus aria-label="Filter events">
