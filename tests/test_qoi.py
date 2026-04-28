@@ -72,6 +72,10 @@ KNOWN_BAD_AGE_ROWS: set[tuple[str, str, date]] = {
 KNOWN_MARK_ANNOTATIONS: set[str] = {
     "+", "A", "a", "*", "y", "i", "h", "m", "p", "e", "x", "d",
     "*A", "yA", "A*", "m+", "a+", "Ay", "B", "Y",
+    # Symbols Larsson uses on a handful of marks. Origin varies (en route,
+    # short-track, hand-timed variant, indoor mat, etc.); we keep them as raw
+    # annotations so consumers can filter without re-parsing mark_raw.
+    "#", "'", "´", "@", "-", "A@",
 }
 
 
@@ -327,3 +331,157 @@ def test_field_marks_within_physical_bounds(df: pl.DataFrame) -> None:
     )
     assert field["mark_value"].min() > 1.0    # a 1m HJ would be weirdly low
     assert field["mark_value"].max() < 110.0  # Železný-era javelin pre-1986 spec
+
+
+# ---------------------------------------------------- column-type histograms ---
+#
+# These tests assert the *shape* of each column: numeric columns are actually
+# numeric and have plausible distributions, date columns are real dates with
+# the right span, string columns have low cardinality where they should and
+# high cardinality where they shouldn't. A parser change that silently turns
+# a numeric column into "all NaN" or smears years across centuries trips one
+# of these.
+
+
+def test_dtypes_are_canonical(df: pl.DataFrame) -> None:
+    """Schema check: each column has the type the consumer expects."""
+    expected: dict[str, type[pl.DataType]] = {
+        "event": pl.Utf8,
+        "event_slug": pl.Utf8,
+        "sex": pl.Utf8,
+        "legality": pl.Utf8,
+        "family": pl.Utf8,
+        "section": pl.Utf8,
+        "rank": pl.UInt32,
+        "mark_raw": pl.Utf8,
+        "mark_value": pl.Float64,
+        "mark_annotation": pl.Utf8,
+        "wind": pl.Float64,
+        "name": pl.Utf8,
+        "country": pl.Utf8,
+        "dob": pl.Date,
+        "dob_precision": pl.Utf8,
+        "position": pl.Utf8,
+        "venue": pl.Utf8,
+        "date": pl.Date,
+        "source_url": pl.Utf8,
+    }
+    for col, dt in expected.items():
+        assert df.schema[col] == dt, f"{col}: dtype is {df.schema[col]}, expected {dt}"
+
+
+def test_categorical_columns_have_closed_vocabulary(df: pl.DataFrame) -> None:
+    """``sex``, ``legality``, ``family``, ``dob_precision`` are closed sets."""
+    assert set(df["sex"].unique().to_list()) <= {"men", "women", "mixed"}
+    assert set(df["legality"].unique().to_list()) <= {"legal", "non-legal"}
+    assert set(df["family"].unique().to_list()) <= {
+        "track_time",
+        "track_time_wind",
+        "field_distance",
+        "field_distance_wind",
+        "combined_points",
+        "relay",
+    }
+    assert set(df["dob_precision"].drop_nulls().unique().to_list()) <= {"day", "year"}
+
+
+def test_country_column_is_iso_shaped(df: pl.DataFrame) -> None:
+    """Every non-null country is 2-3 uppercase letters + optional digit."""
+    bad = df.filter(
+        pl.col("country").is_not_null()
+        & ~pl.col("country").str.contains(r"^[A-Z]{2,3}\d?$")
+    )
+    assert bad.height == 0, (
+        f"{bad.height} rows have non-IOC-shaped country: "
+        f"{bad['country'].unique().to_list()[:10]}"
+    )
+
+
+def test_date_year_distribution_is_modern(df: pl.DataFrame) -> None:
+    """≥ 95 % of performance dates fall within Larsson's coverage window."""
+    years = df.filter(pl.col("date").is_not_null()).select(
+        pl.col("date").dt.year().alias("y")
+    )
+    in_window = years.filter((pl.col("y") >= 1960) & (pl.col("y") <= date.today().year + 1))
+    ratio = in_window.height / max(1, years.height)
+    assert ratio >= 0.95, f"only {ratio:.3%} of dates fall in [1960, this year+1]"
+
+
+def test_dob_year_distribution_covers_century(df: pl.DataFrame) -> None:
+    """Athletes' birth years span at least 70 years and stay before today."""
+    today_year = date.today().year
+    dobs = df.filter(pl.col("dob").is_not_null()).select(
+        pl.col("dob").dt.year().alias("y")
+    )["y"]
+    assert dobs.max() <= today_year, f"future dob seen: {dobs.max()}"
+    assert dobs.max() - dobs.min() >= 70, (
+        f"dob span only {dobs.max() - dobs.min()} years; expected ≥ 70"
+    )
+
+
+def test_wind_distribution_is_centered_and_bounded(df: pl.DataFrame) -> None:
+    """Wind readings cluster near 0 with extremes capped by laws of physics."""
+    wind = df.filter(pl.col("wind").is_not_null())["wind"]
+    assert wind.min() >= -10.0, f"impossible headwind: {wind.min()}"
+    assert wind.max() <= 20.0, f"impossible tailwind: {wind.max()}"
+    # Median wind across all measured rows sits around 0.7 — both legal-only
+    # and non-legal sections in the parquet. A median > 5 would mean the
+    # column has been smeared with non-wind values (regression).
+    assert -1.0 <= wind.median() <= 3.0
+
+
+def test_mark_value_per_family_in_band(df: pl.DataFrame) -> None:
+    """Per-family mark_value range — catches a family-dispatch swap."""
+    bands: dict[str, tuple[float, float]] = {
+        "track_time": (5.0, 90_000.0),         # 60m up to 24-hour run
+        "track_time_wind": (5.0, 30.0),         # short sprint times only
+        "field_distance": (0.5, 110.0),         # HJ floor to javelin (old spec)
+        "field_distance_wind": (0.5, 25.0),     # LJ/TJ wind-aided
+        "combined_points": (50.0, 10_000.0),    # decathlon/heptathlon
+        "relay": (30.0, 2_000.0),               # 4x100 up to 4x1500
+    }
+    for family, (lo, hi) in bands.items():
+        sub = df.filter(pl.col("family") == family)["mark_value"]
+        assert sub.min() >= lo, f"{family}: min {sub.min()} < {lo}"
+        assert sub.max() <= hi, f"{family}: max {sub.max()} > {hi}"
+
+
+def test_name_column_is_high_cardinality(df: pl.DataFrame) -> None:
+    """Hundreds of thousands of rows but tens of thousands of distinct athletes."""
+    n_unique = df["name"].n_unique()
+    # If the parser collapsed names into a constant or a tiny set, this fails.
+    assert n_unique >= 10_000, f"only {n_unique} distinct names — parser regression?"
+
+
+def test_no_wind_strings_leaked_into_name(df: pl.DataFrame) -> None:
+    """Names must not start with a leading sign-and-digit (regression for #wind-leak bug)."""
+    leaked = df.filter(pl.col("name").str.contains(r"^[+\-]\d"))
+    assert leaked.height == 0, (
+        f"{leaked.height} names start with sign+digit (wind leaked into name): "
+        f"{leaked['name'].head(5).to_list()}"
+    )
+
+
+def test_mark_value_never_null(df: pl.DataFrame) -> None:
+    """Every parsed row must have a numeric mark — string ``mark_raw`` is always
+    parseable into ``mark_value`` after the European-decimal/annotation cleanup."""
+    nulls = df.filter(pl.col("mark_value").is_null())
+    assert nulls.height == 0, (
+        f"{nulls.height} rows have null mark_value; sample mark_raw="
+        f"{nulls['mark_raw'].head(5).to_list()}"
+    )
+
+
+def test_source_url_includes_section_anchor(df: pl.DataFrame) -> None:
+    """Per-row deep-link to Larsson's section: ``…htm#<anchor>``.
+
+    Larsson doesn't anchor individual rows, but every section has an
+    ``<A name="N">`` anchor that the page's Jump-to nav links to. Each row's
+    ``source_url`` must include that anchor so users can deep-link from our
+    table back to the originating section on the source page.
+    """
+    no_anchor = df.filter(~pl.col("source_url").str.contains("#"))
+    assert no_anchor.height == 0, (
+        f"{no_anchor.height} rows lack '#anchor' in source_url; e.g. "
+        f"{no_anchor['source_url'].head(3).to_list()}"
+    )

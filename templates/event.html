@@ -68,6 +68,17 @@ columns.push(
   { title: "Section", field: "section", visible: false, headerFilter: "input" },
   { title: "Mark annotation", field: "mark_annotation", visible: false, headerFilter: "input" },
   { title: "DOB precision", field: "dob_precision", visible: false, headerFilter: "input" },
+  { title: "Source", field: "source_url", width: 80, hozAlign: "center", headerSort: false, headerFilter: false,
+    formatter: (cell) => {
+      const frag = cell.getValue() || "";
+      // Deep-link back to the row's section on Larsson's page. We can only
+      // anchor at the section level — the source HTML doesn't have per-row
+      // anchors — so this jumps the user to the right sub-list.
+      const href = "{{ event.url }}" + frag;
+      const label = frag ? "view (" + frag + ")" : "view";
+      return '<a href="' + href + '" rel="external" target="_blank">' + label + '</a>';
+    },
+  },
 );
 
 new Tabulator("#table", {

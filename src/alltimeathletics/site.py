@@ -117,12 +117,15 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
 def _write_per_event_json(df: pl.DataFrame, out_dir: Path) -> None:
     """One JSON file per event slug for the static frontend.
 
-    Drops fields that are constant across every row of a given event
-    (event/event_slug/sex/legality/family/source_url) to keep payloads small.
-    Tabulator's ajaxURL fetches these directly.
+    Drops fields constant across every row of a given event
+    (event/event_slug/sex/legality/family). ``source_url`` is kept because it
+    now varies per row — the trailing ``#<anchor>`` deep-links to the section
+    on Larsson's page that the row came from. To keep payloads small we also
+    drop the page prefix and just store the fragment (e.g. ``#1``); the
+    template stitches it back onto ``event.url`` in the browser.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
-    drop_cols = ["event", "event_slug", "sex", "legality", "family", "source_url"]
+    drop_cols = ["event", "event_slug", "sex", "legality", "family"]
     for slug in df.select("event_slug").unique().to_series().to_list():
         sub = (
             df.filter(pl.col("event_slug") == slug)
@@ -130,6 +133,10 @@ def _write_per_event_json(df: pl.DataFrame, out_dir: Path) -> None:
             .with_columns(
                 pl.col("dob").cast(pl.Utf8),
                 pl.col("date").cast(pl.Utf8),
+                pl.col("source_url")
+                .str.extract(r"(#\d+)$", 1)
+                .fill_null("")
+                .alias("source_url"),
             )
         )
         records = sub.to_dicts()
