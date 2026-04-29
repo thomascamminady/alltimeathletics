@@ -5,15 +5,83 @@
 
 <h1>{{ event.label }} <span class="meta-tag">{{ event.sex }}</span> <span class="meta-tag">{{ event.legality }}</span></h1>
 
+{# ----- summary card (#3) ------------------------------------------------ #}
+{% if 'top_name' in meta.summary %}
+<section class="summary-card" aria-labelledby="summary-heading">
+  <h2 id="summary-heading" class="visually-hidden">Event summary</h2>
+  <div class="summary-grid">
+    <div class="summary-cell">
+      <div class="summary-label">Top mark</div>
+      <div class="summary-value">{{ meta.summary.top_mark_raw }}</div>
+      <div class="summary-meta">
+        {{ flag(meta.summary.top_country) }} {{ meta.summary.top_name }}
+      </div>
+      <div class="summary-meta">
+        {{ meta.summary.top_venue }}
+        {% if 'top_date' in meta.summary and meta.summary.top_date %}&middot; {{ meta.summary.top_date }}{% endif %}
+      </div>
+    </div>
+    {% if 'tenth_mark_raw' in meta.summary %}
+    <div class="summary-cell">
+      <div class="summary-label">10<sup>th</sup>-place mark</div>
+      <div class="summary-value">{{ meta.summary.tenth_mark_raw }}</div>
+      <div class="summary-meta">
+        gap: {{ "%+.2f"|format(meta.summary.tenth_gap if not meta.descending else -meta.summary.tenth_gap) }}
+      </div>
+    </div>
+    {% endif %}
+    {% if 'median_age_top100' in meta.summary %}
+    <div class="summary-cell">
+      <div class="summary-label">Median age, top 100</div>
+      <div class="summary-value">{{ meta.summary.median_age_top100 }} <span class="summary-unit">yrs</span></div>
+    </div>
+    {% endif %}
+    <div class="summary-cell">
+      <div class="summary-label">All-time list size</div>
+      <div class="summary-value">{{ row_count }}</div>
+      <div class="summary-meta">{{ meta.n_wrs }} historical WRs</div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# ----- WR progression chart (#5) ---------------------------------------- #}
+{% if wr_chart_svg %}
+<section class="wr-chart-wrap" aria-labelledby="wr-chart-heading">
+  <h2 id="wr-chart-heading">World-record progression</h2>
+  <p class="lede">{{ meta.n_wrs }} world records since {{ meta.wr_progression[0].date[:4] }}.
+    Each step marks a new best mark in the canonical list ("{{ meta.main_section }}").</p>
+  {{ wr_chart_svg|safe }}
+</section>
+{% endif %}
+
 <p class="source-link">
   <strong>Source:</strong>
   <a href="{{ event.url }}" rel="external">{{ event.url }}</a>
   &middot; maintained by Peter Larsson
 </p>
 
+{# ----- toolbar: WR-only toggle (#1) + section chips (#2) ---------------- #}
+<div class="table-toolbar" role="toolbar" aria-label="Table filters">
+  <button id="wr-only" type="button" class="toolbar-btn" aria-pressed="false">
+    Show world records only
+  </button>
+  <div class="section-chips" role="group" aria-label="Sub-list filter">
+    {% for s in meta.sections %}
+    <button type="button"
+            class="chip{% if s.name == meta.main_section %} chip-on{% endif %}"
+            data-section="{{ s.name }}"
+            aria-pressed="{{ 'true' if s.name == meta.main_section else 'false' }}"
+            title="{{ s.name }} — {{ s.n }} rows">
+      {{ s.name|truncate(36, True, "…") }} <span class="chip-count">{{ s.n }}</span>
+    </button>
+    {% endfor %}
+  </div>
+</div>
+
 <p class="lede">
-  Showing <strong>{{ row_count }}</strong> performances. Click a column header to sort.
-  Type into the column headers to filter. Click an athlete or venue to filter by it.
+  Showing <span id="visible-count">{{ row_count }}</span> performances. Click a column header to sort.
+  Type into the column headers to filter.
 </p>
 
 {% if family == 'relay' %}
@@ -25,10 +93,20 @@
 <script src="{{ static_root }}tabulator.min.js"></script>
 <script>
 const event = {{ event_meta_json|safe }};
+const FLAGS = {{ flags_json|safe }};
+const MAIN_SECTION = {{ meta.main_section|tojson }};
 const dataUrl = "{{ site_root }}data/events/{{ event.slug }}.json";
 
 const isRelay = event.family === 'relay';
 const hasWind = event.family === 'track_time_wind' || event.family === 'field_distance_wind';
+
+// IOC code → "🇰🇪 KEN" with a graceful fallback for codes we don't map
+// (historical teams, etc).
+function fmtCountry(code) {
+  if (!code) return "";
+  const flag = FLAGS[code];
+  return flag ? flag + " " + code : code;
+}
 
 const columns = [
   { title: "#", field: "rank", width: 70, hozAlign: "right", sorter: "number", headerFilter: false },
@@ -36,7 +114,6 @@ const columns = [
     sorter: (a, b, ar, br, _col, dir) => {
       const av = ar.getData().mark_value;
       const bv = br.getData().mark_value;
-      // Push null marks to the end regardless of sort direction.
       if (av == null && bv == null) return 0;
       if (av == null) return dir === "desc" ? -1 : 1;
       if (bv == null) return dir === "desc" ? 1 : -1;
@@ -53,7 +130,8 @@ if (hasWind) {
 if (!isRelay) {
   columns.push(
     { title: "Name", field: "name", headerFilter: "input", minWidth: 180 },
-    { title: "Country", field: "country", width: 90, headerFilter: "input" },
+    { title: "Country", field: "country", width: 110, headerFilter: "input",
+      formatter: (cell) => fmtCountry(cell.getValue()) },
     { title: "DOB", field: "dob", width: 110 },
     { title: "Pos", field: "position", width: 70 },
   );
@@ -70,7 +148,19 @@ columns.push(
   { title: "DOB precision", field: "dob_precision", visible: false, headerFilter: "input" },
 );
 
-new Tabulator("#table", {
+// State for our two custom filters: WR-only toggle + active section chips.
+const state = {
+  wrOnly: false,
+  activeSections: new Set(MAIN_SECTION ? [MAIN_SECTION] : []),
+};
+
+const customFilter = (data) => {
+  if (state.wrOnly && !data.is_wr) return false;
+  if (state.activeSections.size > 0 && !state.activeSections.has(data.section)) return false;
+  return true;
+};
+
+const table = new Tabulator("#table", {
   ajaxURL: dataUrl,
   layout: "fitDataStretch",
   pagination: "local",
@@ -79,6 +169,41 @@ new Tabulator("#table", {
   movableColumns: true,
   columns: columns,
   initialSort: [{ column: "mark_value", dir: event.family === 'field_distance' || event.family === 'field_distance_wind' || event.family === 'combined_points' ? 'desc' : 'asc' }],
+});
+
+// Apply the custom filter once data is in. Tabulator's dataFiltered fires
+// whenever the active set changes, so use that to drive the visible-count.
+table.on("dataLoaded", () => {
+  table.setFilter(customFilter);
+});
+function refreshCount(_filters, rows) {
+  const n = (rows && rows.length) ?? table.getDataCount("active");
+  const el = document.getElementById("visible-count");
+  if (el) el.textContent = n.toLocaleString();
+}
+table.on("dataFiltered", refreshCount);
+
+document.getElementById("wr-only").addEventListener("click", (e) => {
+  state.wrOnly = !state.wrOnly;
+  e.currentTarget.setAttribute("aria-pressed", state.wrOnly ? "true" : "false");
+  e.currentTarget.classList.toggle("toolbar-btn-on", state.wrOnly);
+  table.setFilter(customFilter);
+});
+
+document.querySelectorAll(".chip").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    const section = chip.dataset.section;
+    if (state.activeSections.has(section)) {
+      state.activeSections.delete(section);
+      chip.classList.remove("chip-on");
+      chip.setAttribute("aria-pressed", "false");
+    } else {
+      state.activeSections.add(section);
+      chip.classList.add("chip-on");
+      chip.setAttribute("aria-pressed", "true");
+    }
+    table.setFilter(customFilter);
+  });
 });
 </script>
 {% endblock %}
