@@ -182,11 +182,11 @@ h2 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; }
   margin: 0;
 }
 .recent-list li {
-  padding: 0.35rem 0;
+  padding: 0.3rem 0;
   border-top: 1px solid var(--border);
   font-size: 0.92rem;
   display: grid;
-  grid-template-columns: 6.5rem 1fr;
+  grid-template-columns: 6rem 1fr auto;
   gap: 0.25rem 0.75rem;
   align-items: baseline;
 }
@@ -196,23 +196,18 @@ h2 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; }
   color: var(--fg-muted);
   font-size: 0.85rem;
 }
-.recent-mark {
+.recent-venue {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.recent-count {
+  font-size: 0.8rem;
+  color: var(--fg-muted);
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
-  margin-right: 0.15rem;
 }
-.recent-rank {
-  font-size: 0.8em;
-  color: var(--fg-muted);
-  margin-right: 0.25rem;
-}
-.recent-sex {
-  font-size: 0.75em;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--fg-muted);
-  margin-left: 0.25rem;
-}
-.recent-where { color: var(--fg-muted); font-size: 0.9em; }
 
 /* ---- event page: summary card --------------------------------- */
 
@@ -292,6 +287,11 @@ h2 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; }
 .wr-chart .grid {
   stroke: var(--grid);
   stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+.wr-chart .grid-axis {
+  stroke: var(--border);
+  stroke-dasharray: none;
 }
 .wr-chart .wr-line {
   stroke: var(--accent);
@@ -314,6 +314,12 @@ h2 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; }
   font-family: system-ui, sans-serif;
   font-size: 11px;
   fill: var(--fg-muted);
+}
+.wr-chart .ax-grid {
+  font-family: system-ui, sans-serif;
+  font-size: 10px;
+  fill: var(--fg-muted);
+  opacity: 0.65;
 }
 
 /* ---- WR-chart custom tooltip ----------------------------------- */

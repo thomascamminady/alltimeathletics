@@ -277,15 +277,19 @@ def _compute_event_meta(df: pl.DataFrame, slug: str) -> dict[str, Any]:
 def _recent_additions(
     df: pl.DataFrame,
     ev_by_slug: dict[str, Any],
-    n: int = 10,
+    n: int = 12,
 ) -> list[dict[str, Any]]:
-    """Top ``n`` most-recently-dated performances across the whole catalogue.
+    """Most recent meets the database picked up — one row per (date, venue).
 
-    Used by the index page's "Recent additions" panel — mirrors what
-    alltime-athletics.com does on its homepage. We restrict to canonical
-    ("main") sub-lists so the panel doesn't fill up with dubious-timing
-    or hand-timed entries that would hide the real recent action.
+    Larsson doesn't tag rows with an "added at" timestamp or with a meet
+    name, so we proxy "recent meets" by the most recent ``date + venue``
+    pairs in the canonical sub-lists. That gives a clean "what was new
+    this week" panel like alltime-athletics.com's homepage shows.
+
+    The ``ev_by_slug`` argument is unused here but kept in the signature
+    so the call site doesn't have to change as we evolve the panel.
     """
+    del ev_by_slug
     main_per_slug = (
         df.filter(pl.col("rank") == 1)
         .group_by("event_slug")
@@ -294,37 +298,25 @@ def _recent_additions(
     canonical = df.join(main_per_slug, on="event_slug", how="inner").filter(
         pl.col("section") == pl.col("main_section")
     )
-    recent = (
-        canonical.filter(pl.col("date").is_not_null())
-        .sort("date", descending=True)
-        .head(n * 4)  # over-fetch then dedupe; we want N distinct rows
-    ).to_dicts()
-    out: list[dict[str, Any]] = []
-    seen: set[tuple[Any, ...]] = set()
-    for r in recent:
-        key = (r["event_slug"], r["name"], r["mark_raw"], r["date"], r["venue"])
-        if key in seen:
-            continue
-        seen.add(key)
-        ev = ev_by_slug.get(r["event_slug"])
-        if ev is None:
-            continue
-        out.append(
-            {
-                "slug": r["event_slug"],
-                "label": ev.label,
-                "sex": ev.sex,
-                "date": str(r["date"]),
-                "mark_raw": r["mark_raw"],
-                "name": r["name"],
-                "country": r["country"],
-                "venue": r["venue"],
-                "rank": r["rank"],
-            }
+    meets = (
+        canonical.filter(pl.col("date").is_not_null() & pl.col("venue").is_not_null())
+        .group_by(["date", "venue"])
+        .agg(
+            pl.len().alias("n_perfs"),
+            pl.col("event_slug").n_unique().alias("n_events"),
         )
-        if len(out) >= n:
-            break
-    return out
+        .sort("date", descending=True)
+        .head(n)
+    )
+    return [
+        {
+            "date": str(m["date"]),
+            "venue": m["venue"],
+            "n_perfs": int(m["n_perfs"]),
+            "n_events": int(m["n_events"]),
+        }
+        for m in meets.to_dicts()
+    ]
 
 
 # ---------------------------------------------------------------- charts --
@@ -349,7 +341,10 @@ def _render_wr_chart_svg(wrs: list[dict[str, Any]], family: str) -> str:
       is *also* present so screen readers + non-JS users still get the
       details.
     """
-    del family  # historical y-flip removed; both families share the same convention
+    # ``family`` no longer flips the y-axis (both families share the
+    # natural convention) but it still drives intermediate Y-tick formatting
+    # (track times → ``mm:ss``, field marks → metres with one decimal).
+    family_for_format = family
     if len(wrs) < 2:
         return ""
     # Coordinates (px) inside a 560x180 viewport, with margins for labels
@@ -384,15 +379,54 @@ def _render_wr_chart_svg(wrs: list[dict[str, Any]], family: str) -> str:
         pts.append(f"H {sx(today_ord):.1f}")
     path = " ".join(pts)
 
-    # Light gridlines: top + bottom of plot area + first/last x value.
+    # Plot area
     plot_top, plot_bot = M_T, H - M_B
     plot_left, plot_right = M_L, W - M_R
-    grid = (
-        f'<line class="grid" x1="{plot_left}" y1="{plot_top}" '
+
+    # Decade-aligned X gridlines (every 10 years from the first decade boundary
+    # at/after x_min, ending at the last boundary at/before x_max_chart).
+    first_year_int = date.fromordinal(x_min).year
+    last_year_int = date.fromordinal(x_max_chart).year
+    decade_lo = ((first_year_int + 9) // 10) * 10  # next decade boundary
+    decade_hi = (last_year_int // 10) * 10
+    decade_years = list(range(decade_lo, decade_hi + 1, 10))
+    x_grid_lines = "".join(
+        f'<line class="grid" x1="{sx(date(y, 1, 1).toordinal()):.1f}" '
+        f'y1="{plot_top}" x2="{sx(date(y, 1, 1).toordinal()):.1f}" '
+        f'y2="{plot_bot}" />'
+        for y in decade_years
+    )
+    x_tick_labels = "".join(
+        f'<text x="{sx(date(y, 1, 1).toordinal()):.1f}" y="{H - 8}" '
+        f'text-anchor="middle" class="ax-grid">{y}</text>'
+        for y in decade_years
+        # Skip endpoints — first/last year labels are drawn separately.
+        if abs(y - int(wrs[0]["date"][:4])) >= 5
+        and abs(y - int(wrs[-1]["date"][:4])) >= 5
+    )
+
+    # Y gridlines at quartiles of the value range (skip extremes; those are
+    # drawn from the first/last WR labels).
+    y_quarters = [y_min + (y_max - y_min) * f for f in (0.25, 0.5, 0.75)]
+    y_grid_lines = "".join(
+        f'<line class="grid" x1="{plot_left}" y1="{sy(yv):.1f}" '
+        f'x2="{plot_right}" y2="{sy(yv):.1f}" />'
+        for yv in y_quarters
+    )
+    y_tick_labels = "".join(
+        f'<text x="{plot_left - 4}" y="{sy(yv):.1f}" dy="4" '
+        f'text-anchor="end" class="ax-grid">{_format_y_tick(yv, family_for_format)}</text>'
+        for yv in y_quarters
+    )
+
+    # Bounding box
+    grid_box = (
+        f'<line class="grid grid-axis" x1="{plot_left}" y1="{plot_top}" '
         f'x2="{plot_right}" y2="{plot_top}" />'
-        f'<line class="grid" x1="{plot_left}" y1="{plot_bot}" '
+        f'<line class="grid grid-axis" x1="{plot_left}" y1="{plot_bot}" '
         f'x2="{plot_right}" y2="{plot_bot}" />'
     )
+    grid = grid_box + x_grid_lines + y_grid_lines
 
     # Dots with styled-tooltip data + a native <title> as fallback.
     dots = "".join(
@@ -436,6 +470,7 @@ def _render_wr_chart_svg(wrs: list[dict[str, Any]], family: str) -> str:
         f'aria-label="World-record progression: {len(wrs)} marks from '
         f'{first_year} to {last_year}">'
         f'{grid}'
+        f'{y_tick_labels}{x_tick_labels}'
         f'<path class="wr-line" d="{path}" fill="none" />'
         f'{dots}'
         f'{y_label_extremes}{x_first}{x_last}'
@@ -449,6 +484,26 @@ def _y_axis_label(wrs: list[dict[str, Any]], ys: list[float], target: float) -> 
         if y == target:
             return w["mark_raw"]
     return f"{target:g}"
+
+
+def _format_y_tick(value: float, family: str) -> str:
+    """Format an intermediate Y-axis tick.
+
+    Track times need to be turned back into ``[h:]mm:ss``; field events
+    just want metres with a sensible precision.
+    """
+    if family in _DESC_FAMILIES:
+        # Field/combined: one decimal, suppress trailing zero on integers
+        # to keep tick labels short.
+        return f"{value:.2f}".rstrip("0").rstrip(".")
+    if value < 60:
+        return f"{value:.2f}"
+    if value < 3600:
+        m, s = divmod(value, 60)
+        return f"{int(m)}:{s:05.2f}"
+    h, rem = divmod(value, 3600)
+    m, s = divmod(rem, 60)
+    return f"{int(h)}:{int(m):02d}:{int(s):02d}"
 
 
 # ---------------------------------------------------------------- json --

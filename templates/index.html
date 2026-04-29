@@ -23,22 +23,18 @@
 
 {% if recent_additions %}
 <section class="recent-panel" aria-labelledby="recent-heading">
-  <h2 id="recent-heading">Latest additions</h2>
+  <h2 id="recent-heading">Latest meets in the database</h2>
   <p class="recent-meta">
-    Most recent performances added to the canonical lists.
+    Most recent dates &amp; venues with new performances on the canonical lists.
   </p>
   <ol class="recent-list">
-    {% for r in recent_additions %}
+    {% for m in recent_additions %}
     <li>
-      <span class="recent-date">{{ r.date }}</span>
-      <span class="recent-body">
-        <a href="{{ site_root }}event/{{ r.slug }}.html">{{ r.label }}</a>
-        <span class="recent-sex">{{ r.sex }}</span>
-        &middot;
-        <strong class="recent-mark">{{ r.mark_raw }}</strong>
-        <span class="recent-rank">#{{ r.rank }}</span>
-        by {{ flag(r.country) }} {{ r.name }}
-        <span class="recent-where">&middot; {{ r.venue }}</span>
+      <span class="recent-date">{{ m.date }}</span>
+      <span class="recent-venue">{{ m.venue }}</span>
+      <span class="recent-count">
+        {{ m.n_perfs }} perf{% if m.n_perfs != 1 %}s{% endif %}
+        {% if m.n_events > 1 %}across {{ m.n_events }} events{% endif %}
       </span>
     </li>
     {% endfor %}
