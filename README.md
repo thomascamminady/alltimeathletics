@@ -14,18 +14,42 @@ for now.
 
 - ✅ Scraper, parser, parquet pipeline, static site renderer, local tests
 - ✅ ~371k rows across ~190 events; 0.034 % unparsed
-- ⏸️ Public hosting + weekly automation paused pending Larsson's OK
+- ✅ Weekly auto-refresh via `update-data.yml` cron + dated GitHub Releases
+- ⏸️ Public hosting (GitHub Pages) paused pending Larsson's OK
 
-## Use the data locally
+## Use the data
 
-The whole dataset is one parquet file (~5 MB):
+The whole dataset is one parquet file (~4 MB) and a CSV mirror (~70 MB,
+~10 MB gzipped). Both are refreshed weekly via GitHub Actions and attached
+to a dated [release](https://github.com/thomascamminady/alltimeathletics/releases).
+Stable URLs always point at the latest snapshot:
+
+```bash
+# Parquet (recommended; preserves dtypes)
+curl -L -o alltime_athletics.parquet \
+  https://github.com/thomascamminady/alltimeathletics/releases/latest/download/alltime_athletics.parquet
+
+# CSV (gzipped — ~10 MB)
+curl -L -o alltime_athletics.csv.gz \
+  https://github.com/thomascamminady/alltimeathletics/releases/latest/download/alltime_athletics.csv.gz
+
+# Manifest (per-event row counts + parser diagnostics)
+curl -L -o manifest.json \
+  https://github.com/thomascamminady/alltimeathletics/releases/latest/download/manifest.json
+```
+
+Then in Python:
 
 ```python
 import polars as pl
 
-df = pl.read_parquet("data/alltime_athletics.parquet")
+df = pl.read_parquet("alltime_athletics.parquet")
 df.filter(pl.col("event") == "marathon").sort("mark_value").head(10)
 ```
+
+To pin to a specific weekly snapshot (e.g. for reproducibility), browse
+the [releases page](https://github.com/thomascamminady/alltimeathletics/releases)
+and substitute the dated tag in the URL: `releases/download/data-YYYY-MM-DD/...`.
 
 Schema (one row per performance):
 
@@ -77,7 +101,9 @@ templates/       # base.html, index.html, event.html
 static/          # style.css + vendored Tabulator
 data/            # parquet, manifest.json (per-event JSON is generated, not committed)
 tests/           # parser + schema + data-accessibility tests
-.github/workflows/ci.yml  # tests on every push
+.github/workflows/
+  ci.yml           # tests on every push
+  update-data.yml  # weekly cron: scrape, commit parquet, cut dated release
 ```
 
 ## Credit
