@@ -12,8 +12,13 @@
 
 <section class="download-bar" aria-labelledby="dl-heading">
   <strong id="dl-heading">Get the data</strong> &mdash;
-  <a href="{{ site_root }}data/alltime_athletics.parquet">alltime_athletics.parquet</a>
-  ({{ parquet_size_mb }} MB, {{ n_rows_total }} rows, {{ n_events_total }} events).
+  <a href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/alltime_athletics.parquet">parquet</a>
+  ({{ parquet_size_mb }} MB) &middot;
+  <a href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/alltime_athletics.csv">csv</a> &middot;
+  <a href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/alltime_athletics.csv.gz">csv.gz</a> &middot;
+  <a href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/manifest.json">manifest</a>.
+  {{ n_rows_total }} rows across {{ n_events_total }} events.
+  Refreshed weekly from <a href="https://github.com/thomascamminady/alltimeathletics/releases">tagged snapshots</a>.
 </section>
 
 <input id="filter" type="search" placeholder="Filter events…" autofocus aria-label="Filter events">
