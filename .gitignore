@@ -19,3 +19,4 @@ site/
 # Keeping it out of git means a weekly data refresh diff is ~5 MB of parquet,
 # not ~80 MB of JSON.
 data/events/
+.claude
