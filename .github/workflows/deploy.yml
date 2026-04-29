@@ -49,7 +49,9 @@ jobs:
         run: uv sync --frozen
 
       - name: Render site
-        run: uv run python -m alltimeathletics.site --out site/
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY##*/}"
+          uv run python -m alltimeathletics.site --out site/ --site_root "/${REPO_NAME}/"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
