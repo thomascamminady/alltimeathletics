@@ -7,7 +7,7 @@
 
 {# ----- summary card (#3) ------------------------------------------------ #}
 {% if 'top_name' in meta.summary %}
-<section class="summary-card" aria-labelledby="summary-heading">
+<section class="card summary-card" aria-labelledby="summary-heading">
   <h2 id="summary-heading" class="visually-hidden">Event summary</h2>
   <div class="summary-grid">
     <div class="summary-cell">
@@ -45,14 +45,28 @@
 </section>
 {% endif %}
 
-{# ----- WR progression chart (#5) ---------------------------------------- #}
+{# ----- WR progression chart (#5) — collapsible -------------------------- #}
 {% if wr_chart_svg %}
-<section class="wr-chart-wrap" aria-labelledby="wr-chart-heading">
-  <h2 id="wr-chart-heading">World-record progression</h2>
-  <p class="lede">{{ meta.n_wrs }} world records since {{ meta.wr_progression[0].date[:4] }}.
-    Each step marks a new best mark in the canonical list ("{{ meta.main_section }}").</p>
-  {{ wr_chart_svg|safe }}
-</section>
+<details class="card chart-card" open>
+  <summary>
+    <span class="chart-title">World-record progression</span>
+    <span class="chart-meta">
+      {{ meta.n_wrs }} world records since {{ meta.wr_progression[0].date[:4] }}
+    </span>
+  </summary>
+  <div class="chart-body">
+    {{ wr_chart_svg|safe }}
+    <div class="wr-tooltip" id="wr-tooltip" hidden></div>
+    <p class="chart-note">
+      Canonical list: <em>{{ meta.main_section }}</em>.
+      {% if meta.descending %}
+      Higher mark is better &mdash; line ascends as records improve.
+      {% else %}
+      Lower mark is better &mdash; line descends as records improve.
+      {% endif %}
+    </p>
+  </div>
+</details>
 {% endif %}
 
 <p class="source-link">
@@ -61,22 +75,37 @@
   &middot; maintained by Peter Larsson
 </p>
 
-{# ----- toolbar: WR-only toggle (#1) + section chips (#2) ---------------- #}
+{# ----- toolbar: WR-only toggle (#1) + section dropdown (#2 redux) ------ #}
 <div class="table-toolbar" role="toolbar" aria-label="Table filters">
-  <button id="wr-only" type="button" class="toolbar-btn" aria-pressed="false">
+  <button id="wr-only" type="button" class="btn" aria-pressed="false">
     Show world records only
   </button>
-  <div class="section-chips" role="group" aria-label="Sub-list filter">
-    {% for s in meta.sections %}
-    <button type="button"
-            class="chip{% if s.name == meta.main_section %} chip-on{% endif %}"
-            data-section="{{ s.name }}"
-            aria-pressed="{{ 'true' if s.name == meta.main_section else 'false' }}"
-            title="{{ s.name }} — {{ s.n }} rows">
-      {{ s.name|truncate(36, True, "…") }} <span class="chip-count">{{ s.n }}</span>
-    </button>
-    {% endfor %}
-  </div>
+
+  <details class="dropdown" id="section-dropdown">
+    <summary class="btn" aria-haspopup="true">
+      Sub-lists: <span id="section-summary-count">1</span> of {{ meta.sections|length }}
+    </summary>
+    <div class="dropdown-panel" role="group" aria-label="Sub-list filter">
+      <div class="dropdown-actions">
+        <button type="button" class="btn btn-sm" id="sections-all">Select all</button>
+        <button type="button" class="btn btn-sm" id="sections-none">None</button>
+        <button type="button" class="btn btn-sm" id="sections-main">Just main</button>
+      </div>
+      <ul class="section-list">
+        {% for s in meta.sections %}
+        <li>
+          <label>
+            <input type="checkbox"
+                   data-section="{{ s.name }}"
+                   {% if s.name == meta.main_section %}checked{% endif %}>
+            <span class="section-name" title="{{ s.name }}">{{ s.name }}</span>
+            <span class="section-count">{{ s.n }}</span>
+          </label>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </details>
 </div>
 
 <p class="lede">
@@ -100,8 +129,7 @@ const dataUrl = "{{ site_root }}data/events/{{ event.slug }}.json";
 const isRelay = event.family === 'relay';
 const hasWind = event.family === 'track_time_wind' || event.family === 'field_distance_wind';
 
-// IOC code → "🇰🇪 KEN" with a graceful fallback for codes we don't map
-// (historical teams, etc).
+// IOC code → "🇰🇪 KEN" with a graceful fallback for codes we don't map.
 function fmtCountry(code) {
   if (!code) return "";
   const flag = FLAGS[code];
@@ -148,7 +176,7 @@ columns.push(
   { title: "DOB precision", field: "dob_precision", visible: false, headerFilter: "input" },
 );
 
-// State for our two custom filters: WR-only toggle + active section chips.
+// State for our two custom filters: WR-only toggle + active sections.
 const state = {
   wrOnly: false,
   activeSections: new Set(MAIN_SECTION ? [MAIN_SECTION] : []),
@@ -171,8 +199,6 @@ const table = new Tabulator("#table", {
   initialSort: [{ column: "mark_value", dir: event.family === 'field_distance' || event.family === 'field_distance_wind' || event.family === 'combined_points' ? 'desc' : 'asc' }],
 });
 
-// Apply the custom filter once data is in. Tabulator's dataFiltered fires
-// whenever the active set changes, so use that to drive the visible-count.
 table.on("dataLoaded", () => {
   table.setFilter(customFilter);
 });
@@ -186,24 +212,73 @@ table.on("dataFiltered", refreshCount);
 document.getElementById("wr-only").addEventListener("click", (e) => {
   state.wrOnly = !state.wrOnly;
   e.currentTarget.setAttribute("aria-pressed", state.wrOnly ? "true" : "false");
-  e.currentTarget.classList.toggle("toolbar-btn-on", state.wrOnly);
+  e.currentTarget.classList.toggle("btn-on", state.wrOnly);
   table.setFilter(customFilter);
 });
 
-document.querySelectorAll(".chip").forEach((chip) => {
-  chip.addEventListener("click", () => {
-    const section = chip.dataset.section;
-    if (state.activeSections.has(section)) {
-      state.activeSections.delete(section);
-      chip.classList.remove("chip-on");
-      chip.setAttribute("aria-pressed", "false");
-    } else {
-      state.activeSections.add(section);
-      chip.classList.add("chip-on");
-      chip.setAttribute("aria-pressed", "true");
-    }
-    table.setFilter(customFilter);
-  });
+// ---- section checkbox dropdown -----------------------------------------
+const sectionCheckboxes = document.querySelectorAll('#section-dropdown input[type="checkbox"]');
+const summaryCount = document.getElementById('section-summary-count');
+
+function refreshSectionFilter() {
+  state.activeSections = new Set(
+    [...sectionCheckboxes].filter(c => c.checked).map(c => c.dataset.section)
+  );
+  summaryCount.textContent = state.activeSections.size;
+  table.setFilter(customFilter);
+}
+sectionCheckboxes.forEach(c => c.addEventListener('change', refreshSectionFilter));
+
+document.getElementById('sections-all').addEventListener('click', (e) => {
+  e.preventDefault();
+  sectionCheckboxes.forEach(c => { c.checked = true; });
+  refreshSectionFilter();
 });
+document.getElementById('sections-none').addEventListener('click', (e) => {
+  e.preventDefault();
+  sectionCheckboxes.forEach(c => { c.checked = false; });
+  refreshSectionFilter();
+});
+document.getElementById('sections-main').addEventListener('click', (e) => {
+  e.preventDefault();
+  sectionCheckboxes.forEach(c => { c.checked = c.dataset.section === MAIN_SECTION; });
+  refreshSectionFilter();
+});
+
+// Close dropdown when clicking outside.
+document.addEventListener('click', (e) => {
+  const dd = document.getElementById('section-dropdown');
+  if (dd.open && !dd.contains(e.target)) dd.removeAttribute('open');
+});
+
+// ---- WR-chart hover tooltip --------------------------------------------
+const wrTooltip = document.getElementById('wr-tooltip');
+if (wrTooltip) {
+  const chartWrap = wrTooltip.parentElement;
+  document.querySelectorAll('.wr-dot').forEach((dot) => {
+    const show = (e) => {
+      try {
+        const data = JSON.parse(dot.getAttribute('data-wr'));
+        const country = data.country ? (FLAGS[data.country] || '') + ' ' + data.country : '';
+        wrTooltip.innerHTML =
+          '<strong>' + data.mark_raw + '</strong> &middot; ' +
+          (data.name || '') + (country ? ' &middot; ' + country : '') +
+          '<br><span class="muted">' + (data.venue || '') + ' &middot; ' + data.date + '</span>';
+        wrTooltip.hidden = false;
+        const wrapBox = chartWrap.getBoundingClientRect();
+        const dotBox = dot.getBoundingClientRect();
+        const x = dotBox.left + dotBox.width / 2 - wrapBox.left;
+        const y = dotBox.top - wrapBox.top - 8;
+        wrTooltip.style.left = x + 'px';
+        wrTooltip.style.top = y + 'px';
+      } catch (err) { /* ignore */ }
+    };
+    dot.addEventListener('mouseenter', show);
+    dot.addEventListener('focus', show);
+    const hide = () => { wrTooltip.hidden = true; };
+    dot.addEventListener('mouseleave', hide);
+    dot.addEventListener('blur', hide);
+  });
+}
 </script>
 {% endblock %}

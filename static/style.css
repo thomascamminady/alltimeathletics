@@ -1,4 +1,27 @@
-/* Plain, fast, accessible. No custom palette, no decorative borders. */
+/* Plain, fast, accessible. Square borders, system fonts, one accent colour. */
+
+:root {
+  --fg: #111;
+  --fg-muted: #666;
+  --bg: #fff;
+  --bg-card: rgba(0, 0, 0, 0.025);
+  --border: #ccc;
+  --border-strong: #888;
+  --accent: #1a73e8;
+  --grid: #e5e5e5;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fg: #eee;
+    --fg-muted: #aaa;
+    --bg: #111;
+    --bg-card: rgba(255, 255, 255, 0.04);
+    --border: #444;
+    --border-strong: #777;
+    --accent: #6aa9ff;
+    --grid: #2a2a2a;
+  }
+}
 
 * { box-sizing: border-box; }
 
@@ -10,15 +33,17 @@ body {
   margin: 0 auto;
   padding: 1rem;
   line-height: 1.5;
+  color: var(--fg);
+  background: var(--bg);
 }
 
 header, footer {
   padding: 0.75rem 0;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--border);
 }
 footer {
   margin-top: 2rem;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid var(--border);
   border-bottom: none;
   font-size: 0.9rem;
 }
@@ -26,36 +51,86 @@ footer {
 header a { font-weight: 600; }
 
 h1 { font-size: 1.4rem; margin: 1rem 0 0.25rem; }
-h2 { font-size: 1.1rem; margin: 1.25rem 0 0.5rem; }
+h2 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; }
 
 .lede { margin: 0.25rem 0 1rem; }
 .crumbs { font-size: 0.9rem; margin: 0.5rem 0; }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- shared "card" container ----------------------------------- */
+
+.card {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
 .source-link {
   margin: 1rem 0;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
 }
 
 .download-bar {
   margin: 1rem 0;
   padding: 0.75rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
 }
-.download-bar code {
-  display: block;
-  padding: 0.4rem 0.5rem;
-  background: rgba(0, 0, 0, 0.04);
-  margin-top: 0.5rem;
-  white-space: pre-wrap;
-  word-break: break-word;
+
+.meta-tag {
+  font-size: 0.7em;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--border-strong);
+  vertical-align: middle;
+  margin-left: 0.25rem;
+  color: var(--fg-muted);
 }
+
+/* ---- shared button language ------------------------------------ */
+
+.btn {
+  font: inherit;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+  border-radius: 0;
+  /* Square selectable target; no rounded corners anywhere. */
+}
+.btn:hover { border-color: var(--fg); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.btn-on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-sm { font-size: 0.85rem; padding: 0.15rem 0.5rem; }
+
+/* ---- index: filter input + event grid -------------------------- */
 
 #filter {
   width: 100%;
   padding: 0.5rem;
   font: inherit;
   margin-bottom: 1rem;
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: 0;
 }
 
 .event-grid {
@@ -72,9 +147,11 @@ h2 { font-size: 1.1rem; margin: 1.25rem 0 0.5rem; }
   margin-right: 0.25rem;
   cursor: pointer;
   background: transparent;
-  border: 1px solid #888;
+  border: 1px solid var(--border-strong);
+  border-radius: 0;
+  color: var(--fg);
 }
-.legality-tabs .tab[aria-pressed="true"] { background: #222; color: #fff; }
+.legality-tabs .tab[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 
 .event-list { list-style: none; padding: 0; margin: 0; }
 .event-list li {
@@ -82,22 +159,64 @@ h2 { font-size: 1.1rem; margin: 1.25rem 0 0.5rem; }
   justify-content: space-between;
   padding: 0.2rem 0;
 }
-/* The [hidden] attribute's default display:none loses to display:flex above
-   without this, so the search filter visibly does nothing. */
 .event-list li[hidden] { display: none; }
-.row-count { font-variant-numeric: tabular-nums; color: #666; }
+.row-count { font-variant-numeric: tabular-nums; color: var(--fg-muted); }
 
-#table { margin: 1rem 0; }
-.tabulator { font-size: 0.9rem; }
+/* ---- index: latest-additions panel ----------------------------- */
 
-/* ---- summary card (event page) ----------------------------------- */
-
-.summary-card {
+.recent-panel {
   margin: 1rem 0;
   padding: 0.75rem 1rem;
-  border: 1px solid #ccc;
-  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
 }
+.recent-panel h2 { margin-top: 0; }
+.recent-meta {
+  margin: 0.25rem 0 0.5rem;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+}
+.recent-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.recent-list li {
+  padding: 0.35rem 0;
+  border-top: 1px solid var(--border);
+  font-size: 0.92rem;
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: 0.25rem 0.75rem;
+  align-items: baseline;
+}
+.recent-list li:first-child { border-top: none; }
+.recent-date {
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-muted);
+  font-size: 0.85rem;
+}
+.recent-mark {
+  font-variant-numeric: tabular-nums;
+  margin-right: 0.15rem;
+}
+.recent-rank {
+  font-size: 0.8em;
+  color: var(--fg-muted);
+  margin-right: 0.25rem;
+}
+.recent-sex {
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-muted);
+  margin-left: 0.25rem;
+}
+.recent-where { color: var(--fg-muted); font-size: 0.9em; }
+
+/* ---- event page: summary card --------------------------------- */
+
+.summary-card { padding: 1rem; }
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -105,10 +224,10 @@ h2 { font-size: 1.1rem; margin: 1.25rem 0 0.5rem; }
 }
 .summary-cell { min-width: 0; }
 .summary-label {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #666;
+  color: var(--fg-muted);
 }
 .summary-value {
   font-size: 1.5rem;
@@ -116,159 +235,188 @@ h2 { font-size: 1.1rem; margin: 1.25rem 0 0.5rem; }
   font-variant-numeric: tabular-nums;
   margin-top: 0.1rem;
 }
-.summary-unit { font-size: 0.85rem; font-weight: 400; color: #666; }
+.summary-unit { font-size: 0.85rem; font-weight: 400; color: var(--fg-muted); }
 .summary-meta {
   font-size: 0.85rem;
-  color: #444;
+  color: var(--fg-muted);
   margin-top: 0.1rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.meta-tag {
-  font-size: 0.7em;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.1rem 0.4rem;
-  border: 1px solid #aaa;
-  border-radius: 3px;
-  vertical-align: middle;
-  margin-left: 0.25rem;
-  color: #444;
-}
+/* ---- event page: collapsible chart card ------------------------ */
 
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
+.chart-card {
   padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
-
-/* ---- WR progression chart --------------------------------------- */
-
-.wr-chart-wrap {
-  margin: 1rem 0;
-  padding: 0.75rem 1rem;
-  border: 1px solid #ccc;
+.chart-card > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  user-select: none;
 }
-.wr-chart-wrap h2 { margin-top: 0; }
+.chart-card > summary::-webkit-details-marker { display: none; }
+.chart-card > summary::before {
+  content: "▾";
+  font-size: 0.85em;
+  color: var(--fg-muted);
+  width: 1ch;
+}
+.chart-card:not([open]) > summary::before { content: "▸"; }
+.chart-card > summary:hover .chart-title { text-decoration: underline; }
+.chart-title { font-weight: 600; }
+.chart-meta { color: var(--fg-muted); font-size: 0.9rem; }
+.chart-body {
+  padding: 0.5rem 1rem 0.75rem;
+  position: relative;
+}
+.chart-note {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+}
+.chart-note em { font-style: italic; color: var(--fg); }
+
+/* ---- WR chart svg --------------------------------------------- */
+
 .wr-chart {
   display: block;
   width: 100%;
   height: auto;
-  max-height: 180px;
-  margin-top: 0.5rem;
+  max-height: 220px;
 }
-.wr-chart path {
-  stroke: #1a73e8;
+.wr-chart .grid {
+  stroke: var(--grid);
+  stroke-width: 1;
+}
+.wr-chart .wr-line {
+  stroke: var(--accent);
   stroke-width: 1.5;
   stroke-linejoin: round;
 }
-.wr-chart circle { fill: #1a73e8; }
+.wr-chart .wr-dot {
+  fill: var(--accent);
+  stroke: var(--bg);
+  stroke-width: 1.5;
+  cursor: pointer;
+  transition: r 0.1s ease;
+}
+.wr-chart .wr-dot:hover,
+.wr-chart .wr-dot:focus {
+  r: 6;
+  outline: none;
+}
 .wr-chart .ax {
   font-family: system-ui, sans-serif;
-  font-size: 10px;
-  fill: #666;
+  font-size: 11px;
+  fill: var(--fg-muted);
 }
 
-/* ---- table toolbar (WR-only + section chips) -------------------- */
+/* ---- WR-chart custom tooltip ----------------------------------- */
+
+.wr-tooltip {
+  position: absolute;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  background: var(--fg);
+  color: var(--bg);
+  border: 1px solid var(--fg);
+  padding: 0.35rem 0.55rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.wr-tooltip[hidden] { display: none; }
+.wr-tooltip .muted { opacity: 0.7; font-size: 0.8rem; }
+
+/* ---- table toolbar (WR-only + section dropdown) --------------- */
 
 .table-toolbar {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
+  align-items: stretch;
+  gap: 0.5rem;
   margin: 1rem 0 0.5rem;
+  position: relative;
 }
-.toolbar-btn {
-  font: inherit;
-  padding: 0.3rem 0.7rem;
-  border: 1px solid #888;
-  background: transparent;
-  cursor: pointer;
-}
-.toolbar-btn-on { background: #1a73e8; color: #fff; border-color: #1a73e8; }
 
-.section-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  flex: 1;
+.dropdown { position: relative; }
+.dropdown > summary {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
-.chip {
-  font: inherit;
-  font-size: 0.85rem;
-  padding: 0.2rem 0.65rem;
-  border: 1px solid #aaa;
-  background: transparent;
+.dropdown > summary::-webkit-details-marker { display: none; }
+.dropdown > summary::after {
+  content: "▾";
+  font-size: 0.75em;
+  color: var(--fg-muted);
+}
+.dropdown-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  min-width: 320px;
+  max-width: 480px;
+  max-height: 60vh;
+  overflow: auto;
+  padding: 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+.dropdown-actions {
+  display: flex;
+  gap: 0.25rem;
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.section-list li { padding: 0.15rem 0; }
+.section-list label {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
   cursor: pointer;
-  border-radius: 999px;
-  color: #444;
+  padding: 0.25rem 0.4rem;
+}
+.section-list label:hover { background: var(--bg-card); }
+.section-list input[type="checkbox"] {
+  margin: 0;
+  /* Browser default checkbox is square in most engines; explicit reset to keep it consistent. */
+  accent-color: var(--accent);
+}
+.section-name {
   white-space: nowrap;
-  max-width: 240px;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 280px;
 }
-.chip-on { background: #222; color: #fff; border-color: #222; }
-.chip-count {
-  font-size: 0.75em;
-  opacity: 0.7;
-  margin-left: 0.25rem;
+.section-count {
   font-variant-numeric: tabular-nums;
+  color: var(--fg-muted);
+  font-size: 0.85rem;
 }
 
 #visible-count { font-variant-numeric: tabular-nums; font-weight: 600; }
 
-/* ---- recent WRs callout (index) --------------------------------- */
+/* ---- table ----------------------------------------------------- */
 
-.recent-wrs {
-  margin: 1rem 0;
-  padding: 0.75rem 1rem;
-  border: 1px solid #ccc;
-  background: rgba(26, 115, 232, 0.04);
-}
-.recent-wrs h2 { margin-top: 0; }
-.recent-wrs-list {
-  list-style: none;
-  padding: 0;
-  margin: 0.5rem 0 0;
-}
-.recent-wrs-list li {
-  padding: 0.3rem 0;
-  border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
-  font-size: 0.95rem;
-}
-.recent-wrs-list li:last-child { border-bottom: none; }
-.wr-mark {
-  font-variant-numeric: tabular-nums;
-  font-size: 1.05em;
-}
-.wr-sex {
-  font-size: 0.75em;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #666;
-  margin-left: 0.25rem;
-}
-.wr-where { color: #666; font-size: 0.9em; }
-
-@media (prefers-color-scheme: dark) {
-  .summary-card, .wr-chart-wrap, .recent-wrs, .source-link, .download-bar {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: #444;
-  }
-  .summary-label, .summary-meta, .row-count, .wr-where, .wr-sex,
-  .chip, .summary-unit, .wr-chart .ax, .meta-tag {
-    color: #aaa;
-  }
-  .chip-on, .legality-tabs .tab[aria-pressed="true"] {
-    background: #eee; color: #111; border-color: #eee;
-  }
-}
+#table { margin: 1rem 0; }
+.tabulator { font-size: 0.9rem; border-radius: 0; }
+.tabulator .tabulator-header { border-radius: 0; }
+.tabulator-row.tabulator-row-even { background: var(--bg-card); }

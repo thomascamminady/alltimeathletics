@@ -99,10 +99,14 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
 
     parquet_bytes = (out_data / PARQUET_NAME).stat().st_size
 
-    # Index page — also surface the 5 most recent WRs across the whole catalogue
-    # to make the homepage feel alive (item #11 on the roadmap).
-    recent_wrs = _recent_wrs_across_events(
-        event_meta, ev_by_slug={ev.slug: ev for ev in EVENTS}, n=5
+    # Index page — surface the most recently-dated performances across the
+    # whole catalogue so the homepage shows what's new (item #11 redux:
+    # users care more about "what got added this week" than "the latest WR
+    # which might be years old"). Larsson doesn't tag rows with an
+    # added-at timestamp, so the most recent perf ``date`` is the cleanest
+    # proxy for "fresh entries".
+    recent_additions = _recent_additions(
+        df, ev_by_slug={ev.slug: ev for ev in EVENTS}, n=10
     )
 
     flags_json = json.dumps(flag_emoji_map(), separators=(",", ":"))
@@ -115,7 +119,7 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
             n_rows_total=manifest["n_rows"],
             n_events_total=manifest["n_events"],
             parquet_size_mb=f"{parquet_bytes / (1024 * 1024):.1f}",
-            recent_wrs=recent_wrs,
+            recent_additions=recent_additions,
             flag=ioc_to_emoji,
         )
     )
@@ -270,108 +274,181 @@ def _compute_event_meta(df: pl.DataFrame, slug: str) -> dict[str, Any]:
     }
 
 
-def _recent_wrs_across_events(
-    event_meta: dict[str, dict[str, Any]],
+def _recent_additions(
+    df: pl.DataFrame,
     ev_by_slug: dict[str, Any],
-    n: int = 5,
+    n: int = 10,
 ) -> list[dict[str, Any]]:
-    """Top ``n`` most-recent WRs across the whole catalogue."""
-    rows: list[dict[str, Any]] = []
-    for slug, meta in event_meta.items():
-        for wr in meta["wr_progression"]:
-            ev = ev_by_slug.get(slug)
-            if ev is None:
-                continue
-            rows.append(
-                {
-                    "slug": slug,
-                    "label": ev.label,
-                    "sex": ev.sex,
-                    "date": wr["date"],
-                    "mark_raw": wr["mark_raw"],
-                    "name": wr["name"],
-                    "country": wr["country"],
-                    "venue": wr["venue"],
-                }
-            )
-    rows.sort(key=lambda r: r["date"], reverse=True)
-    return rows[:n]
+    """Top ``n`` most-recently-dated performances across the whole catalogue.
+
+    Used by the index page's "Recent additions" panel — mirrors what
+    alltime-athletics.com does on its homepage. We restrict to canonical
+    ("main") sub-lists so the panel doesn't fill up with dubious-timing
+    or hand-timed entries that would hide the real recent action.
+    """
+    main_per_slug = (
+        df.filter(pl.col("rank") == 1)
+        .group_by("event_slug")
+        .agg(pl.col("section").first().alias("main_section"))
+    )
+    canonical = df.join(main_per_slug, on="event_slug", how="inner").filter(
+        pl.col("section") == pl.col("main_section")
+    )
+    recent = (
+        canonical.filter(pl.col("date").is_not_null())
+        .sort("date", descending=True)
+        .head(n * 4)  # over-fetch then dedupe; we want N distinct rows
+    ).to_dicts()
+    out: list[dict[str, Any]] = []
+    seen: set[tuple[Any, ...]] = set()
+    for r in recent:
+        key = (r["event_slug"], r["name"], r["mark_raw"], r["date"], r["venue"])
+        if key in seen:
+            continue
+        seen.add(key)
+        ev = ev_by_slug.get(r["event_slug"])
+        if ev is None:
+            continue
+        out.append(
+            {
+                "slug": r["event_slug"],
+                "label": ev.label,
+                "sex": ev.sex,
+                "date": str(r["date"]),
+                "mark_raw": r["mark_raw"],
+                "name": r["name"],
+                "country": r["country"],
+                "venue": r["venue"],
+                "rank": r["rank"],
+            }
+        )
+        if len(out) >= n:
+            break
+    return out
 
 
 # ---------------------------------------------------------------- charts --
 
 
 def _render_wr_chart_svg(wrs: list[dict[str, Any]], family: str) -> str:
-    """Tiny inline SVG of WR progression (date → mark, step plot).
+    """Inline SVG of WR progression — date on X, mark on Y, step plot.
 
-    Empty string when there's <2 WRs to plot. The chart is intentionally
-    minimal: no axes labels, no tooltips, no library — just a polyline +
-    a couple of reference dots. The big table below has all the details.
+    Empty string when there's <2 WRs to plot. Visual conventions:
+
+    - Y axis is *natural*: lower mark_value sits lower on screen for both
+      families. That means time events (lower=better) draw a line that
+      *descends* over time as records improve, while field events
+      (higher=better) draw a line that ascends. Both feel right because
+      the labels alongside the axis tell you which direction is "better".
+    - Step path holds horizontally between WRs, then steps to the new mark
+      at the date the new WR was set.
+    - The last horizontal segment extends to today so the most recent WR
+      doesn't visually "end" the moment it was set.
+    - Each dot carries a ``data-wr`` attribute consumed by the page's JS
+      to render a styled tooltip on hover. The native ``<title>`` element
+      is *also* present so screen readers + non-JS users still get the
+      details.
     """
+    del family  # historical y-flip removed; both families share the same convention
     if len(wrs) < 2:
         return ""
-    descending = family in _DESC_FAMILIES
-    # Coordinates (px) inside a 480x140 viewport, with margin for labels.
-    W, H = 480, 140
-    M_L, M_R, M_T, M_B = 36, 8, 12, 24
+    # Coordinates (px) inside a 560x180 viewport, with margins for labels
+    # on the left and below.
+    W, H = 560, 180
+    M_L, M_R, M_T, M_B = 48, 12, 14, 28
     xs = [date.fromisoformat(w["date"]).toordinal() for w in wrs]
     ys = [w["mark_value"] for w in wrs]
     x_min, x_max = min(xs), max(xs)
     y_min, y_max = min(ys), max(ys)
-    if x_max == x_min or y_max == y_min:
+    today_ord = date.today().toordinal()
+    x_max_chart = max(x_max, today_ord)
+    if x_max_chart == x_min or y_max == y_min:
         return ""
 
     def sx(x: int) -> float:
-        return M_L + (W - M_L - M_R) * (x - x_min) / (x_max - x_min)
+        return M_L + (W - M_L - M_R) * (x - x_min) / (x_max_chart - x_min)
 
     def sy(y: float) -> float:
-        # Flip so "better" is up: for time events, lower mark is better,
-        # so smaller y → higher pixel.
+        # Lower mark value → lower y position on screen.
         norm = (y - y_min) / (y_max - y_min)
-        if not descending:
-            norm = 1 - norm
         return M_T + (H - M_T - M_B) * (1 - norm)
 
-    # Step path: horizontal until the next WR, then vertical drop.
-    pts: list[str] = []
-    for i, (x, y) in enumerate(zip(xs, ys, strict=True)):
-        if i == 0:
-            pts.append(f"M {sx(x):.1f},{sy(y):.1f}")
-        else:
-            pts.append(f"H {sx(x):.1f}")
-            pts.append(f"V {sy(y):.1f}")
-    # Extend the last value to today so the latest WR doesn't end mid-chart.
-    today_ord = date.today().toordinal()
+    # Step path: horizontal segment ending at the next WR's date, then a
+    # vertical step to that WR's value.
+    pts: list[str] = [f"M {sx(xs[0]):.1f},{sy(ys[0]):.1f}"]
+    for x, y in list(zip(xs, ys, strict=True))[1:]:
+        pts.append(f"H {sx(x):.1f}")
+        pts.append(f"V {sy(y):.1f}")
+    # Extend last mark out to today so the current WR doesn't appear to end.
     if today_ord > x_max:
-        pts.append(f"H {sx(today_ord):.1f}")  # off-scale; we'll rescale below
+        pts.append(f"H {sx(today_ord):.1f}")
     path = " ".join(pts)
 
-    dots = "".join(
-        f'<circle cx="{sx(x):.1f}" cy="{sy(y):.1f}" r="3" />' for x, y in zip(xs, ys, strict=True)
+    # Light gridlines: top + bottom of plot area + first/last x value.
+    plot_top, plot_bot = M_T, H - M_B
+    plot_left, plot_right = M_L, W - M_R
+    grid = (
+        f'<line class="grid" x1="{plot_left}" y1="{plot_top}" '
+        f'x2="{plot_right}" y2="{plot_top}" />'
+        f'<line class="grid" x1="{plot_left}" y1="{plot_bot}" '
+        f'x2="{plot_right}" y2="{plot_bot}" />'
     )
-    # Y-axis labels: first and last mark.
-    first_label = f'<text x="0" y="{sy(ys[0]):.1f}" dy="4" class="ax">{wrs[0]["mark_raw"]}</text>'
-    last_label = f'<text x="0" y="{sy(ys[-1]):.1f}" dy="4" class="ax">{wrs[-1]["mark_raw"]}</text>'
-    # X-axis labels: first and last year only.
+
+    # Dots with styled-tooltip data + a native <title> as fallback.
+    dots = "".join(
+        '<circle class="wr-dot" cx="{x:.1f}" cy="{y:.1f}" r="4" '
+        'data-wr="{data}" tabindex="0">'
+        '<title>{tip}</title>'
+        '</circle>'.format(
+            x=sx(xs[i]),
+            y=sy(ys[i]),
+            data=json.dumps(wrs[i]).replace('"', "&quot;"),
+            tip=(
+                f"{wrs[i]['mark_raw']} — {wrs[i]['name']} ({wrs[i]['country']}) "
+                f"— {wrs[i]['venue']}, {wrs[i]['date']}"
+            ),
+        )
+        for i in range(len(wrs))
+    )
+
+    # Y-axis labels: best (extreme) mark + worst (other extreme).
+    # Positioning: text is right-aligned to the chart's left margin.
+    y_label_extremes = (
+        f'<text x="{plot_left - 4}" y="{sy(y_min):.1f}" dy="4" '
+        f'text-anchor="end" class="ax">{_y_axis_label(wrs, ys, y_min)}</text>'
+        f'<text x="{plot_left - 4}" y="{sy(y_max):.1f}" dy="4" '
+        f'text-anchor="end" class="ax">{_y_axis_label(wrs, ys, y_max)}</text>'
+    )
+    # X-axis labels: first year, last year.
     first_year = wrs[0]["date"][:4]
     last_year = wrs[-1]["date"][:4]
     x_first = (
-        f'<text x="{sx(xs[0]):.1f}" y="{H - 6}" text-anchor="middle" '
+        f'<text x="{sx(xs[0]):.1f}" y="{H - 8}" text-anchor="middle" '
         f'class="ax">{first_year}</text>'
     )
     x_last = (
-        f'<text x="{sx(xs[-1]):.1f}" y="{H - 6}" text-anchor="middle" '
+        f'<text x="{sx(xs[-1]):.1f}" y="{H - 8}" text-anchor="middle" '
         f'class="ax">{last_year}</text>'
     )
     return (
-        f'<svg viewBox="0 0 {W} {H}" class="wr-chart" '
+        f'<svg viewBox="0 0 {W} {H}" class="wr-chart" preserveAspectRatio="xMidYMid meet" '
+        f'role="img" '
         f'aria-label="World-record progression: {len(wrs)} marks from '
         f'{first_year} to {last_year}">'
-        f'<path d="{path}" fill="none" />'
+        f'{grid}'
+        f'<path class="wr-line" d="{path}" fill="none" />'
         f'{dots}'
-        f'{first_label}{last_label}{x_first}{x_last}'
+        f'{y_label_extremes}{x_first}{x_last}'
         "</svg>"
     )
+
+
+def _y_axis_label(wrs: list[dict[str, Any]], ys: list[float], target: float) -> str:
+    """Return the ``mark_raw`` for the row whose ``mark_value`` equals ``target``."""
+    for w, y in zip(wrs, ys, strict=True):
+        if y == target:
+            return w["mark_raw"]
+    return f"{target:g}"
 
 
 # ---------------------------------------------------------------- json --
