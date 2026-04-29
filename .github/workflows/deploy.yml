@@ -1,0 +1,67 @@
+name: Deploy site to GitHub Pages
+
+# Builds ./site/ via `make site` (uses the committed data/ parquet — no
+# scraping happens here) and publishes it to GitHub Pages.
+#
+# Triggers:
+#   - push to main that touches site-relevant inputs
+#   - completion of "Update data (weekly)" so a fresh parquet auto-redeploys
+#   - manual dispatch (also: `make trigger-deploy`)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "templates/**"
+      - "static/**"
+      - "data/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/deploy.yml"
+  workflow_run:
+    workflows: ["Update data (weekly)"]
+    types: [completed]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # When triggered by workflow_run, only deploy if the upstream run succeeded.
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Sync deps
+        run: uv sync --frozen
+
+      - name: Render site
+        run: uv run python -m alltimeathletics.site --out site/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
