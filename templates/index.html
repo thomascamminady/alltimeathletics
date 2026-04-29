@@ -21,6 +21,24 @@
   Refreshed weekly from <a href="https://github.com/thomascamminady/alltimeathletics/releases">tagged snapshots</a>.
 </section>
 
+{% if recent_wrs %}
+<section class="recent-wrs" aria-labelledby="recent-wrs-heading">
+  <h2 id="recent-wrs-heading">Most recent world records</h2>
+  <ol class="recent-wrs-list">
+    {% for wr in recent_wrs %}
+    <li>
+      <a href="{{ site_root }}event/{{ wr.slug }}.html">{{ wr.label }}</a>
+      <span class="wr-sex">{{ wr.sex }}</span>
+      &middot;
+      <strong class="wr-mark">{{ wr.mark_raw }}</strong>
+      by {{ flag(wr.country) }} {{ wr.name }}
+      <span class="wr-where">&middot; {{ wr.venue }}, {{ wr.date }}</span>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+{% endif %}
+
 <input id="filter" type="search" placeholder="Filter events…" autofocus aria-label="Filter events">
 
 <section class="event-grid">
