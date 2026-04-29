@@ -15,7 +15,7 @@ for now.
 - ✅ Scraper, parser, parquet pipeline, static site renderer, local tests
 - ✅ ~371k rows across ~190 events; 0.034 % unparsed
 - ✅ Weekly auto-refresh via `update-data.yml` cron + dated GitHub Releases
-- ⏸️ Public hosting (GitHub Pages) paused pending Larsson's OK
+- ✅ Public hosting (GitHub Pages)
 
 ## Use the data
 
