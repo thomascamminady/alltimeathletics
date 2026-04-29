@@ -35,7 +35,7 @@ Each row is one page Larsson maintains. ✅ = parser exactly matches the HTML ro
 | ⚠️ known source issue | `w_60mhok` | 2455 | 2454 | 5/5 |
 | ⚠️ known source issue | `wjaveoldok` | 1209 | 1201 | 2/2 |
 | ✅ verified | `m100km` | 197 | 197 | 1/1 |
-| ✅ verified | `m100mno` | 2418 | 2418 | 25/25 |
+| ✅ verified | `m100mno` | 2455 | 2455 | 25/25 |
 | ✅ verified | `m10kroad` | 1255 | 1255 | 2/2 |
 | ✅ verified | `m10kroadno` | 36 | 36 | 4/4 |
 | ✅ verified | `m10kwno` | 403 | 403 | 9/9 |

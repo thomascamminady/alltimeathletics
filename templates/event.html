@@ -69,12 +69,6 @@
 </details>
 {% endif %}
 
-<p class="source-link">
-  <strong>Source:</strong>
-  <a href="{{ event.url }}" rel="external">{{ event.url }}</a>
-  &middot; maintained by Peter Larsson
-</p>
-
 {# ----- toolbar: WR-only toggle (#1) + section dropdown (#2 redux) ------ #}
 <div class="table-toolbar" role="toolbar" aria-label="Table filters">
   <button id="wr-only" type="button" class="btn" aria-pressed="false">
@@ -118,6 +112,12 @@
 {% endif %}
 
 <div id="table"></div>
+
+<p class="source-link">
+  <strong>Source:</strong>
+  <a href="{{ event.url }}" rel="external">{{ event.url }}</a>
+  &middot; maintained by Peter Larsson
+</p>
 
 <script src="{{ static_root }}tabulator.min.js"></script>
 <script>
