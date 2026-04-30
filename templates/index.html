@@ -9,6 +9,10 @@
   sortable, filterable table; the original Larsson page is one click away from
   the top of every event page.
 </p>
+<p class="updated-banner">
+  <strong>Last updated {{ scraped_at }}.</strong>
+  Source is checked daily; the site only redeploys when the canonical lists actually change.
+</p>
 
 <section class="download-bar" aria-labelledby="dl-heading">
   <strong id="dl-heading">Get the data</strong> &mdash;
@@ -18,7 +22,7 @@
   <a href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/alltime_athletics.csv.gz">csv.gz</a> &middot;
   <a href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/manifest.json">manifest</a>.
   {{ n_rows_total }} rows across {{ n_events_total }} events.
-  Refreshed weekly from <a href="https://github.com/thomascamminady/alltimeathletics/releases">tagged snapshots</a>.
+  Refreshed daily from <a href="https://github.com/thomascamminady/alltimeathletics/releases">tagged snapshots</a> (only on days the source changes).
 </section>
 
 {% if recent_additions %}

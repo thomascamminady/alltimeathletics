@@ -69,8 +69,8 @@
 </section>
 {% endif %}
 
-{# ----- WR progression ------------------------------------------------ #}
-{% if wr_chart_svg %}
+{# ----- WR progression (absolute / delta / percent) ------------------- #}
+{% if wr_chart_svg_absolute %}
 <details class="card chart-card" open>
   <summary>
     <span class="chart-title">World-record progression</span>
@@ -78,14 +78,41 @@
       {{ meta.n_wrs }} world records since {{ meta.wr_progression[0].date[:4] }}
     </span>
   </summary>
-  <div class="chart-body">
-    {{ wr_chart_svg|safe }}
+  <div class="chart-body" id="wr-chart-body">
+    <div class="chart-mode-toggle" role="tablist" aria-label="WR chart mode">
+      <button type="button" class="btn btn-sm btn-on" data-mode="absolute" aria-pressed="true">Absolute</button>
+      <button type="button" class="btn btn-sm" data-mode="delta" aria-pressed="false">Δ vs current WR</button>
+      <button type="button" class="btn btn-sm" data-mode="percent" aria-pressed="false">% vs current WR</button>
+    </div>
+    <div class="wr-chart-pane" data-mode="absolute">{{ wr_chart_svg_absolute|safe }}</div>
+    <div class="wr-chart-pane" data-mode="delta" hidden>{{ wr_chart_svg_delta|safe }}</div>
+    <div class="wr-chart-pane" data-mode="percent" hidden>{{ wr_chart_svg_percent|safe }}</div>
     <p class="chart-note">
       Canonical list: <em>{{ meta.main_section }}</em>.
       {% if meta.descending %}Higher mark = better.{% else %}Lower mark = better.{% endif %}
+      Hover a dot for the holder &amp; venue.
     </p>
   </div>
 </details>
+<script>
+(function () {
+  const root = document.getElementById('wr-chart-body');
+  if (!root) return;
+  const buttons = root.querySelectorAll('.chart-mode-toggle button');
+  const panes = root.querySelectorAll('.wr-chart-pane');
+  buttons.forEach((b) => {
+    b.addEventListener('click', () => {
+      const mode = b.dataset.mode;
+      buttons.forEach((bb) => {
+        const on = bb === b;
+        bb.classList.toggle('btn-on', on);
+        bb.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      panes.forEach((p) => { p.hidden = p.dataset.mode !== mode; });
+    });
+  });
+})();
+</script>
 {% endif %}
 
 {# ----- best mark per year ------------------------------------------- #}

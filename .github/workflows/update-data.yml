@@ -1,6 +1,6 @@
-name: Update data (weekly)
+name: Update data (daily)
 
-# Weekly refresh of the alltime-athletics mirror.
+# Daily refresh of the alltime-athletics mirror.
 #
 # Flow
 # ----
@@ -8,7 +8,9 @@ name: Update data (weekly)
 # 2. Parse → ``data/alltime_athletics.parquet`` + ``data/manifest.json``.
 # 3. Run the schema + audit tests against the freshly produced parquet.
 #    The audit fails loudly if any new unexplained mismatch appears.
-# 4. If ``data/`` is unchanged: exit clean (no PR, no release).
+# 4. If ``data/`` is unchanged: exit clean (no PR, no release, no deploy).
+#    The diff check is the gate — most days nothing has changed and the
+#    job exits in ~3 min without spending bandwidth on a redeploy.
 # 5. Otherwise:
 #    a. Commit the parquet + manifest straight to ``main`` (signed by the
 #       Actions bot; the parquet is ~4 MB so no LFS needed).
@@ -29,9 +31,10 @@ name: Update data (weekly)
 
 on:
   schedule:
-    # Sundays 04:00 UTC — Larsson posts updates throughout the week so
-    # Sunday morning catches the bulk of the prior week's edits.
-    - cron: "0 4 * * 0"
+    # Daily at 04:00 UTC. Larsson posts updates throughout the week, so
+    # checking once a day keeps the mirror fresh; the diff gate (step 4)
+    # ensures no commit/deploy happens on days where nothing has changed.
+    - cron: "0 4 * * *"
   workflow_dispatch: {}  # also runnable from the Actions tab
 
 permissions:
