@@ -105,18 +105,28 @@ function escapeHtml(s) {
   }[c]));
 }
 
-function renderTable(rows, columns) {
+function formatValue(v, typeName) {
+  if (v === null || v === undefined) return null;
+  if (typeof v === 'bigint') return v.toString();
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  // Arrow can hand back DATE columns as ms-since-epoch numbers.
+  if (typeof v === 'number' && typeName && /Date|date/.test(typeName)) {
+    return new Date(v).toISOString().slice(0, 10);
+  }
+  // Sometimes BigInt nanoseconds for TIMESTAMP — but we don't expect those here.
+  return String(v);
+}
+
+function renderTable(rows, columns, types) {
   if (!rows.length) {
     $result.innerHTML = '<p class="sql-empty">0 rows.</p>';
     return;
   }
   const head = columns.map((c) => `<th>${escapeHtml(c)}</th>`).join('');
   const body = rows.map((r) => {
-    const cells = columns.map((c) => {
-      let v = r[c];
-      if (v === null || v === undefined) return '<td class="sql-null">∅</td>';
-      // Polars/Arrow returns BigInt for u64/i64; render as plain string.
-      if (typeof v === 'bigint') v = v.toString();
+    const cells = columns.map((c, i) => {
+      const v = formatValue(r[c], types[i]);
+      if (v === null) return '<td class="sql-null">∅</td>';
       return `<td>${escapeHtml(v)}</td>`;
     }).join('');
     return `<tr>${cells}</tr>`;
@@ -147,8 +157,9 @@ async function runQuery() {
     const result = await conn.query(sql);
     await conn.close();
     const columns = result.schema.fields.map((f) => f.name);
+    const types = result.schema.fields.map((f) => String(f.type));
     const rows = result.toArray().map((r) => r.toJSON());
-    renderTable(rows, columns);
+    renderTable(rows, columns, types);
     const ms = (performance.now() - t0).toFixed(0);
     setStatus(`Done in ${ms} ms — ${rows.length.toLocaleString()} row${rows.length === 1 ? '' : 's'}.`, 'ok');
   } catch (e) {
