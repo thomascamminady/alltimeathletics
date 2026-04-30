@@ -1,98 +1,145 @@
-{% extends "base.html" %}
-{% block title %}All-Time Athletics — index{% endblock %}
-{% block main %}
+{% extends "base.html" %} {% block title %}All-Time Athletics — index{% endblock
+%} {% block main %}
 <h1>All-Time Athletics</h1>
 <p class="lede">
-  A data-analysis-friendly view of every all-time performance list maintained by
-  <a href="https://www.alltime-athletics.com/">Peter Larsson</a>.
-  All {{ n_rows_total }} performances live in one parquet file. Each event has a
-  sortable, filterable table; the original Larsson page is one click away from
-  the top of every event page.
+    A data-analysis-friendly view of every all-time performance list maintained
+    by
+    <a href="https://www.alltime-athletics.com/">Peter Larsson</a>.
 </p>
 <p class="updated-banner">
-  <strong>Last updated {{ scraped_at }}.</strong>
-  Source is checked daily; the site only redeploys when the canonical lists actually change.
+    <strong>Last updated {{ scraped_at }}.</strong>
+    Source is checked daily; the site only redeploys when the canonical lists
+    actually change.
 </p>
 
 <section class="download-bar" aria-labelledby="dl-heading">
-  <strong id="dl-heading">Get the data</strong> &mdash;
-  <a href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/alltime_athletics.parquet">parquet</a>
-  ({{ parquet_size_mb }} MB) &middot;
-  <a href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/alltime_athletics.csv">csv</a> &middot;
-  <a href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/alltime_athletics.csv.gz">csv.gz</a> &middot;
-  <a href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/manifest.json">manifest</a>.
-  {{ n_rows_total }} rows across {{ n_events_total }} events.
-  Refreshed daily from <a href="https://github.com/thomascamminady/alltimeathletics/releases">tagged snapshots</a> (only on days the source changes).
+    <strong id="dl-heading">Get the data</strong> &mdash;
+    <a
+        href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/alltime_athletics.parquet"
+        >parquet</a
+    >
+    ({{ parquet_size_mb }} MB) &middot;
+    <a
+        href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/alltime_athletics.csv"
+        >csv</a
+    >
+    &middot;
+    <a
+        href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/alltime_athletics.csv.gz"
+        >csv.gz</a
+    >
+    &middot;
+    <a
+        href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/manifest.json"
+        >manifest</a
+    >. {{ n_rows_total }} rows across {{ n_events_total }} events.
 </section>
 
 {% if recent_additions %}
 <section class="recent-panel" aria-labelledby="recent-heading">
-  <h2 id="recent-heading">Latest meets in the database</h2>
-  <p class="recent-meta">
-    Most recent dates &amp; venues with new performances on the canonical lists.
-  </p>
-  <ol class="recent-list">
-    {% for m in recent_additions %}
-    <li>
-      <span class="recent-date">{{ m.date }}</span>
-      <span class="recent-venue">{{ m.venue }}</span>
-      <span class="recent-count">
-        {{ m.n_perfs }} perf{% if m.n_perfs != 1 %}s{% endif %}
-        {% if m.n_events > 1 %}across {{ m.n_events }} events{% endif %}
-      </span>
-    </li>
-    {% endfor %}
-  </ol>
+    <h2 id="recent-heading">Latest meets in the database</h2>
+    <p class="recent-meta">
+        Most recent dates &amp; venues with new performances on the canonical
+        lists.
+    </p>
+    <ol class="recent-list">
+        {% for m in recent_additions %}
+        <li>
+            <span class="recent-date">{{ m.date }}</span>
+            <span class="recent-venue">{{ m.venue }}</span>
+            <span class="recent-count">
+                {{ m.n_perfs }} perf{% if m.n_perfs != 1 %}s{% endif %} {% if
+                m.n_events > 1 %}across {{ m.n_events }} events{% endif %}
+            </span>
+        </li>
+        {% endfor %}
+    </ol>
 </section>
 {% endif %}
 
-<input id="filter" type="search" placeholder="Filter events…" autofocus aria-label="Filter events">
+<input
+    id="filter"
+    type="search"
+    placeholder="Filter events…"
+    autofocus
+    aria-label="Filter events"
+/>
 
 <section class="event-grid">
-{% for sex, label in [('men','Men'), ('women','Women'), ('mixed','Mixed')] %}
-  {% set events_for_sex = events_by_sex[sex] %}
-  {% if events_for_sex %}
+    {% for sex, label in [('men','Men'), ('women','Women'), ('mixed','Mixed')]
+    %} {% set events_for_sex = events_by_sex[sex] %} {% if events_for_sex %}
     <div class="sex-block" data-sex="{{ sex }}">
-      <h2>{{ label }}</h2>
-      <div class="legality-tabs" role="tablist">
-        <button class="tab" type="button" data-legality="legal" aria-pressed="true">Wind-legal</button>
-        <button class="tab" type="button" data-legality="non-legal" aria-pressed="false">All marks</button>
-      </div>
-      {% for legality in ['legal', 'non-legal'] %}
-        <ul class="event-list" data-legality="{{ legality }}" {% if legality != 'legal' %}hidden{% endif %}>
-        {% for ev in events_for_sex if ev.legality == legality %}
-          <li>
-            <a href="{{ site_root }}event/{{ ev.slug }}.html" data-label="{{ ev.label }}">
-              {{ ev.label }}
-            </a>
-            <span class="row-count">{{ counts[ev.slug] }}</span>
-          </li>
-        {% endfor %}
+        <h2>{{ label }}</h2>
+        <div class="legality-tabs" role="tablist">
+            <button
+                class="tab"
+                type="button"
+                data-legality="legal"
+                aria-pressed="true"
+            >
+                Wind-legal
+            </button>
+            <button
+                class="tab"
+                type="button"
+                data-legality="non-legal"
+                aria-pressed="false"
+            >
+                All marks
+            </button>
+        </div>
+        {% for legality in ['legal', 'non-legal'] %}
+        <ul
+            class="event-list"
+            data-legality="{{ legality }}"
+            {%
+            if
+            legality
+            !="legal"
+            %}hidden{%
+            endif
+            %}
+        >
+            {% for ev in events_for_sex if ev.legality == legality %}
+            <li>
+                <a
+                    href="{{ site_root }}event/{{ ev.slug }}.html"
+                    data-label="{{ ev.label }}"
+                >
+                    {{ ev.label }}
+                </a>
+                <span class="row-count">{{ counts[ev.slug] }}</span>
+            </li>
+            {% endfor %}
         </ul>
-      {% endfor %}
+        {% endfor %}
     </div>
-  {% endif %}
-{% endfor %}
+    {% endif %} {% endfor %}
 </section>
 
 <script>
-const filter = document.getElementById('filter');
-filter.addEventListener('input', () => {
-  const q = filter.value.toLowerCase().trim();
-  document.querySelectorAll('.event-list li').forEach(li => {
-    const label = li.querySelector('a').dataset.label.toLowerCase();
-    li.hidden = q && !label.includes(q);
-  });
-});
-document.querySelectorAll('.legality-tabs').forEach(tabs => {
-  tabs.addEventListener('click', e => {
-    if (!e.target.matches('.tab')) return;
-    const block = tabs.closest('.sex-block');
-    tabs.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-pressed', t === e.target ? 'true' : 'false'));
-    block.querySelectorAll('.event-list').forEach(ul => {
-      ul.hidden = ul.dataset.legality !== e.target.dataset.legality;
+    const filter = document.getElementById("filter");
+    filter.addEventListener("input", () => {
+        const q = filter.value.toLowerCase().trim();
+        document.querySelectorAll(".event-list li").forEach((li) => {
+            const label = li.querySelector("a").dataset.label.toLowerCase();
+            li.hidden = q && !label.includes(q);
+        });
     });
-  });
-});
+    document.querySelectorAll(".legality-tabs").forEach((tabs) => {
+        tabs.addEventListener("click", (e) => {
+            if (!e.target.matches(".tab")) return;
+            const block = tabs.closest(".sex-block");
+            tabs.querySelectorAll(".tab").forEach((t) =>
+                t.setAttribute(
+                    "aria-pressed",
+                    t === e.target ? "true" : "false",
+                ),
+            );
+            block.querySelectorAll(".event-list").forEach((ul) => {
+                ul.hidden = ul.dataset.legality !== e.target.dataset.legality;
+            });
+        });
+    });
 </script>
 {% endblock %}
