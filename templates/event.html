@@ -5,46 +5,6 @@
 
 <h1>{{ event.label }} <span class="meta-tag">{{ event.sex }}</span> <span class="meta-tag">{{ event.legality }}</span></h1>
 
-{# ----- summary card (#3) ------------------------------------------------ #}
-{% if 'top_name' in meta.summary %}
-<section class="card summary-card" aria-labelledby="summary-heading">
-  <h2 id="summary-heading" class="visually-hidden">Event summary</h2>
-  <div class="summary-grid">
-    <div class="summary-cell">
-      <div class="summary-label">Top mark</div>
-      <div class="summary-value">{{ meta.summary.top_mark_raw }}</div>
-      <div class="summary-meta">
-        {{ flag(meta.summary.top_country) }} {{ meta.summary.top_name }}
-      </div>
-      <div class="summary-meta">
-        {{ meta.summary.top_venue }}
-        {% if 'top_date' in meta.summary and meta.summary.top_date %}&middot; {{ meta.summary.top_date }}{% endif %}
-      </div>
-    </div>
-    {% if 'tenth_mark_raw' in meta.summary %}
-    <div class="summary-cell">
-      <div class="summary-label">10<sup>th</sup>-place mark</div>
-      <div class="summary-value">{{ meta.summary.tenth_mark_raw }}</div>
-      <div class="summary-meta">
-        gap: {{ "%+.2f"|format(meta.summary.tenth_gap if not meta.descending else -meta.summary.tenth_gap) }}
-      </div>
-    </div>
-    {% endif %}
-    {% if 'median_age_top100' in meta.summary %}
-    <div class="summary-cell">
-      <div class="summary-label">Median age, top 100</div>
-      <div class="summary-value">{{ meta.summary.median_age_top100 }} <span class="summary-unit">yrs</span></div>
-    </div>
-    {% endif %}
-    <div class="summary-cell">
-      <div class="summary-label">All-time list size</div>
-      <div class="summary-value">{{ row_count }}</div>
-      <div class="summary-meta">{{ meta.n_wrs }} historical WRs</div>
-    </div>
-  </div>
-</section>
-{% endif %}
-
 {# ----- WR progression chart (#5) — collapsible -------------------------- #}
 {% if wr_chart_svg %}
 <details class="card chart-card" open>
@@ -157,7 +117,15 @@ if (hasWind) {
 
 if (!isRelay) {
   columns.push(
-    { title: "Name", field: "name", headerFilter: "input", minWidth: 180 },
+    { title: "Name", field: "name", headerFilter: "input", minWidth: 180,
+      formatter: (cell) => {
+        const row = cell.getRow().getData();
+        const slug = row.athlete_slug;
+        const name = cell.getValue() || "";
+        if (!slug) return name;
+        return `<a href="{{ site_root }}athlete/${slug}.html">${name}</a>`;
+      },
+    },
     { title: "Country", field: "country", width: 110, headerFilter: "input",
       formatter: (cell) => fmtCountry(cell.getValue()) },
     { title: "DOB", field: "dob", width: 110 },

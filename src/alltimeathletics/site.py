@@ -26,8 +26,11 @@ Use::
 from __future__ import annotations
 
 import json
+import re
 import shutil
+import unicodedata
 from collections import defaultdict
+from collections.abc import Mapping
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -68,9 +71,15 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
 
     df = pl.read_parquet(out_data / PARQUET_NAME)
 
-    # Per-event meta (summary card, sections, WR progression) — used by both
-    # the per-event JSON (for client-side rendering) and the template (for
-    # server-rendered headlines that show before Tabulator boots).
+    # Pre-compute athlete slugs once and attach to the dataframe — both the
+    # per-event JSON (for in-table name links) and the per-athlete pages
+    # need them, and we want one canonical mapping. Relays don't get
+    # athlete pages (the "name" is a team like "USA"); their slug is "".
+    df = df.with_columns(_athlete_slug_expr().alias("athlete_slug"))
+
+    # Per-event meta (sections, WR progression) — used by both the per-event
+    # JSON (for client-side rendering) and the template (for server-rendered
+    # headlines that show before Tabulator boots).
     event_meta: dict[str, dict[str, Any]] = {
         slug: _compute_event_meta(df, slug)
         for slug in df["event_slug"].unique().to_list()
@@ -106,7 +115,7 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
     # added-at timestamp, so the most recent perf ``date`` is the cleanest
     # proxy for "fresh entries".
     recent_additions = _recent_additions(
-        df, ev_by_slug={ev.slug: ev for ev in EVENTS}, n=10
+        df, ev_by_slug={ev.slug: ev for ev in EVENTS}, n=5
     )
 
     flags_json = json.dumps(flag_emoji_map(), separators=(",", ":"))
@@ -123,6 +132,11 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
             flag=ioc_to_emoji,
         )
     )
+
+    # Event-slug → label, used on the athlete page so we can show "100m"
+    # next to a row instead of just its slug.
+    event_labels = {ev.slug: ev.label for ev in EVENTS}
+    event_sex = {ev.slug: ev.sex for ev in EVENTS}
 
     # Per-event pages
     event_dir = out_dir / "event"
@@ -149,8 +163,160 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
             )
         )
 
+    # Per-athlete pages — one HTML per (name, country, dob) so the name
+    # column in event tables can link to a complete career view.
+    n_athletes = _render_athlete_pages(
+        df,
+        out_dir / "athlete",
+        env=env,
+        common=common,
+        event_labels=event_labels,
+        event_sex=event_sex,
+        flags_json=flags_json,
+    )
+
     n_pages = sum(len(events_by_sex[s]) for s in ("men", "women", "mixed"))
-    print(f"Rendered {n_pages} event pages to {out_dir}")
+    print(f"Rendered {n_pages} event pages and {n_athletes} athlete pages to {out_dir}")
+
+
+# ---------------------------------------------------------------- athletes --
+
+
+def _athlete_slug(name: str | None, country: str | None, dob: date | None) -> str:
+    """Stable slug for an athlete. Empty for relays/unknowns.
+
+    Identity is ``(name, country, dob)``. We accent-fold the name and keep
+    only ``[a-z0-9-]``; the country and dob suffixes disambiguate athletes
+    who share the same display name. When ``dob`` is missing (a chunk of
+    the older entries don't have one) we use ``"u"`` as a placeholder.
+    Two distinct athletes with identical ``(name, country, "u")`` will
+    collide — accept it, it's vanishingly rare and the page still shows
+    every entry.
+    """
+    if not name:
+        return ""
+    base = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
+    base = re.sub(r"[^a-zA-Z0-9]+", "-", base).strip("-").lower()
+    if not base:
+        return ""
+    parts = [base, (country or "xxx").lower()]
+    parts.append(dob.strftime("%Y%m%d") if dob else "u")
+    return "-".join(parts)
+
+
+def _athlete_slug_expr() -> pl.Expr:
+    """Polars expression that materialises ``athlete_slug`` per row.
+
+    Implemented via ``map_elements`` because the slug requires Unicode
+    folding + regex, which polars can't do natively. Relays return ``""``.
+    """
+
+    def _slug(row: dict[str, Any]) -> str:
+        if row["family"] == "relay":
+            return ""
+        return _athlete_slug(row["name"], row["country"], row["dob"])
+
+    return pl.struct(["family", "name", "country", "dob"]).map_elements(
+        _slug, return_dtype=pl.Utf8
+    )
+
+
+def _render_athlete_pages(
+    df: pl.DataFrame,
+    out_dir: Path,
+    *,
+    env: Environment,
+    common: dict[str, Any],
+    event_labels: Mapping[str, str],
+    event_sex: Mapping[str, str],
+    flags_json: str,
+) -> int:
+    """Render one HTML per athlete with all their entries inlined.
+
+    Per-athlete data is small (median 4 rows, p99 ~150) so we inline it
+    into the HTML rather than spawning a 29k-file JSON sidecar. The
+    template wires the inline JSON into Tabulator the same way the event
+    page does, so sorting/filtering still feels identical.
+    """
+    out_dir.mkdir(parents=True, exist_ok=True)
+    template = env.get_template("athlete.html")
+
+    athletes_df = df.filter(pl.col("athlete_slug") != "")
+    rows = athletes_df.select(
+        "athlete_slug",
+        "name",
+        "country",
+        "dob",
+        "event_slug",
+        "section",
+        "rank",
+        "mark_raw",
+        "mark_value",
+        "mark_annotation",
+        "wind",
+        "venue",
+        "date",
+        "position",
+    ).to_dicts()
+
+    entries_by_slug: dict[str, list[dict[str, Any]]] = {}
+    events_by_slug: dict[str, set[str]] = {}
+    sexes_by_slug: dict[str, set[str]] = {}
+    meta_by_slug: dict[str, dict[str, Any]] = {}
+    for r in rows:
+        slug = r["athlete_slug"]
+        if slug not in meta_by_slug:
+            meta_by_slug[slug] = {
+                "slug": slug,
+                "name": r["name"],
+                "country": r["country"],
+                "dob": str(r["dob"]) if r["dob"] is not None else None,
+            }
+            entries_by_slug[slug] = []
+            events_by_slug[slug] = set()
+            sexes_by_slug[slug] = set()
+        events_by_slug[slug].add(r["event_slug"])
+        sexes_by_slug[slug].add(event_sex.get(r["event_slug"], "?"))
+        entries_by_slug[slug].append(
+            {
+                "event_slug": r["event_slug"],
+                "event_label": event_labels.get(r["event_slug"], r["event_slug"]),
+                "section": r["section"],
+                "rank": r["rank"],
+                "mark_raw": r["mark_raw"],
+                "mark_value": r["mark_value"],
+                "wind": r["wind"],
+                "venue": r["venue"],
+                "date": str(r["date"]) if r["date"] is not None else None,
+                "position": r["position"],
+            }
+        )
+
+    for slug, meta in meta_by_slug.items():
+        entries = entries_by_slug[slug]
+        # Newest first by default; the table is sortable so this is just
+        # the initial view.
+        entries.sort(
+            key=lambda e: (e["date"] or "0000-00-00", e["event_label"]),
+            reverse=True,
+        )
+        athlete = {
+            **meta,
+            "n_entries": len(entries),
+            "n_events": len(events_by_slug[slug]),
+            "sexes_label": ", ".join(sorted(sexes_by_slug[slug])),
+        }
+        (out_dir / f"{slug}.html").write_text(
+            template.render(
+                **common,
+                athlete=athlete,
+                entries_json=json.dumps(entries, separators=(",", ":")),
+                flags_json=flags_json,
+                flag=ioc_to_emoji,
+            )
+        )
+
+    return len(meta_by_slug)
 
 
 # ---------------------------------------------------------------- meta --
@@ -167,9 +333,8 @@ def _compute_event_meta(df: pl.DataFrame, slug: str) -> dict[str, Any]:
       the canonical list (chronological order)
     - ``wr_indices``: parquet-row indices flagged as WRs (for the
       "Show WRs only" button)
-    - ``summary``: rank-1 holder + mark + date + venue + 10th-place gap
-      + median age of top-100
     - ``descending``: True if higher mark = better (field events)
+    - ``n_wrs``: number of historical WRs in the canonical list
     """
     sub = df.filter(pl.col("event_slug") == slug)
     family = sub["family"][0] if not sub.is_empty() else "track_time"
@@ -226,49 +391,10 @@ def _compute_event_meta(df: pl.DataFrame, slug: str) -> dict[str, Any]:
                 for r in wrs.sort("date").to_dicts()
             ]
 
-    # Summary card numbers.
-    summary: dict[str, Any] = {}
-    if main_section is not None:
-        main_clean = sub.filter(
-            (pl.col("section") == main_section) & pl.col("mark_value").is_not_null()
-        ).sort("mark_value", descending=descending)
-        if not main_clean.is_empty():
-            top = main_clean.row(0, named=True)
-            summary["top_name"] = top["name"]
-            summary["top_country"] = top["country"]
-            summary["top_mark_raw"] = top["mark_raw"]
-            summary["top_mark_value"] = top["mark_value"]
-            summary["top_date"] = str(top["date"]) if top["date"] is not None else None
-            summary["top_venue"] = top["venue"]
-        if main_clean.height >= 10:
-            tenth = main_clean.row(9, named=True)
-            summary["tenth_mark_raw"] = tenth["mark_raw"]
-            summary["tenth_gap"] = (
-                tenth["mark_value"] - main_clean["mark_value"][0]
-                if not descending
-                else main_clean["mark_value"][0] - tenth["mark_value"]
-            )
-        # Median age of athletes in the top 100 of the main section.
-        ages = (
-            main_clean.head(100)
-            .filter(pl.col("dob").is_not_null() & pl.col("date").is_not_null())
-            .with_columns(
-                ((pl.col("date") - pl.col("dob")).dt.total_days() / 365.25).alias("age")
-            )
-        )
-        if not ages.is_empty():
-            # ``ages["age"]`` is a Float64 series — median always returns a
-            # float — but ty can't narrow Series.median() from its general
-            # union return type. Round-trip through str to satisfy the checker.
-            median = ages["age"].median()
-            if median is not None:
-                summary["median_age_top100"] = round(float(str(median)), 1)
-
     return {
         "main_section": main_section,
         "sections": sections,
         "wr_progression": wr_rows,
-        "summary": summary,
         "descending": descending,
         "n_wrs": len(wr_rows),
     }
