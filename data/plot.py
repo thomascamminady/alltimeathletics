@@ -177,7 +177,7 @@ def main():
     ax.set_xlabel("Event")
     ax.set_ylabel("Pace (m/s)")
     ax.set_title("Athlete Pace vs Distance with World Record")
-    ax.legend()
+    ax.legend(loc="upper right", ncol=2, fontsize=8)
     fig.tight_layout()
     plt.show()
 
