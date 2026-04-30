@@ -25,6 +25,7 @@ Use::
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import shutil
@@ -52,6 +53,18 @@ PARQUET_NAME = "alltime_athletics.parquet"
 _DESC_FAMILIES = frozenset(
     {"field_distance", "field_distance_wind", "combined_points"}
 )
+
+
+def _hash_static_assets(static_dir: Path) -> str:
+    """Short content hash of the CSS so the cache key flips when CSS changes.
+
+    Tabulator + js bundles are vendored and rarely change; only the
+    handwritten stylesheet really matters for cache invalidation, so we
+    only hash that. Returns 8 hex chars — enough to avoid collisions in
+    practice without bloating every link href.
+    """
+    css = (static_dir / "style.css").read_bytes()
+    return hashlib.sha256(css).hexdigest()[:8]
 
 
 def render(*, out: str = "site", site_root: str = "/") -> None:
@@ -94,10 +107,16 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
         undefined=StrictUndefined,
     )
 
+    # Cache-bust the stylesheet on its content hash, not on scraped_at.
+    # Otherwise CSS changes shipped between data refreshes never invalidate
+    # in users' browsers (and locally during development).
+    static_version = _hash_static_assets(STATIC_SRC)
+
     common: dict[str, Any] = {
         "scraped_at": manifest["scraped_at"][:10],
         "site_root": site_root,
         "static_root": f"{site_root}static/",
+        "static_version": static_version,
     }
 
     counts = {e["slug"]: e["n_rows"] for e in manifest["events"]}
