@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}SQL playground — All-Time Athletics{% endblock %}
+{% block main %}
+<nav class="crumbs"><a href="{{ site_root }}index.html">&larr; All events</a></nav>
+
+<h1>SQL playground</h1>
+
+<p class="lede">
+  Run DuckDB queries against the {{ parquet_size_mb }} MB parquet directly in your browser.
+  Nothing is sent to a server &mdash; the data and the engine load on this page
+  on first <em>Run</em>, then everything is local.
+</p>
+
+<details class="card">
+  <summary><strong>Schema reference</strong> &middot; click to expand</summary>
+  <div class="sql-schema">
+    <p>
+      Single table loaded as <code>perf</code> (alias for the parquet file).
+      Columns:
+    </p>
+    <ul class="sql-cols">
+      <li><code>event</code> — human label, e.g. <code>'marathon'</code></li>
+      <li><code>event_slug</code> — id, e.g. <code>'w_maraok'</code></li>
+      <li><code>sex</code> — <code>'men' | 'women' | 'mixed'</code></li>
+      <li><code>legality</code> — <code>'legal' | 'non-legal'</code></li>
+      <li><code>family</code> — <code>'track_time' | 'field_distance' | 'combined_points' | 'relay' | …</code></li>
+      <li><code>section</code> — sub-list label inside an event page (canonical list contains rank=1)</li>
+      <li><code>rank</code>, <code>mark_raw</code>, <code>mark_value</code> (numeric: seconds / metres / points)</li>
+      <li><code>mark_annotation</code> (e.g. <code>'A'</code>, <code>'+'</code>, <code>'*'</code>), <code>wind</code></li>
+      <li><code>name</code>, <code>country</code> (IOC code), <code>dob</code> (date), <code>dob_precision</code></li>
+      <li><code>position</code>, <code>venue</code>, <code>date</code> (perf date), <code>source_url</code></li>
+    </ul>
+  </div>
+</details>
+
+<div class="sql-toolbar">
+  <button id="sql-run" type="button" class="btn">Run query</button>
+  <button id="sql-reset" type="button" class="btn btn-sm">Reset to example</button>
+  <span id="sql-status" class="sql-status" aria-live="polite">DuckDB not loaded yet — first run will fetch ~10 MB.</span>
+</div>
+
+<textarea id="sql-input" spellcheck="false" rows="14" aria-label="SQL query">{{ example_query }}</textarea>
+
+<div id="sql-result"></div>
+
+<p class="source-link">
+  Powered by <a href="https://duckdb.org/docs/api/wasm/overview" rel="external">DuckDB-WASM</a>.
+  Data &copy;
+  <a href="https://www.alltime-athletics.com/" rel="external">Peter Larsson</a>.
+</p>
+
+<script type="module">
+const PARQUET_URL = "{{ site_root }}data/alltime_athletics.parquet";
+const EXAMPLE = {{ example_query|tojson }};
+
+const $status = document.getElementById('sql-status');
+const $run = document.getElementById('sql-run');
+const $reset = document.getElementById('sql-reset');
+const $input = document.getElementById('sql-input');
+const $result = document.getElementById('sql-result');
+
+let _db = null;          // duckdb instance, cached after first init
+let _registered = false; // whether the parquet has been registered
+
+function setStatus(msg, kind) {
+  $status.textContent = msg;
+  $status.className = 'sql-status' + (kind ? ' sql-status-' + kind : '');
+}
+
+async function ensureDb() {
+  if (_db) return _db;
+  setStatus('Loading DuckDB-WASM…');
+  // Pin a known-good version. jsDelivr serves the ESM bundle.
+  const duckdb = await import('https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm');
+  const bundles = duckdb.getJsDelivrBundles();
+  const bundle = await duckdb.selectBundle(bundles);
+  // Worker URL needs to be a Blob URL so cross-origin works on GH Pages.
+  const workerUrl = URL.createObjectURL(
+    new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' })
+  );
+  const worker = new Worker(workerUrl);
+  const logger = new duckdb.ConsoleLogger();
+  const db = new duckdb.AsyncDuckDB(logger, worker);
+  await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+  URL.revokeObjectURL(workerUrl);
+  _db = db;
+  return db;
+}
+
+async function ensureParquet(db) {
+  if (_registered) return;
+  setStatus('Fetching parquet ({{ parquet_size_mb }} MB)…');
+  const buf = new Uint8Array(await (await fetch(PARQUET_URL)).arrayBuffer());
+  await db.registerFileBuffer('alltime.parquet', buf);
+  // Convenience view so users can write `FROM perf` instead of the full URL.
+  const conn = await db.connect();
+  await conn.query("CREATE OR REPLACE VIEW perf AS SELECT * FROM 'alltime.parquet'");
+  await conn.close();
+  _registered = true;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]));
+}
+
+function renderTable(rows, columns) {
+  if (!rows.length) {
+    $result.innerHTML = '<p class="sql-empty">0 rows.</p>';
+    return;
+  }
+  const head = columns.map((c) => `<th>${escapeHtml(c)}</th>`).join('');
+  const body = rows.map((r) => {
+    const cells = columns.map((c) => {
+      let v = r[c];
+      if (v === null || v === undefined) return '<td class="sql-null">∅</td>';
+      // Polars/Arrow returns BigInt for u64/i64; render as plain string.
+      if (typeof v === 'bigint') v = v.toString();
+      return `<td>${escapeHtml(v)}</td>`;
+    }).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('');
+  $result.innerHTML = `<div class="sql-table-wrap">
+    <table class="sql-table">
+      <thead><tr>${head}</tr></thead>
+      <tbody>${body}</tbody>
+    </table>
+    <p class="sql-rowcount">${rows.length.toLocaleString()} row${rows.length === 1 ? '' : 's'}</p>
+  </div>`;
+}
+
+async function runQuery() {
+  $run.disabled = true;
+  const sql = $input.value.trim();
+  if (!sql) {
+    setStatus('Enter a query first.', 'warn');
+    $run.disabled = false;
+    return;
+  }
+  const t0 = performance.now();
+  try {
+    const db = await ensureDb();
+    await ensureParquet(db);
+    setStatus('Running…');
+    const conn = await db.connect();
+    const result = await conn.query(sql);
+    await conn.close();
+    const columns = result.schema.fields.map((f) => f.name);
+    const rows = result.toArray().map((r) => r.toJSON());
+    renderTable(rows, columns);
+    const ms = (performance.now() - t0).toFixed(0);
+    setStatus(`Done in ${ms} ms — ${rows.length.toLocaleString()} row${rows.length === 1 ? '' : 's'}.`, 'ok');
+  } catch (e) {
+    $result.innerHTML = `<pre class="sql-error">${escapeHtml(String(e.message || e))}</pre>`;
+    setStatus('Error.', 'err');
+  } finally {
+    $run.disabled = false;
+  }
+}
+
+$run.addEventListener('click', runQuery);
+$reset.addEventListener('click', () => { $input.value = EXAMPLE; });
+// Cmd/Ctrl-Enter to run.
+$input.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); runQuery(); }
+});
+</script>
+{% endblock %}

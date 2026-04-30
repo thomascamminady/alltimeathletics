@@ -120,6 +120,8 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
 
     flags_json = json.dumps(flag_emoji_map(), separators=(",", ":"))
 
+    parquet_size_mb_str = f"{parquet_bytes / (1024 * 1024):.1f}"
+
     (out_dir / "index.html").write_text(
         env.get_template("index.html").render(
             **common,
@@ -127,9 +129,42 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
             counts=counts,
             n_rows_total=manifest["n_rows"],
             n_events_total=manifest["n_events"],
-            parquet_size_mb=f"{parquet_bytes / (1024 * 1024):.1f}",
+            parquet_size_mb=parquet_size_mb_str,
             recent_additions=recent_additions,
             flag=ioc_to_emoji,
+        )
+    )
+
+    # SQL playground — single page, lazy-loads DuckDB-WASM + the parquet
+    # only when the user clicks Run on this page. Pre-fills with a women's
+    # marathon WR-progression query so a first visit shows something useful.
+    example_query = (
+        "-- Women's marathon — every world record on the canonical list,\n"
+        "-- in chronological order. Each row was the WR when set.\n"
+        "WITH w_marathon AS (\n"
+        "  SELECT date, name, country, mark_raw, mark_value, venue\n"
+        "  FROM perf\n"
+        "  WHERE event_slug = 'w_maraok'\n"
+        "    AND section = 'All-time women''s best Marathon'\n"
+        "    AND mark_value IS NOT NULL AND date IS NOT NULL\n"
+        "    AND (mark_annotation IS NULL OR mark_annotation <> '*')\n"
+        "), running AS (\n"
+        "  SELECT *,\n"
+        "         MIN(mark_value) OVER (ORDER BY date\n"
+        "             ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS best_so_far\n"
+        "  FROM w_marathon\n"
+        ")\n"
+        "SELECT date, mark_raw, name, country, venue\n"
+        "FROM running\n"
+        "WHERE mark_value = best_so_far\n"
+        "QUALIFY ROW_NUMBER() OVER (PARTITION BY mark_value ORDER BY date) = 1\n"
+        "ORDER BY date;"
+    )
+    (out_dir / "sql.html").write_text(
+        env.get_template("sql.html").render(
+            **common,
+            example_query=example_query,
+            parquet_size_mb=parquet_size_mb_str,
         )
     )
 
