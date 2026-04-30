@@ -136,29 +136,28 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
     )
 
     # SQL playground — single page, lazy-loads DuckDB-WASM + the parquet
-    # only when the user clicks Run on this page. Pre-fills with a women's
-    # marathon WR-progression query so a first visit shows something useful.
+    # only when the user clicks Run on this page. The pre-filled query is
+    # deliberately short so first-time visitors see something useful in
+    # one read: the current world record per event, sorted by how recently
+    # it was set. Filters keep the answer to one row per event:
+    #
+    # - rank = 1                  → top of each sub-list
+    # - section LIKE 'All-time%'  → keep only the canonical sub-list per
+    #                               event (skips altitude / indoor / etc.)
+    # - legality = 'legal'        → drops wind-aided / drug-annulled lists
+    # - family != 'relay'         → individual events only (relays have
+    #                               team names instead of an athlete)
     example_query = (
-        "-- Women's marathon — every world record on the canonical list,\n"
-        "-- in chronological order. Each row was the WR when set.\n"
-        "WITH w_marathon AS (\n"
-        "  SELECT date, name, country, mark_raw, mark_value, venue\n"
-        "  FROM perf\n"
-        "  WHERE event_slug = 'wmaraok'\n"
-        "    AND section = 'All-time women''s best marathon'\n"
-        "    AND mark_value IS NOT NULL AND date IS NOT NULL\n"
-        "    AND (mark_annotation IS NULL OR mark_annotation <> '*')\n"
-        "), running AS (\n"
-        "  SELECT *,\n"
-        "         MIN(mark_value) OVER (ORDER BY date\n"
-        "             ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS best_so_far\n"
-        "  FROM w_marathon\n"
-        ")\n"
-        "SELECT date, mark_raw, name, country, venue\n"
-        "FROM running\n"
-        "WHERE mark_value = best_so_far\n"
-        "QUALIFY ROW_NUMBER() OVER (PARTITION BY mark_value ORDER BY date) = 1\n"
-        "ORDER BY date;"
+        "-- Current world records by event, freshest on top.\n"
+        "-- Each row is the all-time #1 mark for that event,\n"
+        "-- sorted by the date it was set.\n"
+        "SELECT event, sex, mark_raw, name, country, venue, date\n"
+        "FROM perf\n"
+        "WHERE rank = 1\n"
+        "  AND legality = 'legal'\n"
+        "  AND family <> 'relay'\n"
+        "  AND section LIKE 'All-time%'\n"
+        "ORDER BY date DESC;"
     )
     (out_dir / "sql.html").write_text(
         env.get_template("sql.html").render(
@@ -539,10 +538,36 @@ def _compute_event_analytics(
         summary["last_year"] = int(str(by_year["year"].max() or 0))
     summary["n_canonical"] = canonical.height
 
+    # ---- top countries (top 100) -------------------------------
+    # Compact "national depth" indicator: how many athletes from each
+    # country appear in the all-time top 100. Tells you at a glance which
+    # nations dominate this event. Empty list when the canonical list has
+    # <10 entries (then "top 100" is meaningless).
+    top_countries: list[dict[str, Any]] = []
+    if sorted_main.height >= 10:
+        n_pool = min(100, sorted_main.height)
+        country_counts = (
+            sorted_main.head(n_pool)
+            .filter(pl.col("country").is_not_null())
+            .group_by("country")
+            .len()
+            .rename({"len": "count"})
+            .sort("count", descending=True)
+        )
+        top_countries = [
+            {
+                "country": r["country"],
+                "count": int(r["count"]),
+                "share": int(r["count"]) / n_pool,
+            }
+            for r in country_counts.head(8).to_dicts()
+        ]
+
     return {
         "best_per_year": best_per_year,
         "entries_per_year": entries_per_year,
         "age_scatter": age_scatter,
+        "top_countries": top_countries,
         "summary": summary,
     }
 

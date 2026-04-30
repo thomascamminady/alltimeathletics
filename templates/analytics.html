@@ -153,6 +153,33 @@
 </details>
 {% endif %}
 
+{# ----- top countries (top 100) ------------------------------------ #}
+{% if analytics.top_countries %}
+<details class="card chart-card" open>
+  <summary>
+    <span class="chart-title">Top countries (top 100)</span>
+    <span class="chart-meta">
+      national depth on the all-time list
+    </span>
+  </summary>
+  <div class="chart-body">
+    <ol class="country-bars">
+      {% for c in analytics.top_countries %}
+      <li>
+        <span class="country-cell">{{ flag(c.country) }} {{ c.country }}</span>
+        <span class="country-bar"><span class="country-bar-fill" style="width: {{ '%.1f'|format(c.share * 100) }}%"></span></span>
+        <span class="country-count">{{ c.count }}</span>
+      </li>
+      {% endfor %}
+    </ol>
+    <p class="chart-note">
+      Number of athletes from each country in the all-time top 100 of the
+      canonical list. Wider bar = more representation.
+    </p>
+  </div>
+</details>
+{% endif %}
+
 {# ----- mark vs age scatter ----------------------------------------- #}
 {% if age_scatter_svg %}
 <details class="card chart-card" open>
