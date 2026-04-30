@@ -5,29 +5,10 @@
 
 <h1>{{ event.label }} <span class="meta-tag">{{ event.sex }}</span> <span class="meta-tag">{{ event.legality }}</span></h1>
 
-{# ----- WR progression chart (#5) — collapsible -------------------------- #}
-{% if wr_chart_svg %}
-<details class="card chart-card" open>
-  <summary>
-    <span class="chart-title">World-record progression</span>
-    <span class="chart-meta">
-      {{ meta.n_wrs }} world records since {{ meta.wr_progression[0].date[:4] }}
-    </span>
-  </summary>
-  <div class="chart-body">
-    {{ wr_chart_svg|safe }}
-    <div class="wr-tooltip" id="wr-tooltip" hidden></div>
-    <p class="chart-note">
-      Canonical list: <em>{{ meta.main_section }}</em>.
-      {% if meta.descending %}
-      Higher mark is better &mdash; line ascends as records improve.
-      {% else %}
-      Lower mark is better &mdash; line descends as records improve.
-      {% endif %}
-    </p>
-  </div>
-</details>
-{% endif %}
+<p class="lede">
+  <a href="{{ site_root }}analytics/{{ event.slug }}.html" class="btn btn-sm">Analytics &rarr;</a>
+  WR progression, year-by-year trends, age curve, and stats.
+</p>
 
 {# ----- toolbar: WR-only toggle (#1) + section dropdown (#2 redux) ------ #}
 <div class="table-toolbar" role="toolbar" aria-label="Table filters">
@@ -218,35 +199,5 @@ document.addEventListener('click', (e) => {
   const dd = document.getElementById('section-dropdown');
   if (dd.open && !dd.contains(e.target)) dd.removeAttribute('open');
 });
-
-// ---- WR-chart hover tooltip --------------------------------------------
-const wrTooltip = document.getElementById('wr-tooltip');
-if (wrTooltip) {
-  const chartWrap = wrTooltip.parentElement;
-  document.querySelectorAll('.wr-dot').forEach((dot) => {
-    const show = (e) => {
-      try {
-        const data = JSON.parse(dot.getAttribute('data-wr'));
-        const country = data.country ? (FLAGS[data.country] || '') + ' ' + data.country : '';
-        wrTooltip.innerHTML =
-          '<strong>' + data.mark_raw + '</strong> &middot; ' +
-          (data.name || '') + (country ? ' &middot; ' + country : '') +
-          '<br><span class="muted">' + (data.venue || '') + ' &middot; ' + data.date + '</span>';
-        wrTooltip.hidden = false;
-        const wrapBox = chartWrap.getBoundingClientRect();
-        const dotBox = dot.getBoundingClientRect();
-        const x = dotBox.left + dotBox.width / 2 - wrapBox.left;
-        const y = dotBox.top - wrapBox.top - 8;
-        wrTooltip.style.left = x + 'px';
-        wrTooltip.style.top = y + 'px';
-      } catch (err) { /* ignore */ }
-    };
-    dot.addEventListener('mouseenter', show);
-    dot.addEventListener('focus', show);
-    const hide = () => { wrTooltip.hidden = true; };
-    dot.addEventListener('mouseleave', hide);
-    dot.addEventListener('blur', hide);
-  });
-}
 </script>
 {% endblock %}

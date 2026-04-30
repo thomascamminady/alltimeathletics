@@ -209,6 +209,37 @@ h2 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; }
   font-variant-numeric: tabular-nums;
 }
 
+/* ---- analytics page: stats panel ------------------------------- */
+
+.summary-card { padding: 1rem; }
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+.summary-cell { min-width: 0; }
+.summary-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-muted);
+}
+.summary-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  margin-top: 0.1rem;
+}
+.summary-unit { font-size: 0.85rem; font-weight: 400; color: var(--fg-muted); }
+.summary-meta {
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+  margin-top: 0.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ---- event page: collapsible chart card ------------------------ */
 
 .chart-card {
@@ -289,6 +320,19 @@ h2 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; }
   font-size: 10px;
   fill: var(--fg-muted);
   opacity: 0.65;
+}
+.wr-chart .bar {
+  fill: var(--accent);
+  opacity: 0.75;
+}
+.wr-chart .bar:hover { opacity: 1; }
+.wr-chart .scatter-dot {
+  fill: var(--accent);
+  fill-opacity: 0.35;
+  stroke: none;
+}
+.wr-chart .scatter-dot:hover {
+  fill-opacity: 1;
 }
 
 /* ---- WR-chart custom tooltip ----------------------------------- */

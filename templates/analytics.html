@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}{{ event.label }} ({{ event.sex }}, {{ event.legality }}) — Analytics{% endblock %}
+{% block main %}
+<nav class="crumbs">
+  <a href="{{ site_root }}index.html">&larr; All events</a> &middot;
+  <a href="{{ site_root }}event/{{ event.slug }}.html">{{ event.label }} ({{ event.sex }}) table</a>
+</nav>
+
+<h1>
+  {{ event.label }}
+  <span class="meta-tag">{{ event.sex }}</span>
+  <span class="meta-tag">{{ event.legality }}</span>
+  <span class="meta-tag">analytics</span>
+</h1>
+
+{# ----- summary stats panel ------------------------------------------- #}
+{% if 'top_name' in analytics.summary %}
+<section class="card summary-card" aria-labelledby="stats-heading">
+  <h2 id="stats-heading" class="visually-hidden">Event stats</h2>
+  <div class="summary-grid">
+    <div class="summary-cell">
+      <div class="summary-label">Top mark</div>
+      <div class="summary-value">{{ analytics.summary.top_mark_raw }}</div>
+      <div class="summary-meta">
+        {{ flag(analytics.summary.top_country) }} {{ analytics.summary.top_name }}
+      </div>
+      <div class="summary-meta">
+        {{ analytics.summary.top_venue }}
+        {% if 'top_date' in analytics.summary and analytics.summary.top_date %}&middot; {{ analytics.summary.top_date }}{% endif %}
+      </div>
+    </div>
+    {% if 'tenth_mark_raw' in analytics.summary %}
+    <div class="summary-cell">
+      <div class="summary-label">10<sup>th</sup>-place mark</div>
+      <div class="summary-value">{{ analytics.summary.tenth_mark_raw }}</div>
+      <div class="summary-meta">
+        gap: {{ "%+.2f"|format(analytics.summary.tenth_gap) }}
+      </div>
+    </div>
+    {% endif %}
+    {% if 'hundredth_mark_raw' in analytics.summary %}
+    <div class="summary-cell">
+      <div class="summary-label">100<sup>th</sup>-place mark</div>
+      <div class="summary-value">{{ analytics.summary.hundredth_mark_raw }}</div>
+      <div class="summary-meta">
+        gap: {{ "%+.2f"|format(analytics.summary.hundredth_gap) }}
+      </div>
+    </div>
+    {% endif %}
+    {% if 'median_age_top100' in analytics.summary %}
+    <div class="summary-cell">
+      <div class="summary-label">Median age, top 100</div>
+      <div class="summary-value">{{ analytics.summary.median_age_top100 }} <span class="summary-unit">yrs</span></div>
+    </div>
+    {% endif %}
+    <div class="summary-cell">
+      <div class="summary-label">Distinct athletes</div>
+      <div class="summary-value">{{ analytics.summary.n_athletes }}</div>
+      <div class="summary-meta">{{ analytics.summary.n_canonical }} canonical perfs</div>
+    </div>
+    {% if 'first_year' in analytics.summary %}
+    <div class="summary-cell">
+      <div class="summary-label">Years contested</div>
+      <div class="summary-value">{{ analytics.summary.first_year }}–{{ analytics.summary.last_year }}</div>
+      <div class="summary-meta">{{ meta.n_wrs }} historical WRs</div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
+{# ----- WR progression ------------------------------------------------ #}
+{% if wr_chart_svg %}
+<details class="card chart-card" open>
+  <summary>
+    <span class="chart-title">World-record progression</span>
+    <span class="chart-meta">
+      {{ meta.n_wrs }} world records since {{ meta.wr_progression[0].date[:4] }}
+    </span>
+  </summary>
+  <div class="chart-body">
+    {{ wr_chart_svg|safe }}
+    <p class="chart-note">
+      Canonical list: <em>{{ meta.main_section }}</em>.
+      {% if meta.descending %}Higher mark = better.{% else %}Lower mark = better.{% endif %}
+    </p>
+  </div>
+</details>
+{% endif %}
+
+{# ----- best mark per year ------------------------------------------- #}
+{% if year_line_svg %}
+<details class="card chart-card" open>
+  <summary>
+    <span class="chart-title">Best mark per year</span>
+    <span class="chart-meta">
+      {{ analytics.best_per_year|length }} years
+    </span>
+  </summary>
+  <div class="chart-body">
+    {{ year_line_svg|safe }}
+    <p class="chart-note">
+      The single best canonical mark for each year. Hover a dot for the holder.
+    </p>
+  </div>
+</details>
+{% endif %}
+
+{# ----- entries per year -------------------------------------------- #}
+{% if year_bars_svg %}
+<details class="card chart-card" open>
+  <summary>
+    <span class="chart-title">Entries per year</span>
+    <span class="chart-meta">
+      depth growth on the all-time list
+    </span>
+  </summary>
+  <div class="chart-body">
+    {{ year_bars_svg|safe }}
+    <p class="chart-note">
+      How many performances on the canonical list belong to each year.
+      Bars trending up = the event is getting deeper (or sample bias as the
+      list cutoff stays put while modern fields grow).
+    </p>
+  </div>
+</details>
+{% endif %}
+
+{# ----- mark vs age scatter ----------------------------------------- #}
+{% if age_scatter_svg %}
+<details class="card chart-card" open>
+  <summary>
+    <span class="chart-title">Mark vs age</span>
+    <span class="chart-meta">
+      {{ analytics.age_scatter|length }} points
+    </span>
+  </summary>
+  <div class="chart-body">
+    {{ age_scatter_svg|safe }}
+    <p class="chart-note">
+      Each dot is one canonical performance plotted against the athlete's
+      age on the day of the mark. The cloud shows when athletes typically
+      run their fastest in this event.
+    </p>
+  </div>
+</details>
+{% endif %}
+
+<p class="source-link">
+  <strong>Source:</strong>
+  <a href="{{ event.url }}" rel="external">{{ event.url }}</a>
+  &middot; maintained by Peter Larsson
+</p>
+{% endblock %}

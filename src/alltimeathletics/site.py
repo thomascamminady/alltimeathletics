@@ -157,7 +157,39 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
                 event_meta_json=json.dumps(
                     {"slug": ev.slug, "label": ev.label, "family": ev.family}
                 ),
+                flag=ioc_to_emoji,
+                flags_json=flags_json,
+            )
+        )
+
+    # Per-event analytics pages — the visualisation hub. Each event gets
+    # its own page with WR progression, best-of-year line, entries-per-year
+    # bars, mark-vs-age scatter, and a stats panel.
+    analytics_dir = out_dir / "analytics"
+    analytics_dir.mkdir()
+    analytics_template = env.get_template("analytics.html")
+    for ev in EVENTS:
+        n = counts.get(ev.slug, 0)
+        if n == 0:
+            continue
+        meta = event_meta[ev.slug]
+        analytics = _compute_event_analytics(df, ev.slug, meta)
+        (analytics_dir / f"{ev.slug}.html").write_text(
+            analytics_template.render(
+                **common,
+                event=ev,
+                family=ev.family,
+                row_count=n,
+                meta=meta,
+                analytics=analytics,
                 wr_chart_svg=_render_wr_chart_svg(meta["wr_progression"], ev.family),
+                year_line_svg=_render_year_line_svg(
+                    analytics["best_per_year"], ev.family, meta["descending"]
+                ),
+                year_bars_svg=_render_year_bars_svg(analytics["entries_per_year"]),
+                age_scatter_svg=_render_age_scatter_svg(
+                    analytics["age_scatter"], ev.family, meta["descending"]
+                ),
                 flag=ioc_to_emoji,
                 flags_json=flags_json,
             )
@@ -176,7 +208,10 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
     )
 
     n_pages = sum(len(events_by_sex[s]) for s in ("men", "women", "mixed"))
-    print(f"Rendered {n_pages} event pages and {n_athletes} athlete pages to {out_dir}")
+    print(
+        f"Rendered {n_pages} event pages, {n_pages} analytics pages, "
+        f"and {n_athletes} athlete pages to {out_dir}"
+    )
 
 
 # ---------------------------------------------------------------- athletes --
@@ -317,6 +352,444 @@ def _render_athlete_pages(
         )
 
     return len(meta_by_slug)
+
+
+# ---------------------------------------------------------------- analytics --
+
+
+def _compute_event_analytics(
+    df: pl.DataFrame, slug: str, meta: dict[str, Any]
+) -> dict[str, Any]:
+    """Pre-compute every analytics-page input from the canonical sub-list.
+
+    All charts pivot on the canonical (rank-1) section to keep the picture
+    consistent — sub-lists like "altitude marks" or "manual timing" would
+    otherwise distort the year-by-year and depth views.
+    """
+    main_section = meta["main_section"]
+    descending = meta["descending"]
+
+    if main_section is None:
+        return {
+            "best_per_year": [],
+            "entries_per_year": [],
+            "age_scatter": [],
+            "summary": {},
+        }
+
+    canonical = df.filter(
+        (pl.col("event_slug") == slug)
+        & (pl.col("section") == main_section)
+        & pl.col("mark_value").is_not_null()
+        & pl.col("date").is_not_null()
+        # Drop "*" (later-DQ) marks from year-over-year and stats — keeping
+        # them would let stripped marks distort the depth picture.
+        & (pl.col("mark_annotation").is_null() | (pl.col("mark_annotation") != "*"))
+    )
+
+    # ---- best-of-year line ---------------------------------------
+    # For each year, the single best mark (min for time, max for field).
+    best_agg = (
+        pl.col("mark_value").max() if descending else pl.col("mark_value").min()
+    ).alias("best")
+    by_year = (
+        canonical.with_columns(pl.col("date").dt.year().alias("year"))
+        .group_by("year")
+        .agg(best_agg)
+        .sort("year")
+    )
+    # Attach the holder's display info per year (first match for ties).
+    holders = canonical.with_columns(pl.col("date").dt.year().alias("year")).join(
+        by_year, left_on=["year", "mark_value"], right_on=["year", "best"], how="inner"
+    )
+    holders = holders.unique(subset=["year"], keep="first").sort("year")
+    best_per_year: list[dict[str, Any]] = [
+        {
+            "year": int(r["year"]),
+            "mark_value": r["mark_value"],
+            "mark_raw": r["mark_raw"],
+            "name": r["name"],
+            "country": r["country"],
+            "venue": r["venue"],
+            "date": str(r["date"]),
+        }
+        for r in holders.to_dicts()
+    ]
+
+    # ---- entries-per-year bars -----------------------------------
+    counts_by_year = (
+        canonical.with_columns(pl.col("date").dt.year().alias("year"))
+        .group_by("year")
+        .len()
+        .sort("year")
+    )
+    entries_per_year: list[dict[str, Any]] = [
+        {"year": int(r["year"]), "count": int(r["len"])}
+        for r in counts_by_year.to_dicts()
+    ]
+
+    # ---- mark-vs-age scatter -------------------------------------
+    # Cap at the top N performances per event — past that the dots just
+    # overlap and inflate page weight without adding signal. The cap
+    # keeps the analytics page under ~150 KB even for the deepest lists
+    # (some events have 5k+ marks).
+    SCATTER_CAP = 800
+    age_scatter_df = (
+        canonical.filter(pl.col("dob").is_not_null())
+        .sort("mark_value", descending=descending)
+        .head(SCATTER_CAP)
+        .with_columns(
+            ((pl.col("date") - pl.col("dob")).dt.total_days() / 365.25).alias("age")
+        )
+    )
+    age_scatter: list[dict[str, Any]] = [
+        {
+            "age": round(float(r["age"]), 2),
+            "mark_value": r["mark_value"],
+            "mark_raw": r["mark_raw"],
+            "name": r["name"],
+            "date": str(r["date"]),
+        }
+        for r in age_scatter_df.select(
+            "age", "mark_value", "mark_raw", "name", "date"
+        ).to_dicts()
+        if 12.0 <= r["age"] <= 65.0  # filter obvious dob/date typos
+    ]
+
+    # ---- summary stats panel -------------------------------------
+    summary: dict[str, Any] = {}
+    sorted_main = canonical.sort("mark_value", descending=descending)
+    if not sorted_main.is_empty():
+        top = sorted_main.row(0, named=True)
+        summary["top_name"] = top["name"]
+        summary["top_country"] = top["country"]
+        summary["top_mark_raw"] = top["mark_raw"]
+        summary["top_date"] = str(top["date"])
+        summary["top_venue"] = top["venue"]
+    if sorted_main.height >= 10:
+        tenth = sorted_main.row(9, named=True)
+        summary["tenth_mark_raw"] = tenth["mark_raw"]
+        gap = tenth["mark_value"] - sorted_main["mark_value"][0]
+        summary["tenth_gap"] = -gap if descending else gap
+    if sorted_main.height >= 100:
+        hundredth = sorted_main.row(99, named=True)
+        summary["hundredth_mark_raw"] = hundredth["mark_raw"]
+        gap = hundredth["mark_value"] - sorted_main["mark_value"][0]
+        summary["hundredth_gap"] = -gap if descending else gap
+    # Median age top 100
+    if age_scatter_df.height > 0:
+        top100 = sorted_main.head(100).filter(pl.col("dob").is_not_null())
+        if not top100.is_empty():
+            ages = top100.with_columns(
+                ((pl.col("date") - pl.col("dob")).dt.total_days() / 365.25).alias("age")
+            )["age"]
+            median = ages.median()
+            if median is not None:
+                summary["median_age_top100"] = round(float(str(median)), 1)
+    # Distinct athletes on the canonical list
+    summary["n_athletes"] = (
+        canonical.select(["name", "country", "dob"]).unique().height
+    )
+    # First & last year the event was contested at top-N level
+    if not by_year.is_empty():
+        summary["first_year"] = int(str(by_year["year"].min() or 0))
+        summary["last_year"] = int(str(by_year["year"].max() or 0))
+    summary["n_canonical"] = canonical.height
+
+    return {
+        "best_per_year": best_per_year,
+        "entries_per_year": entries_per_year,
+        "age_scatter": age_scatter,
+        "summary": summary,
+    }
+
+
+# ---------------------------------------------------------------- charts (svg) --
+
+
+def _scale(v: float, vmin: float, vmax: float, lo: float, hi: float) -> float:
+    """Linear scale ``v`` from ``[vmin, vmax]`` into ``[lo, hi]``."""
+    if vmax == vmin:
+        return (lo + hi) / 2
+    return lo + (hi - lo) * (v - vmin) / (vmax - vmin)
+
+
+def _decade_ticks(year_min: int, year_max: int) -> list[int]:
+    """Decade-aligned tick positions inside ``[year_min, year_max]``."""
+    lo = ((year_min + 9) // 10) * 10
+    hi = (year_max // 10) * 10
+    return list(range(lo, hi + 1, 10))
+
+
+def _render_year_line_svg(
+    points: list[dict[str, Any]], family: str, descending: bool
+) -> str:
+    """Best-mark-per-year line chart. Returns ``""`` when there's <2 years."""
+    if len(points) < 2:
+        return ""
+    W, H = 560, 200
+    M_L, M_R, M_T, M_B = 56, 12, 14, 28
+    plot_left, plot_right = M_L, W - M_R
+    plot_top, plot_bot = M_T, H - M_B
+
+    years = [p["year"] for p in points]
+    ys = [p["mark_value"] for p in points]
+    y_min, y_max = min(ys), max(ys)
+    if y_max == y_min:
+        # Pad a touch so we have something to draw.
+        y_max = y_min + 1.0
+    x_min, x_max = min(years), max(years)
+    if x_min == x_max:
+        return ""
+
+    def sx(yr: float) -> float:
+        return _scale(yr, x_min, x_max, plot_left, plot_right)
+
+    def sy(v: float) -> float:
+        # Lower mark_value sits lower on screen — same convention as WR chart.
+        return _scale(v, y_min, y_max, plot_bot, plot_top)
+
+    # Decade gridlines + labels
+    decade_years = _decade_ticks(int(x_min), int(x_max))
+    grid_x = "".join(
+        f'<line class="grid" x1="{sx(yr):.1f}" y1="{plot_top}" '
+        f'x2="{sx(yr):.1f}" y2="{plot_bot}" />'
+        for yr in decade_years
+    )
+    label_x = "".join(
+        f'<text x="{sx(yr):.1f}" y="{H - 8}" text-anchor="middle" '
+        f'class="ax-grid">{yr}</text>'
+        for yr in decade_years
+        if abs(yr - x_min) >= 4 and abs(yr - x_max) >= 4
+    )
+
+    # Quartile Y gridlines + labels
+    y_quarters = [y_min + (y_max - y_min) * f for f in (0.25, 0.5, 0.75)]
+    grid_y = "".join(
+        f'<line class="grid" x1="{plot_left}" y1="{sy(v):.1f}" '
+        f'x2="{plot_right}" y2="{sy(v):.1f}" />'
+        for v in y_quarters
+    )
+    label_y = "".join(
+        f'<text x="{plot_left - 4}" y="{sy(v):.1f}" dy="4" '
+        f'text-anchor="end" class="ax-grid">{_format_y_tick(v, family)}</text>'
+        for v in y_quarters
+    )
+
+    # Bounding box
+    box = (
+        f'<line class="grid grid-axis" x1="{plot_left}" y1="{plot_top}" '
+        f'x2="{plot_right}" y2="{plot_top}" />'
+        f'<line class="grid grid-axis" x1="{plot_left}" y1="{plot_bot}" '
+        f'x2="{plot_right}" y2="{plot_bot}" />'
+    )
+
+    # Path through points
+    pts = " ".join(f"{sx(p['year']):.1f},{sy(p['mark_value']):.1f}" for p in points)
+
+    # Dots with native title hover
+    dots = "".join(
+        '<circle class="wr-dot" cx="{x:.1f}" cy="{y:.1f}" r="3.2">'
+        '<title>{tip}</title></circle>'.format(
+            x=sx(p["year"]),
+            y=sy(p["mark_value"]),
+            tip=f"{p['year']}: {p['mark_raw']} — {p['name']} ({p['country']})",
+        )
+        for p in points
+    )
+
+    # Endpoint y-labels (best of first year, best of last year)
+    first = points[0]
+    last = points[-1]
+    label_extremes = (
+        f'<text x="{plot_left - 4}" y="{sy(first["mark_value"]):.1f}" dy="4" '
+        f'text-anchor="end" class="ax">{first["mark_raw"]}</text>'
+        f'<text x="{plot_left - 4}" y="{sy(last["mark_value"]):.1f}" dy="4" '
+        f'text-anchor="end" class="ax">{last["mark_raw"]}</text>'
+    )
+    # X-axis endpoint labels
+    x_first = (
+        f'<text x="{sx(x_min):.1f}" y="{H - 8}" text-anchor="middle" '
+        f'class="ax">{x_min}</text>'
+    )
+    x_last = (
+        f'<text x="{sx(x_max):.1f}" y="{H - 8}" text-anchor="middle" '
+        f'class="ax">{x_max}</text>'
+    )
+    del descending  # used for y-axis direction; same convention covers both
+    return (
+        f'<svg viewBox="0 0 {W} {H}" class="wr-chart" preserveAspectRatio="xMidYMid meet" '
+        f'role="img" aria-label="Best mark per year, {x_min}-{x_max}">'
+        f"{box}{grid_x}{grid_y}{label_x}{label_y}"
+        f'<polyline class="wr-line" fill="none" points="{pts}" />'
+        f"{dots}{label_extremes}{x_first}{x_last}"
+        "</svg>"
+    )
+
+
+def _render_year_bars_svg(points: list[dict[str, Any]]) -> str:
+    """Entries-per-year vertical bars."""
+    if len(points) < 2:
+        return ""
+    W, H = 560, 160
+    M_L, M_R, M_T, M_B = 40, 12, 12, 28
+    plot_left, plot_right = M_L, W - M_R
+    plot_top, plot_bot = M_T, H - M_B
+
+    years = [p["year"] for p in points]
+    counts = [p["count"] for p in points]
+    x_min, x_max = min(years), max(years)
+    c_max = max(counts)
+    if x_min == x_max or c_max == 0:
+        return ""
+
+    def sx(yr: float) -> float:
+        return _scale(yr, x_min, x_max, plot_left, plot_right)
+
+    def sy(c: float) -> float:
+        return _scale(c, 0, c_max, plot_bot, plot_top)
+
+    span = x_max - x_min + 1
+    # Bars sit centered on each year; width is slightly less than the slot.
+    slot_w = (plot_right - plot_left) / max(span, 1)
+    bar_w = max(slot_w * 0.85, 1.0)
+
+    bars = "".join(
+        '<rect class="bar" x="{x:.2f}" y="{y:.2f}" width="{w:.2f}" '
+        'height="{h:.2f}"><title>{tip}</title></rect>'.format(
+            x=sx(p["year"]) - bar_w / 2,
+            y=sy(p["count"]),
+            w=bar_w,
+            h=plot_bot - sy(p["count"]),
+            tip=f"{p['year']}: {p['count']} performance{'s' if p['count'] != 1 else ''}",
+        )
+        for p in points
+    )
+
+    # Decade x-axis labels
+    decade_years = _decade_ticks(int(x_min), int(x_max))
+    label_x = "".join(
+        f'<text x="{sx(yr):.1f}" y="{H - 8}" text-anchor="middle" '
+        f'class="ax-grid">{yr}</text>'
+        for yr in decade_years
+    )
+    x_first = (
+        f'<text x="{sx(x_min):.1f}" y="{H - 8}" text-anchor="middle" '
+        f'class="ax">{x_min}</text>'
+    )
+    x_last = (
+        f'<text x="{sx(x_max):.1f}" y="{H - 8}" text-anchor="middle" '
+        f'class="ax">{x_max}</text>'
+    )
+    # Y-axis: just min (0) and max
+    label_y = (
+        f'<text x="{plot_left - 4}" y="{sy(0):.1f}" dy="4" '
+        f'text-anchor="end" class="ax">0</text>'
+        f'<text x="{plot_left - 4}" y="{sy(c_max):.1f}" dy="4" '
+        f'text-anchor="end" class="ax">{c_max}</text>'
+    )
+    box = (
+        f'<line class="grid grid-axis" x1="{plot_left}" y1="{plot_bot}" '
+        f'x2="{plot_right}" y2="{plot_bot}" />'
+    )
+    return (
+        f'<svg viewBox="0 0 {W} {H}" class="wr-chart" preserveAspectRatio="xMidYMid meet" '
+        f'role="img" aria-label="Entries per year, {x_min}-{x_max}">'
+        f"{box}{bars}{label_x}{label_y}{x_first}{x_last}"
+        "</svg>"
+    )
+
+
+def _render_age_scatter_svg(
+    points: list[dict[str, Any]], family: str, descending: bool
+) -> str:
+    """Scatter of mark vs athlete age at performance."""
+    if len(points) < 5:
+        return ""
+    W, H = 560, 220
+    M_L, M_R, M_T, M_B = 56, 12, 14, 28
+    plot_left, plot_right = M_L, W - M_R
+    plot_top, plot_bot = M_T, H - M_B
+
+    ages = [p["age"] for p in points]
+    ys = [p["mark_value"] for p in points]
+    a_min = max(14.0, min(ages) - 1)
+    a_max = min(50.0, max(ages) + 1)
+    y_min, y_max = min(ys), max(ys)
+    # Pad y-range slightly so dots aren't pinned to the axis.
+    pad = (y_max - y_min) * 0.05 or 1
+    y_min, y_max = y_min - pad, y_max + pad
+
+    def sx(a: float) -> float:
+        return _scale(a, a_min, a_max, plot_left, plot_right)
+
+    def sy(v: float) -> float:
+        return _scale(v, y_min, y_max, plot_bot, plot_top)
+
+    # Age gridlines every 5 years
+    age_ticks = list(range(int(a_min // 5) * 5, int(a_max) + 1, 5))
+    age_ticks = [t for t in age_ticks if a_min <= t <= a_max]
+    grid_x = "".join(
+        f'<line class="grid" x1="{sx(t):.1f}" y1="{plot_top}" '
+        f'x2="{sx(t):.1f}" y2="{plot_bot}" />'
+        for t in age_ticks
+    )
+    label_x = "".join(
+        f'<text x="{sx(t):.1f}" y="{H - 8}" text-anchor="middle" '
+        f'class="ax-grid">{t}</text>'
+        for t in age_ticks
+    )
+
+    # Y gridlines at quartiles
+    y_quarters = [y_min + (y_max - y_min) * f for f in (0.25, 0.5, 0.75)]
+    grid_y = "".join(
+        f'<line class="grid" x1="{plot_left}" y1="{sy(v):.1f}" '
+        f'x2="{plot_right}" y2="{sy(v):.1f}" />'
+        for v in y_quarters
+    )
+    label_y = "".join(
+        f'<text x="{plot_left - 4}" y="{sy(v):.1f}" dy="4" '
+        f'text-anchor="end" class="ax-grid">{_format_y_tick(v, family)}</text>'
+        for v in y_quarters
+    )
+
+    box = (
+        f'<line class="grid grid-axis" x1="{plot_left}" y1="{plot_top}" '
+        f'x2="{plot_right}" y2="{plot_top}" />'
+        f'<line class="grid grid-axis" x1="{plot_left}" y1="{plot_bot}" '
+        f'x2="{plot_right}" y2="{plot_bot}" />'
+    )
+
+    # Translucent dots — overlap is informative.
+    dots = "".join(
+        '<circle class="scatter-dot" cx="{x:.1f}" cy="{y:.1f}" r="2.4">'
+        '<title>{tip}</title></circle>'.format(
+            x=sx(p["age"]),
+            y=sy(p["mark_value"]),
+            tip=(
+                f"{p['mark_raw']} @ age {p['age']:.1f} — {p['name']} ({p['date'][:4]})"
+            ),
+        )
+        for p in points
+    )
+
+    # Best-mark endpoint label
+    extreme = max(ys) if descending else min(ys)
+    label_best = (
+        f'<text x="{plot_left - 4}" y="{sy(extreme):.1f}" dy="4" '
+        f'text-anchor="end" class="ax">{_format_y_tick(extreme, family)}</text>'
+    )
+    # X-axis label
+    x_axis_label = (
+        f'<text x="{(plot_left + plot_right) / 2:.1f}" y="{H - 2}" '
+        f'text-anchor="middle" class="ax-grid">age (years)</text>'
+    )
+    return (
+        f'<svg viewBox="0 0 {W} {H}" class="wr-chart" preserveAspectRatio="xMidYMid meet" '
+        f'role="img" aria-label="Mark vs age scatter ({len(points)} points)">'
+        f"{box}{grid_x}{grid_y}{label_x}{label_y}{dots}{label_best}{x_axis_label}"
+        "</svg>"
+    )
 
 
 # ---------------------------------------------------------------- meta --
