@@ -10,7 +10,11 @@ import duckdb
 import matplotlib.pyplot as plt
 
 
-def speed_mps(mark_value, distance_m):
+def pace_mps(mark_value, distance_m):
+    """Average pace = distance / time, expressed in m/s.
+
+    (Same physical quantity as 'speed'; the user prefers the label 'pace'.)
+    """
     return distance_m / mark_value
 
 
@@ -20,6 +24,9 @@ def main():
     # -------------------------------
     # Add sprint athletes & elites
     # -------------------------------
+    # Names must match the parquet exactly. In particular Mo Farah is filed
+    # under "Mohamed Farah", which is why an earlier version of this list
+    # silently produced no data for him.
     MALE_ELITES = [
         # Distance runners
         "Joshua Cheptegei",
@@ -27,13 +34,22 @@ def main():
         "Kenenisa Bekele",
         "Hicham El Guerrouj",
         "Haile Gebrselassie",
-        "Mo Farah",
+        "Mohamed Farah",
         "David Rudisha",
         "Selemon Barega",
         "Jakob Ingebrigtsen",
         "Jacob Kiplimo",
         "Yomif Kejelcha",
         "Samuel Tefera",
+        # 800m / 800-1500 specialists — fill the 400-to-1500 gap that the
+        # pure sprinters and pure distance runners leave behind.
+        "Sebastian Coe",
+        "Steve Cram",
+        "Wilson Kipketer",
+        "Nijel Amos",
+        "Marco Arop",
+        "Emmanuel Wanyonyi",
+        "Joaquim Cruz",
         # Sprinters
         "Usain Bolt",
         "Yohan Blake",
@@ -122,10 +138,10 @@ def main():
     # -------------------------------
     athletes_data = {name: [] for name in MALE_ELITES}
     for name, event, mark_value, distance_m in athletes_rows:
-        athletes_data[name].append((distance_m, speed_mps(mark_value, distance_m)))
+        athletes_data[name].append((distance_m, pace_mps(mark_value, distance_m)))
 
     wr_data = [
-        (distance_m, speed_mps(mark_value, distance_m)) for _, mark_value, distance_m in wr_rows
+        (distance_m, pace_mps(mark_value, distance_m)) for _, mark_value, distance_m in wr_rows
     ]
 
     # -------------------------------
@@ -159,8 +175,8 @@ def main():
     ax.grid(False, which="minor")
 
     ax.set_xlabel("Event")
-    ax.set_ylabel("Speed (m/s)")
-    ax.set_title("Athlete Speed vs Distance with World Record")
+    ax.set_ylabel("Pace (m/s)")
+    ax.set_title("Athlete Pace vs Distance with World Record")
     ax.legend()
     fig.tight_layout()
     plt.show()
