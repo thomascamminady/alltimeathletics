@@ -6,12 +6,27 @@
 <title>{% block title %}All-Time Athletics — data view{% endblock %}</title>
 <link rel="stylesheet" href="{{ static_root }}tabulator.min.css?v={{ scraped_at }}">
 <link rel="stylesheet" href="{{ static_root }}style.css?v={{ scraped_at }}">
+<script>
+  // Apply saved theme before first paint (no flash of wrong theme).
+  (function () {
+    try {
+      var t = localStorage.getItem('theme');
+      if (t === 'light' || t === 'dark') {
+        document.documentElement.setAttribute('data-theme', t);
+      }
+    } catch (e) {}
+  })();
+</script>
 </head>
 <body>
 <header>
   <a href="{{ site_root }}index.html">All-Time Athletics</a>
   &middot;
   a sortable view of <a href="https://www.alltime-athletics.com/">alltime-athletics.com</a>
+  <button id="theme-toggle" type="button" class="btn btn-sm theme-toggle"
+          aria-label="Toggle light/dark theme" title="Toggle light/dark theme">
+    <span class="theme-icon-light" aria-hidden="true">☀</span><span class="theme-icon-dark" aria-hidden="true">☾</span>
+  </button>
 </header>
 
 <main>
@@ -31,5 +46,22 @@
     <a href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/manifest.json">manifest</a>
   </p>
 </footer>
+<script>
+  // Theme toggle: cycles between light and dark, persists in localStorage.
+  (function () {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    function effective() {
+      var t = document.documentElement.getAttribute('data-theme');
+      if (t) return t;
+      return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    btn.addEventListener('click', function () {
+      var next = effective() === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+    });
+  })();
+</script>
 </body>
 </html>

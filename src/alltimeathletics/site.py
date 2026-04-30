@@ -182,7 +182,15 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
                 row_count=n,
                 meta=meta,
                 analytics=analytics,
-                wr_chart_svg=_render_wr_chart_svg(meta["wr_progression"], ev.family),
+                wr_chart_svg_absolute=_render_wr_chart_svg(
+                    meta["wr_progression"], ev.family, mode="absolute"
+                ),
+                wr_chart_svg_delta=_render_wr_chart_svg(
+                    meta["wr_progression"], ev.family, mode="delta"
+                ),
+                wr_chart_svg_percent=_render_wr_chart_svg(
+                    meta["wr_progression"], ev.family, mode="percent"
+                ),
                 year_line_svg=_render_year_line_svg(
                     analytics["best_per_year"], ev.family, meta["descending"]
                 ),
@@ -921,7 +929,12 @@ def _recent_additions(
 # ---------------------------------------------------------------- charts --
 
 
-def _render_wr_chart_svg(wrs: list[dict[str, Any]], family: str) -> str:
+def _render_wr_chart_svg(
+    wrs: list[dict[str, Any]],
+    family: str,
+    *,
+    mode: str = "absolute",
+) -> str:
     """Inline SVG of WR progression — date on X, mark on Y, step plot.
 
     Empty string when there's <2 WRs to plot. Visual conventions:
@@ -935,23 +948,65 @@ def _render_wr_chart_svg(wrs: list[dict[str, Any]], family: str) -> str:
       at the date the new WR was set.
     - The last horizontal segment extends to today so the most recent WR
       doesn't visually "end" the moment it was set.
-    - Each dot carries a ``data-wr`` attribute consumed by the page's JS
-      to render a styled tooltip on hover. The native ``<title>`` element
-      is *also* present so screen readers + non-JS users still get the
-      details.
+    - Each dot has a native SVG ``<title>`` so hovering reveals the holder.
+
+    ``mode`` controls what the Y values represent:
+
+    - ``"absolute"``  (default): the raw ``mark_value`` (seconds, metres,
+      points). Y-axis labels show ``mark_raw`` strings.
+    - ``"delta"``: each mark expressed as how-much-worse-than-the-current
+      WR. The current WR sits at 0; older WRs are positive (slower /
+      shorter / fewer points). Units match the family.
+    - ``"percent"``: same as ``delta`` but as a percentage of the current
+      WR. Useful for cross-event comparison.
     """
-    # ``family`` no longer flips the y-axis (both families share the
-    # natural convention) but it still drives intermediate Y-tick formatting
-    # (track times → ``mm:ss``, field marks → metres with one decimal).
-    family_for_format = family
     if len(wrs) < 2:
         return ""
+    descending = family in _DESC_FAMILIES
+    # The "current" WR is the latest entry — chronologically last.
+    current_value = wrs[-1]["mark_value"]
+    raw_values = [w["mark_value"] for w in wrs]
+
+    if mode == "absolute":
+        ys = raw_values
+        # Y-extreme labels: the actual mark_raw text on the worst & best rows.
+        extreme_label_fn = lambda v: _y_axis_label(wrs, raw_values, v)  # noqa: E731
+        intermediate_fmt = lambda v: _format_y_tick(v, family)  # noqa: E731
+    elif mode == "delta":
+        # Positive = how much worse than current.
+        if descending:
+            ys = [current_value - v for v in raw_values]
+        else:
+            ys = [v - current_value for v in raw_values]
+
+        def _delta_fmt(v: float) -> str:
+            if abs(v) < 1e-9:
+                return "0"
+            return ("+" if v > 0 else "") + _format_y_tick(abs(v), family)
+
+        extreme_label_fn = _delta_fmt
+        intermediate_fmt = _delta_fmt
+    elif mode == "percent":
+        if descending:
+            ys = [100 * (current_value - v) / current_value for v in raw_values]
+        else:
+            ys = [100 * (v - current_value) / current_value for v in raw_values]
+
+        def _pct_fmt(v: float) -> str:
+            if abs(v) < 1e-9:
+                return "0%"
+            return f"{'+' if v > 0 else ''}{v:.2f}%"
+
+        extreme_label_fn = _pct_fmt
+        intermediate_fmt = _pct_fmt
+    else:
+        raise ValueError(f"unknown mode {mode!r}")
+
     # Coordinates (px) inside a 560x180 viewport, with margins for labels
     # on the left and below.
     W, H = 560, 180
-    M_L, M_R, M_T, M_B = 48, 12, 14, 28
+    M_L, M_R, M_T, M_B = 56, 12, 14, 28
     xs = [date.fromisoformat(w["date"]).toordinal() for w in wrs]
-    ys = [w["mark_value"] for w in wrs]
     x_min, x_max = min(xs), max(xs)
     y_min, y_max = min(ys), max(ys)
     today_ord = date.today().toordinal()
@@ -1014,7 +1069,7 @@ def _render_wr_chart_svg(wrs: list[dict[str, Any]], family: str) -> str:
     )
     y_tick_labels = "".join(
         f'<text x="{plot_left - 4}" y="{sy(yv):.1f}" dy="4" '
-        f'text-anchor="end" class="ax-grid">{_format_y_tick(yv, family_for_format)}</text>'
+        f'text-anchor="end" class="ax-grid">{intermediate_fmt(yv)}</text>'
         for yv in y_quarters
     )
 
@@ -1027,15 +1082,13 @@ def _render_wr_chart_svg(wrs: list[dict[str, Any]], family: str) -> str:
     )
     grid = grid_box + x_grid_lines + y_grid_lines
 
-    # Dots with styled-tooltip data + a native <title> as fallback.
+    # Dots with native <title> hover.
     dots = "".join(
-        '<circle class="wr-dot" cx="{x:.1f}" cy="{y:.1f}" r="4" '
-        'data-wr="{data}" tabindex="0">'
+        '<circle class="wr-dot" cx="{x:.1f}" cy="{y:.1f}" r="4" tabindex="0">'
         '<title>{tip}</title>'
         '</circle>'.format(
             x=sx(xs[i]),
             y=sy(ys[i]),
-            data=json.dumps(wrs[i]).replace('"', "&quot;"),
             tip=(
                 f"{wrs[i]['mark_raw']} — {wrs[i]['name']} ({wrs[i]['country']}) "
                 f"— {wrs[i]['venue']}, {wrs[i]['date']}"
@@ -1048,9 +1101,9 @@ def _render_wr_chart_svg(wrs: list[dict[str, Any]], family: str) -> str:
     # Positioning: text is right-aligned to the chart's left margin.
     y_label_extremes = (
         f'<text x="{plot_left - 4}" y="{sy(y_min):.1f}" dy="4" '
-        f'text-anchor="end" class="ax">{_y_axis_label(wrs, ys, y_min)}</text>'
+        f'text-anchor="end" class="ax">{extreme_label_fn(y_min)}</text>'
         f'<text x="{plot_left - 4}" y="{sy(y_max):.1f}" dy="4" '
-        f'text-anchor="end" class="ax">{_y_axis_label(wrs, ys, y_max)}</text>'
+        f'text-anchor="end" class="ax">{extreme_label_fn(y_max)}</text>'
     )
     # X-axis labels: first year, last year.
     first_year = wrs[0]["date"][:4]

@@ -1,6 +1,8 @@
-/* Plain, fast, accessible. Square borders, system fonts, one accent colour. */
+/* Plain, fast, accessible. Square borders, system fonts, one accent colour.
+   Theme is driven by `data-theme` on <html>, falling back to OS preference. */
 
-:root {
+:root,
+:root[data-theme="light"] {
   --fg: #111;
   --fg-muted: #666;
   --bg: #fff;
@@ -10,8 +12,18 @@
   --accent: #1a73e8;
   --grid: #e5e5e5;
 }
+:root[data-theme="dark"] {
+  --fg: #eee;
+  --fg-muted: #aaa;
+  --bg: #111;
+  --bg-card: rgba(255, 255, 255, 0.04);
+  --border: #444;
+  --border-strong: #777;
+  --accent: #6aa9ff;
+  --grid: #2a2a2a;
+}
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --fg: #eee;
     --fg-muted: #aaa;
     --bg: #111;
@@ -26,6 +38,8 @@
 * { box-sizing: border-box; }
 
 html { color-scheme: light dark; }
+html[data-theme="dark"] { color-scheme: dark; }
+html[data-theme="light"] { color-scheme: light; }
 
 body {
   font-family: system-ui, sans-serif;
@@ -49,12 +63,41 @@ footer {
 }
 
 header a { font-weight: 600; }
+header { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+header .theme-toggle { margin-left: auto; }
+
+.theme-toggle {
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.2rem 0.5rem;
+  min-width: 2rem;
+}
+/* Show the icon that represents the OPPOSITE theme — the action you'd take
+   by clicking. Default (light) shows the moon; dark shows the sun. */
+:root .theme-icon-dark { display: inline; }
+:root .theme-icon-light { display: none; }
+:root[data-theme="dark"] .theme-icon-dark { display: none; }
+:root[data-theme="dark"] .theme-icon-light { display: inline; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .theme-icon-dark { display: none; }
+  :root:not([data-theme]) .theme-icon-light { display: inline; }
+}
 
 h1 { font-size: 1.4rem; margin: 1rem 0 0.25rem; }
 h2 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; }
 
 .lede { margin: 0.25rem 0 1rem; }
 .crumbs { font-size: 0.9rem; margin: 0.5rem 0; }
+
+.updated-banner {
+  margin: 0.5rem 0 1rem;
+  padding: 0.4rem 0.7rem;
+  border-left: 3px solid var(--accent);
+  background: var(--bg-card);
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+}
+.updated-banner strong { color: var(--fg); }
 
 .visually-hidden {
   position: absolute;
@@ -276,13 +319,22 @@ h2 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; }
 }
 .chart-note em { font-style: italic; color: var(--fg); }
 
+.chart-mode-toggle {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
 /* ---- WR chart svg --------------------------------------------- */
 
 .wr-chart {
   display: block;
   width: 100%;
+  max-width: 760px;
   height: auto;
-  max-height: 220px;
+  margin-inline: auto;
+  /* max-width keeps the chart at a comfortable readable size — at full body
+     width the SVG would render >340 px tall and dwarf the page. */
 }
 .wr-chart .grid {
   stroke: var(--grid);
@@ -436,6 +488,42 @@ h2 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; }
 /* ---- table ----------------------------------------------------- */
 
 #table { margin: 1rem 0; }
-.tabulator { font-size: 0.9rem; border-radius: 0; }
-.tabulator .tabulator-header { border-radius: 0; }
+.tabulator {
+  font-size: 0.9rem;
+  border-radius: 0;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+}
+.tabulator .tabulator-header { border-radius: 0; background: var(--bg-card); border-bottom: 1px solid var(--border); color: var(--fg); }
+.tabulator .tabulator-header .tabulator-col { background: var(--bg-card); border-right: 1px solid var(--border); color: var(--fg); }
+.tabulator .tabulator-tableholder .tabulator-table { background: var(--bg); color: var(--fg); }
+.tabulator-row { background: var(--bg); color: var(--fg); border-bottom: 1px solid var(--border); }
 .tabulator-row.tabulator-row-even { background: var(--bg-card); }
+.tabulator-row .tabulator-cell { border-right: 1px solid var(--border); color: var(--fg); }
+.tabulator .tabulator-footer { background: var(--bg-card); color: var(--fg); border-top: 1px solid var(--border); }
+.tabulator .tabulator-footer .tabulator-paginator,
+.tabulator .tabulator-footer .tabulator-page-counter { color: var(--fg); }
+.tabulator .tabulator-footer .tabulator-page {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--fg);
+}
+.tabulator .tabulator-footer .tabulator-page.active { color: var(--accent); }
+.tabulator .tabulator-footer .tabulator-page-size {
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+}
+.tabulator .tabulator-header .tabulator-col .tabulator-header-filter input,
+.tabulator .tabulator-header .tabulator-col .tabulator-header-filter textarea {
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+}
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort=ascending] .tabulator-col-content .tabulator-col-sorter .tabulator-arrow,
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort=descending] .tabulator-col-content .tabulator-col-sorter .tabulator-arrow {
+  border-bottom-color: var(--accent);
+  border-top-color: var(--accent);
+}
+.tabulator a { color: var(--accent); }
