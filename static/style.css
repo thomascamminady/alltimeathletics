@@ -433,6 +433,103 @@ h2 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; }
 
 #visible-count { font-variant-numeric: tabular-nums; font-weight: 600; }
 
+/* ---- SQL playground -------------------------------------------- */
+
+.sql-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  flex-wrap: wrap;
+}
+.sql-status {
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+  margin-left: auto;
+}
+.sql-status-ok { color: var(--fg); }
+.sql-status-warn { color: #b87900; }
+.sql-status-err { color: #d00; }
+
+#sql-input {
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: 0;
+  resize: vertical;
+  white-space: pre;
+  tab-size: 2;
+}
+
+.sql-schema { font-size: 0.9rem; }
+.sql-schema p { margin: 0.4rem 0; }
+.sql-schema code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--bg-card);
+  padding: 0 0.2rem;
+}
+.sql-cols { padding-left: 1.25rem; }
+.sql-cols li { margin: 0.15rem 0; }
+
+#sql-result { margin: 1rem 0; }
+.sql-table-wrap {
+  border: 1px solid var(--border);
+  overflow: auto;
+  max-height: 70vh;
+  background: var(--bg);
+}
+.sql-table {
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  width: 100%;
+}
+.sql-table th, .sql-table td {
+  padding: 0.3rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+.sql-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+  border-bottom: 2px solid var(--border-strong);
+  font-weight: 600;
+}
+.sql-table tbody tr:nth-child(even) { background: var(--bg-card); }
+.sql-null { color: var(--fg-muted); font-style: italic; }
+.sql-rowcount {
+  margin: 0;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.8rem;
+  color: var(--fg-muted);
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+}
+.sql-empty {
+  margin: 0;
+  padding: 0.6rem;
+  color: var(--fg-muted);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+.sql-error {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  color: #c00;
+  background: var(--bg-card);
+  border: 1px solid #c00;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 /* ---- table ----------------------------------------------------- */
 
 #table { margin: 1rem 0; }
