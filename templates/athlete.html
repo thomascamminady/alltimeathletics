@@ -1,82 +1,77 @@
-{% extends "base.html" %} {% block title %}{{ athlete.name }} ({{
-athlete.country }}) — All-Time Athletics Analytics{% endblock %} {% block main
-%}
-<nav class="crumbs">
-    <a href="{{ site_root }}index.html">&larr; All events</a>
-</nav>
+{% extends "base.html" %}
+{% block title %}{{ athlete.name }} ({{ athlete.country }}) — All-Time Athletics{% endblock %}
+{% block main %}
+<nav class="crumbs"><a href="{{ site_root }}index.html">&larr; All events</a></nav>
 
 <h1>
-    {{ flag(athlete.country) }} {{ athlete.name }}
-    <span class="meta-tag">{{ athlete.country }}</span>
-    {% if athlete.dob %}<span class="meta-tag">b. {{ athlete.dob }}</span>{%
-    endif %}
+  {{ flag(athlete.country) }} {{ athlete.name }}
+  <span class="meta-tag">{{ athlete.country }}</span>
+  {% if athlete.dob %}<span class="meta-tag">b. {{ athlete.dob }}</span>{% endif %}
 </h1>
 
 <p class="lede">
-    <span id="visible-count">{{ athlete.n_entries }}</span> performances across
-    {{ athlete.n_events }} event{% if athlete.n_events != 1 %}s{% endif %}.
-    Click a column header to sort. Type into the column headers to filter.
+  <span id="visible-count">{{ athlete.n_entries }}</span> performances across
+  {{ athlete.n_events }} event{% if athlete.n_events != 1 %}s{% endif %}.
+  Click a column header to sort. Type into the column headers to filter.
 </p>
 
 <div id="table"></div>
 
 <p class="source-link">
-    Data aggregated from
-    <a href="https://www.alltime-athletics.com/" rel="external"
-        >alltime-athletics.com</a
-    >
-    &middot; maintained by Peter Larsson.
+  Data aggregated from
+  <a href="https://www.alltime-athletics.com/" rel="external">alltime-athletics.com</a>
+  &middot; maintained by Peter Larsson.
 </p>
 
 <script src="{{ static_root }}tabulator.min.js"></script>
 <script>
-    const ENTRIES = {{ entries_json|safe }};
-    const SITE_ROOT = {{ site_root|tojson }};
+const ENTRIES = {{ entries_json|safe }};
+const SITE_ROOT = {{ site_root|tojson }};
 
-    const columns = [
-      { title: "Event", field: "event_label", headerFilter: "input", minWidth: 140,
-        formatter: (cell) => {
-          const row = cell.getRow().getData();
-          const slug = row.event_slug;
-          const label = cell.getValue() || slug;
-          return `<a href="${SITE_ROOT}event/${slug}.html">${label}</a>`;
-        },
-      },
-      { title: "Mark", field: "mark_raw", width: 110, hozAlign: "right",
-        sorter: (a, b, ar, br, _col, dir) => {
-          const av = ar.getData().mark_value;
-          const bv = br.getData().mark_value;
-          if (av == null && bv == null) return 0;
-          if (av == null) return dir === "desc" ? -1 : 1;
-          if (bv == null) return dir === "desc" ? 1 : -1;
-          return av - bv;
-        },
-        headerFilter: "input",
-      },
-      { title: "Wind", field: "wind", width: 80, hozAlign: "right", sorter: "number" },
-      { title: "Rank", field: "rank", width: 80, hozAlign: "right", sorter: "number" },
-      { title: "Pos", field: "position", width: 70 },
-      { title: "Venue", field: "venue", headerFilter: "input", minWidth: 160 },
-      { title: "Date", field: "date", width: 120, sorter: "date", headerFilter: "input" },
-      { title: "Sub-list", field: "section", visible: false, headerFilter: "input" },
-    ];
+const columns = [
+  { title: "Event", field: "event_label", headerFilter: "input", minWidth: 140,
+    formatter: (cell) => {
+      const row = cell.getRow().getData();
+      const slug = row.event_slug;
+      const label = cell.getValue() || slug;
+      return `<a href="${SITE_ROOT}event/${slug}.html">${label}</a>`;
+    },
+  },
+  { title: "Mark", field: "mark_raw", width: 110, hozAlign: "right",
+    sorter: (a, b, ar, br, _col, dir) => {
+      const av = ar.getData().mark_value;
+      const bv = br.getData().mark_value;
+      if (av == null && bv == null) return 0;
+      if (av == null) return dir === "desc" ? -1 : 1;
+      if (bv == null) return dir === "desc" ? 1 : -1;
+      return av - bv;
+    },
+    headerFilter: "input",
+  },
+  { title: "Wind", field: "wind", width: 80, hozAlign: "right", sorter: "number" },
+  { title: "Rank", field: "rank", width: 80, hozAlign: "right", sorter: "number" },
+  { title: "Pos", field: "position", width: 70 },
+  { title: "Venue", field: "venue", headerFilter: "input", minWidth: 160 },
+  { title: "Date", field: "date", width: 120, sorter: "date", headerFilter: "input" },
+  { title: "Sub-list", field: "section", visible: false, headerFilter: "input" },
+];
 
-    const table = new Tabulator("#table", {
-      data: ENTRIES,
-      layout: "fitDataStretch",
-      pagination: "local",
-      paginationSize: 100,
-      paginationSizeSelector: [50, 100, 250, 1000, true],
-      movableColumns: true,
-      columns: columns,
-      initialSort: [{ column: "date", dir: "desc" }],
-    });
+const table = new Tabulator("#table", {
+  data: ENTRIES,
+  layout: "fitDataStretch",
+  pagination: "local",
+  paginationSize: 100,
+  paginationSizeSelector: [50, 100, 250, 1000, true],
+  movableColumns: true,
+  columns: columns,
+  initialSort: [{ column: "date", dir: "desc" }],
+});
 
-    function refreshCount(_filters, rows) {
-      const n = (rows && rows.length) ?? table.getDataCount("active");
-      const el = document.getElementById("visible-count");
-      if (el) el.textContent = n.toLocaleString();
-    }
-    table.on("dataFiltered", refreshCount);
+function refreshCount(_filters, rows) {
+  const n = (rows && rows.length) ?? table.getDataCount("active");
+  const el = document.getElementById("visible-count");
+  if (el) el.textContent = n.toLocaleString();
+}
+table.on("dataFiltered", refreshCount);
 </script>
 {% endblock %}
