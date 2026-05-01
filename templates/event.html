@@ -1,203 +1,230 @@
-{% extends "base.html" %}
-{% block title %}{{ event.label }} ({{ event.sex }}, {{ event.legality }}) — All-Time Athletics{% endblock %}
-{% block main %}
-<nav class="crumbs"><a href="{{ site_root }}index.html">&larr; All events</a></nav>
+{% extends "base.html" %} {% block title %}{{ event.label }} ({{ event.sex }},
+{{ event.legality }}) — All-Time Athletics Analytics{% endblock %} {% block main
+%}
+<nav class="crumbs">
+    <a href="{{ site_root }}index.html">&larr; All events</a>
+</nav>
 
-<h1>{{ event.label }} <span class="meta-tag">{{ event.sex }}</span> <span class="meta-tag">{{ event.legality }}</span></h1>
+<h1>
+    {{ event.label }} <span class="meta-tag">{{ event.sex }}</span>
+    <span class="meta-tag">{{ event.legality }}</span>
+</h1>
 
 <p class="lede">
-  <a href="{{ site_root }}analytics/{{ event.slug }}.html" class="btn btn-sm">Analytics &rarr;</a>
-  WR progression, year-by-year trends, age curve, and stats.
+    <a href="{{ site_root }}analytics/{{ event.slug }}.html" class="btn btn-sm"
+        >Analytics &rarr;</a
+    >
+    WR progression, year-by-year trends, age curve, and stats.
 </p>
 
 {# ----- toolbar: WR-only toggle (#1) + section dropdown (#2 redux) ------ #}
 <div class="table-toolbar" role="toolbar" aria-label="Table filters">
-  <button id="wr-only" type="button" class="btn" aria-pressed="false">
-    Show world records only
-  </button>
+    <button id="wr-only" type="button" class="btn" aria-pressed="false">
+        Show world records only
+    </button>
 
-  <details class="dropdown" id="section-dropdown">
-    <summary class="btn" aria-haspopup="true">
-      Sub-lists: <span id="section-summary-count">1</span> of {{ meta.sections|length }}
-    </summary>
-    <div class="dropdown-panel" role="group" aria-label="Sub-list filter">
-      <div class="dropdown-actions">
-        <button type="button" class="btn btn-sm" id="sections-all">Select all</button>
-        <button type="button" class="btn btn-sm" id="sections-none">None</button>
-        <button type="button" class="btn btn-sm" id="sections-main">Just main</button>
-      </div>
-      <ul class="section-list">
-        {% for s in meta.sections %}
-        <li>
-          <label>
-            <input type="checkbox"
-                   data-section="{{ s.name }}"
-                   {% if s.name == meta.main_section %}checked{% endif %}>
-            <span class="section-name" title="{{ s.name }}">{{ s.name }}</span>
-            <span class="section-count">{{ s.n }}</span>
-          </label>
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-  </details>
+    <details class="dropdown" id="section-dropdown">
+        <summary class="btn" aria-haspopup="true">
+            Sub-lists: <span id="section-summary-count">1</span> of {{
+            meta.sections|length }}
+        </summary>
+        <div class="dropdown-panel" role="group" aria-label="Sub-list filter">
+            <div class="dropdown-actions">
+                <button type="button" class="btn btn-sm" id="sections-all">
+                    Select all
+                </button>
+                <button type="button" class="btn btn-sm" id="sections-none">
+                    None
+                </button>
+                <button type="button" class="btn btn-sm" id="sections-main">
+                    Just main
+                </button>
+            </div>
+            <ul class="section-list">
+                {% for s in meta.sections %}
+                <li>
+                    <label>
+                        <input
+                            type="checkbox"
+                            data-section="{{ s.name }}"
+                            {%
+                            if
+                            s.name=""
+                            ="meta.main_section"
+                            %}checked{%
+                            endif
+                            %}
+                        />
+                        <span class="section-name" title="{{ s.name }}"
+                            >{{ s.name }}</span
+                        >
+                        <span class="section-count">{{ s.n }}</span>
+                    </label>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </details>
 </div>
 
 <p class="lede">
-  Showing <span id="visible-count">{{ row_count }}</span> performances. Click a column header to sort.
-  Type into the column headers to filter.
+    Showing <span id="visible-count">{{ row_count }}</span> performances. Click
+    a column header to sort. Type into the column headers to filter.
 </p>
 
 {% if family == 'relay' %}
-<p class="note">Relay teams: click a row to view the team members and split times (where listed).</p>
+<p class="note">
+    Relay teams: click a row to view the team members and split times (where
+    listed).
+</p>
 {% endif %}
 
 <div id="table"></div>
 
 <p class="source-link">
-  <strong>Source:</strong>
-  <a href="{{ event.url }}" rel="external">{{ event.url }}</a>
-  &middot; maintained by Peter Larsson
+    <strong>Source:</strong>
+    <a href="{{ event.url }}" rel="external">{{ event.url }}</a>
+    &middot; maintained by Peter Larsson
 </p>
 
 <script src="{{ static_root }}tabulator.min.js"></script>
 <script>
-const event = {{ event_meta_json|safe }};
-const FLAGS = {{ flags_json|safe }};
-const MAIN_SECTION = {{ meta.main_section|tojson }};
-const dataUrl = "{{ site_root }}data/events/{{ event.slug }}.json";
+    const event = {{ event_meta_json|safe }};
+    const FLAGS = {{ flags_json|safe }};
+    const MAIN_SECTION = {{ meta.main_section|tojson }};
+    const dataUrl = "{{ site_root }}data/events/{{ event.slug }}.json";
 
-const isRelay = event.family === 'relay';
-const hasWind = event.family === 'track_time_wind' || event.family === 'field_distance_wind';
+    const isRelay = event.family === 'relay';
+    const hasWind = event.family === 'track_time_wind' || event.family === 'field_distance_wind';
 
-// IOC code → "🇰🇪 KEN" with a graceful fallback for codes we don't map.
-function fmtCountry(code) {
-  if (!code) return "";
-  const flag = FLAGS[code];
-  return flag ? flag + " " + code : code;
-}
+    // IOC code → "🇰🇪 KEN" with a graceful fallback for codes we don't map.
+    function fmtCountry(code) {
+      if (!code) return "";
+      const flag = FLAGS[code];
+      return flag ? flag + " " + code : code;
+    }
 
-const columns = [
-  { title: "#", field: "rank", width: 70, hozAlign: "right", sorter: "number", headerFilter: false },
-  { title: "Mark", field: "mark_raw", width: 110, hozAlign: "right",
-    sorter: (a, b, ar, br, _col, dir) => {
-      const av = ar.getData().mark_value;
-      const bv = br.getData().mark_value;
-      if (av == null && bv == null) return 0;
-      if (av == null) return dir === "desc" ? -1 : 1;
-      if (bv == null) return dir === "desc" ? 1 : -1;
-      return av - bv;
-    },
-    headerFilter: "input",
-  },
-];
-
-if (hasWind) {
-  columns.push({ title: "Wind", field: "wind", width: 80, hozAlign: "right", sorter: "number" });
-}
-
-if (!isRelay) {
-  columns.push(
-    { title: "Name", field: "name", headerFilter: "input", minWidth: 180,
-      formatter: (cell) => {
-        const row = cell.getRow().getData();
-        const slug = row.athlete_slug;
-        const name = cell.getValue() || "";
-        if (!slug) return name;
-        return `<a href="{{ site_root }}athlete/${slug}.html">${name}</a>`;
+    const columns = [
+      { title: "#", field: "rank", width: 70, hozAlign: "right", sorter: "number", headerFilter: false },
+      { title: "Mark", field: "mark_raw", width: 110, hozAlign: "right",
+        sorter: (a, b, ar, br, _col, dir) => {
+          const av = ar.getData().mark_value;
+          const bv = br.getData().mark_value;
+          if (av == null && bv == null) return 0;
+          if (av == null) return dir === "desc" ? -1 : 1;
+          if (bv == null) return dir === "desc" ? 1 : -1;
+          return av - bv;
+        },
+        headerFilter: "input",
       },
-    },
-    { title: "Country", field: "country", width: 110, headerFilter: "input",
-      formatter: (cell) => fmtCountry(cell.getValue()) },
-    { title: "DOB", field: "dob", width: 110 },
-    { title: "Pos", field: "position", width: 70 },
-  );
-} else {
-  columns.push({ title: "Team", field: "name", headerFilter: "input", minWidth: 180 });
-  columns.push({ title: "Pos", field: "position", width: 70 });
-}
+    ];
 
-columns.push(
-  { title: "Venue", field: "venue", headerFilter: "input", minWidth: 160 },
-  { title: "Date", field: "date", width: 120, sorter: "date", headerFilter: "input" },
-  { title: "Section", field: "section", visible: false, headerFilter: "input" },
-  { title: "Mark annotation", field: "mark_annotation", visible: false, headerFilter: "input" },
-  { title: "DOB precision", field: "dob_precision", visible: false, headerFilter: "input" },
-);
+    if (hasWind) {
+      columns.push({ title: "Wind", field: "wind", width: 80, hozAlign: "right", sorter: "number" });
+    }
 
-// State for our two custom filters: WR-only toggle + active sections.
-const state = {
-  wrOnly: false,
-  activeSections: new Set(MAIN_SECTION ? [MAIN_SECTION] : []),
-};
+    if (!isRelay) {
+      columns.push(
+        { title: "Name", field: "name", headerFilter: "input", minWidth: 180,
+          formatter: (cell) => {
+            const row = cell.getRow().getData();
+            const slug = row.athlete_slug;
+            const name = cell.getValue() || "";
+            if (!slug) return name;
+            return `<a href="{{ site_root }}athlete/${slug}.html">${name}</a>`;
+          },
+        },
+        { title: "Country", field: "country", width: 110, headerFilter: "input",
+          formatter: (cell) => fmtCountry(cell.getValue()) },
+        { title: "DOB", field: "dob", width: 110 },
+        { title: "Pos", field: "position", width: 70 },
+      );
+    } else {
+      columns.push({ title: "Team", field: "name", headerFilter: "input", minWidth: 180 });
+      columns.push({ title: "Pos", field: "position", width: 70 });
+    }
 
-const customFilter = (data) => {
-  if (state.wrOnly && !data.is_wr) return false;
-  if (state.activeSections.size > 0 && !state.activeSections.has(data.section)) return false;
-  return true;
-};
+    columns.push(
+      { title: "Venue", field: "venue", headerFilter: "input", minWidth: 160 },
+      { title: "Date", field: "date", width: 120, sorter: "date", headerFilter: "input" },
+      { title: "Section", field: "section", visible: false, headerFilter: "input" },
+      { title: "Mark annotation", field: "mark_annotation", visible: false, headerFilter: "input" },
+      { title: "DOB precision", field: "dob_precision", visible: false, headerFilter: "input" },
+    );
 
-const table = new Tabulator("#table", {
-  ajaxURL: dataUrl,
-  layout: "fitDataStretch",
-  pagination: "local",
-  paginationSize: 100,
-  paginationSizeSelector: [50, 100, 250, 1000, true],
-  movableColumns: true,
-  columns: columns,
-  initialSort: [{ column: "mark_value", dir: event.family === 'field_distance' || event.family === 'field_distance_wind' || event.family === 'combined_points' ? 'desc' : 'asc' }],
-});
+    // State for our two custom filters: WR-only toggle + active sections.
+    const state = {
+      wrOnly: false,
+      activeSections: new Set(MAIN_SECTION ? [MAIN_SECTION] : []),
+    };
 
-table.on("dataLoaded", () => {
-  table.setFilter(customFilter);
-});
-function refreshCount(_filters, rows) {
-  const n = (rows && rows.length) ?? table.getDataCount("active");
-  const el = document.getElementById("visible-count");
-  if (el) el.textContent = n.toLocaleString();
-}
-table.on("dataFiltered", refreshCount);
+    const customFilter = (data) => {
+      if (state.wrOnly && !data.is_wr) return false;
+      if (state.activeSections.size > 0 && !state.activeSections.has(data.section)) return false;
+      return true;
+    };
 
-document.getElementById("wr-only").addEventListener("click", (e) => {
-  state.wrOnly = !state.wrOnly;
-  e.currentTarget.setAttribute("aria-pressed", state.wrOnly ? "true" : "false");
-  e.currentTarget.classList.toggle("btn-on", state.wrOnly);
-  table.setFilter(customFilter);
-});
+    const table = new Tabulator("#table", {
+      ajaxURL: dataUrl,
+      layout: "fitDataStretch",
+      pagination: "local",
+      paginationSize: 100,
+      paginationSizeSelector: [50, 100, 250, 1000, true],
+      movableColumns: true,
+      columns: columns,
+      initialSort: [{ column: "mark_value", dir: event.family === 'field_distance' || event.family === 'field_distance_wind' || event.family === 'combined_points' ? 'desc' : 'asc' }],
+    });
 
-// ---- section checkbox dropdown -----------------------------------------
-const sectionCheckboxes = document.querySelectorAll('#section-dropdown input[type="checkbox"]');
-const summaryCount = document.getElementById('section-summary-count');
+    table.on("dataLoaded", () => {
+      table.setFilter(customFilter);
+    });
+    function refreshCount(_filters, rows) {
+      const n = (rows && rows.length) ?? table.getDataCount("active");
+      const el = document.getElementById("visible-count");
+      if (el) el.textContent = n.toLocaleString();
+    }
+    table.on("dataFiltered", refreshCount);
 
-function refreshSectionFilter() {
-  state.activeSections = new Set(
-    [...sectionCheckboxes].filter(c => c.checked).map(c => c.dataset.section)
-  );
-  summaryCount.textContent = state.activeSections.size;
-  table.setFilter(customFilter);
-}
-sectionCheckboxes.forEach(c => c.addEventListener('change', refreshSectionFilter));
+    document.getElementById("wr-only").addEventListener("click", (e) => {
+      state.wrOnly = !state.wrOnly;
+      e.currentTarget.setAttribute("aria-pressed", state.wrOnly ? "true" : "false");
+      e.currentTarget.classList.toggle("btn-on", state.wrOnly);
+      table.setFilter(customFilter);
+    });
 
-document.getElementById('sections-all').addEventListener('click', (e) => {
-  e.preventDefault();
-  sectionCheckboxes.forEach(c => { c.checked = true; });
-  refreshSectionFilter();
-});
-document.getElementById('sections-none').addEventListener('click', (e) => {
-  e.preventDefault();
-  sectionCheckboxes.forEach(c => { c.checked = false; });
-  refreshSectionFilter();
-});
-document.getElementById('sections-main').addEventListener('click', (e) => {
-  e.preventDefault();
-  sectionCheckboxes.forEach(c => { c.checked = c.dataset.section === MAIN_SECTION; });
-  refreshSectionFilter();
-});
+    // ---- section checkbox dropdown -----------------------------------------
+    const sectionCheckboxes = document.querySelectorAll('#section-dropdown input[type="checkbox"]');
+    const summaryCount = document.getElementById('section-summary-count');
 
-// Close dropdown when clicking outside.
-document.addEventListener('click', (e) => {
-  const dd = document.getElementById('section-dropdown');
-  if (dd.open && !dd.contains(e.target)) dd.removeAttribute('open');
-});
+    function refreshSectionFilter() {
+      state.activeSections = new Set(
+        [...sectionCheckboxes].filter(c => c.checked).map(c => c.dataset.section)
+      );
+      summaryCount.textContent = state.activeSections.size;
+      table.setFilter(customFilter);
+    }
+    sectionCheckboxes.forEach(c => c.addEventListener('change', refreshSectionFilter));
+
+    document.getElementById('sections-all').addEventListener('click', (e) => {
+      e.preventDefault();
+      sectionCheckboxes.forEach(c => { c.checked = true; });
+      refreshSectionFilter();
+    });
+    document.getElementById('sections-none').addEventListener('click', (e) => {
+      e.preventDefault();
+      sectionCheckboxes.forEach(c => { c.checked = false; });
+      refreshSectionFilter();
+    });
+    document.getElementById('sections-main').addEventListener('click', (e) => {
+      e.preventDefault();
+      sectionCheckboxes.forEach(c => { c.checked = c.dataset.section === MAIN_SECTION; });
+      refreshSectionFilter();
+    });
+
+    // Close dropdown when clicking outside.
+    document.addEventListener('click', (e) => {
+      const dd = document.getElementById('section-dropdown');
+      if (dd.open && !dd.contains(e.target)) dd.removeAttribute('open');
+    });
 </script>
 {% endblock %}
