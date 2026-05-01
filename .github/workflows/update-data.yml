@@ -1,6 +1,6 @@
-name: Update data (daily)
+name: Update data (weekly)
 
-# Daily refresh of the alltime-athletics mirror.
+# Weekly refresh of the alltime-athletics mirror.
 #
 # Flow
 # ----
@@ -31,14 +31,14 @@ name: Update data (daily)
 
 on:
   schedule:
-    # Daily at 04:00 UTC. Larsson posts updates throughout the week, so
+    # Weekly at 04:00 UTC. Larsson posts updates throughout the week, so
     # checking once a day keeps the mirror fresh; the diff gate (step 4)
     # ensures no commit/deploy happens on days where nothing has changed.
-    - cron: "0 4 * * *"
-  workflow_dispatch: {}  # also runnable from the Actions tab
+    - cron: "0 4 * * 1"
+  workflow_dispatch: {} # also runnable from the Actions tab
 
 permissions:
-  contents: write  # commit to main + create releases
+  contents: write # commit to main + create releases
 
 concurrency:
   # If a manual dispatch fires while the cron run is in flight, queue it.
