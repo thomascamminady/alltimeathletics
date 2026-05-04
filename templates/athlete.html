@@ -2,7 +2,7 @@
 {% block title %}{{ athlete.name }} ({{ athlete.country }}) — All-Time Athletics{% endblock %}
 {% block main %}
 <div class="table-toolbar">
-  <a href="{{ site_root }}index.html" class="btn">All events</a>
+  <a href="{{ site_root }}index.html" class="btn">Home</a>
   <a href="{{ site_root }}athlete/index.html" class="btn">All athletes</a>
 </div>
 
@@ -21,7 +21,7 @@
 {# ----- analytics section -------------------------------------------- #}
 {% if analytics %}
 <section class="card summary-card" aria-labelledby="athlete-analytics-heading">
-  <h2 id="athlete-analytics-heading" style="margin-top:0">Analytics — {{ analytics.primary_label }}</h2>
+  <h2 id="athlete-analytics-heading">Analytics — {{ analytics.primary_label }}</h2>
   <div class="summary-grid">
     {% if analytics.career_span %}
     <div class="summary-cell">
@@ -51,7 +51,7 @@
   </div>
 </section>
 
-<div class="card" style="padding: var(--space-2) var(--space-3) var(--space-3)">
+<div class="card chart-panel">
   <div class="chart-controls">
     <span id="chart-event-wrap">
       <select id="chart-event" class="btn" aria-label="Select event"></select>
@@ -371,6 +371,7 @@ const table = new Tabulator("#table", {
   index: "idx",
   selectable: 1,
   layout: "fitDataStretch",
+  maxHeight: "70vh",
   pagination: "local",
   paginationSize: 100,
   paginationSizeSelector: [50, 100, 250, 1000, true],

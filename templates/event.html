@@ -2,7 +2,7 @@
 {% block title %}{{ event.label }} ({{ event.sex }}, {{ event.legality }}) — All-Time Athletics{% endblock %}
 {% block main %}
 <div class="table-toolbar">
-  <a href="{{ site_root }}index.html" class="btn">All events</a>
+  <a href="{{ site_root }}index.html" class="btn">Home</a>
   <a href="{{ site_root }}analytics/{{ event.slug }}.html" class="btn">View analytics</a>
   <a href="{{ event.url }}" class="btn" rel="external noopener" target="_blank">View source</a>
 </div>
@@ -139,6 +139,7 @@ const customFilter = (data) => {
 const table = new Tabulator("#table", {
   ajaxURL: dataUrl,
   layout: "fitDataStretch",
+  maxHeight: "70vh",
   pagination: "local",
   paginationSize: 100,
   paginationSizeSelector: [50, 100, 250, 1000, true],

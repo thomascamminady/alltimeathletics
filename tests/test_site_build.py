@@ -72,7 +72,7 @@ def test_no_jinja_errors_in_event_page(built_site: Path) -> None:
     assert "UndefinedError" not in content
     assert "TemplateSyntaxError" not in content
     assert "View source" in content
-    assert "All events" in content
+    assert "Home" in content
 
 
 def test_no_jinja_errors_in_athlete_page(built_site: Path) -> None:

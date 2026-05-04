@@ -2,7 +2,7 @@
 {% block title %}Athletes — All-Time Athletics{% endblock %}
 {% block main %}
 <div class="table-toolbar">
-  <a href="{{ site_root }}index.html" class="btn">All events</a>
+  <a href="{{ site_root }}index.html" class="btn">Home</a>
 </div>
 
 <h1>Athletes <span class="meta-tag">{{ n_athletes }} on the all-time lists</span></h1>
@@ -72,6 +72,7 @@ function refreshCount(_filters, rows) {
 const table = new Tabulator("#table", {
   ajaxURL: dataUrl,
   layout: "fitDataStretch",
+  maxHeight: "70vh",
   pagination: "local",
   paginationSize: 100,
   paginationSizeSelector: [50, 100, 250, 1000, true],

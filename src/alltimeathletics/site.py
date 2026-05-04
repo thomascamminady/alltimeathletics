@@ -34,7 +34,7 @@ import unicodedata
 from collections import Counter, defaultdict
 from collections.abc import Mapping
 from concurrent.futures import ProcessPoolExecutor
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -113,6 +113,7 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
 
     common: dict[str, Any] = {
         "scraped_at": manifest["scraped_at"][:10],
+        "built_at": datetime.now(UTC).date().isoformat(),
         "site_root": site_root,
         "static_root": f"{site_root}static/",
         "static_version": static_version,
