@@ -36,6 +36,11 @@ KNOWN_FUTURE_DATE_TYPOS: set[tuple[str, str, str, date]] = {
     ("m_800ok", "Mohamed Attaoui", "New York City", date(2026, 6, 1)),
     ("m_800ok", "Ben Pattison", "New York City", date(2026, 6, 1)),
     ("m_800ok", "Donavan Brazier", "New York City", date(2026, 6, 1)),
+    ("m100mno", "Benjamin Azamati", "Walnut", date(2026, 5, 18)),
+    ("m100mno", "Edward Osei-Nketia", "Walnut", date(2026, 5, 18)),
+    ("m100mno", "Garrett Kaalund", "Walnut", date(2026, 5, 18)),
+    ("m100mno", "Jaleel Croal", "Walnut", date(2026, 5, 18)),
+    ("m100mno", "Jelani Watkins", "Walnut", date(2026, 5, 18)),
 }
 
 

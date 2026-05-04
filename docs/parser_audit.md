@@ -3,13 +3,7 @@
 Auto-generated cross-check of every scraped page against its source HTML.
 See `scripts/audit_pages.py` for the methodology and `KNOWN_SOURCE_ISSUES` for catalogued upstream typos.
 
-**181 clean**, **8 known-source-issue**, **1 unexplained**, **0 no_html** (190 pages total)
-
-## ❌ Unexplained mismatches (parser bugs to fix)
-
-| slug | html rows | parquet rows | sections (html/parq) | detail |
-|---|---:|---:|---|---|
-| `m100mno` | 2455 | 2418 | 25/25 | row count: html=2455, parquet=2418 |
+**182 clean**, **8 known-source-issue**, **0 unexplained**, **0 no_html** (190 pages total)
 
 ## ⚠️ Known source issues
 
@@ -32,7 +26,6 @@ Each row is one page Larsson maintains. ✅ = parser exactly matches the HTML ro
 
 | status | slug | html rows | parquet rows | sections (html/parq) |
 |---|---|---:|---:|---|
-| ❌ parser bug | `m100mno` | 2455 | 2418 | 25/25 |
 | ⚠️ known source issue | `m60mno` | 335 | 298 | 10/9 |
 | ⚠️ known source issue | `m60mok` | 3971 | 3969 | 5/5 |
 | ⚠️ known source issue | `m_60mhok` | 3986 | 3982 | 4/4 |
@@ -42,6 +35,7 @@ Each row is one page Larsson maintains. ✅ = parser exactly matches the HTML ro
 | ⚠️ known source issue | `w_60mhok` | 2455 | 2454 | 5/5 |
 | ⚠️ known source issue | `wjaveoldok` | 1209 | 1201 | 2/2 |
 | ✅ verified | `m100km` | 197 | 197 | 1/1 |
+| ✅ verified | `m100mno` | 2455 | 2455 | 25/25 |
 | ✅ verified | `m10kroad` | 1255 | 1255 | 2/2 |
 | ✅ verified | `m10kroadno` | 36 | 36 | 4/4 |
 | ✅ verified | `m10kwno` | 403 | 403 | 9/9 |

@@ -791,7 +791,7 @@ def _compute_event_analytics(df: pl.DataFrame, slug: str, meta: dict[str, Any]) 
                 .head(8)
             )
             if not athlete_counts.is_empty():
-                max_count = int(athlete_counts["count"].max())
+                max_count = int(athlete_counts["count"][0])
                 top_athletes = [
                     {
                         "name": r["name"],
