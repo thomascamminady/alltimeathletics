@@ -148,6 +148,33 @@
 </details>
 {% endif %}
 
+{# ----- decade leaders ---------------------------------------------- #}
+{% if analytics.decade_leaders %}
+<details class="card chart-card" open>
+  <summary>
+    <span class="chart-title">Decade leaders</span>
+    <span class="chart-meta">
+      best canonical mark of each decade
+    </span>
+  </summary>
+  <div class="chart-body">
+    <ol class="decade-list">
+      {% for d in analytics.decade_leaders %}
+      <li>
+        <span class="decade-label">{{ d.decade }}s</span>
+        <span class="decade-mark">{{ d.mark_raw }}</span>
+        <span class="decade-holder">
+          {{ flag(d.country) }}
+          {% if d.athlete_slug %}<a href="{{ site_root }}athlete/{{ d.athlete_slug }}.html">{{ d.name }}</a>{% else %}{{ d.name }}{% endif %}
+        </span>
+        <span class="decade-date">{{ d.date }}</span>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</details>
+{% endif %}
+
 {# ----- top countries (top 100) ------------------------------------ #}
 {% if analytics.top_countries %}
 <details class="card chart-card" open>
@@ -164,6 +191,32 @@
         <span class="country-cell">{{ flag(c.country) }} {{ c.country }}</span>
         <span class="country-bar"><span class="country-bar-fill" style="width: {{ '%.1f'|format(c.share * 100) }}%"></span></span>
         <span class="country-count">{{ c.count }}</span>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</details>
+{% endif %}
+
+{# ----- most prolific athletes (top 100) --------------------------- #}
+{% if analytics.top_athletes %}
+<details class="card chart-card" open>
+  <summary>
+    <span class="chart-title">Most prolific (top 100)</span>
+    <span class="chart-meta">
+      athletes with the most appearances
+    </span>
+  </summary>
+  <div class="chart-body">
+    <ol class="athlete-bars">
+      {% for a in analytics.top_athletes %}
+      <li>
+        <span class="athlete-cell">
+          {{ flag(a.country) }}
+          {% if a.athlete_slug %}<a href="{{ site_root }}athlete/{{ a.athlete_slug }}.html">{{ a.name }}</a>{% else %}{{ a.name }}{% endif %}
+        </span>
+        <span class="country-bar"><span class="country-bar-fill" style="width: {{ '%.1f'|format(a.share * 100) }}%"></span></span>
+        <span class="country-count">{{ a.count }}</span>
       </li>
       {% endfor %}
     </ol>

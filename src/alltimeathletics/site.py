@@ -748,11 +748,68 @@ def _compute_event_analytics(df: pl.DataFrame, slug: str, meta: dict[str, Any]) 
             for r in country_counts.head(8).to_dicts()
         ]
 
+    # ---- decade leaders ----------------------------------------
+    # Best canonical mark per decade with its holder. Strong narrative
+    # for "how the event evolved generation-by-generation".
+    decade_leaders: list[dict[str, Any]] = []
+    if not canonical.is_empty():
+        decade_df = (
+            canonical.with_columns(((pl.col("date").dt.year() // 10) * 10).alias("decade"))
+            .sort("mark_value", descending=descending)
+            .unique(subset=["decade"], keep="first")
+            .sort("decade")
+        )
+        decade_leaders = [
+            {
+                "decade": int(r["decade"]),
+                "mark_raw": r["mark_raw"],
+                "name": r["name"],
+                "country": r["country"],
+                "athlete_slug": r.get("athlete_slug"),
+                "date": str(r["date"]),
+                "venue": r["venue"],
+            }
+            for r in decade_df.to_dicts()
+        ]
+
+    # ---- most prolific athletes (canonical top 100) ------------
+    # How many top-100 marks each athlete owns. Skip relays — the
+    # "name" column is a national team there, not an athlete page.
+    top_athletes: list[dict[str, Any]] = []
+    if sorted_main.height >= 10 and meta.get("family") != "relay":
+        n_pool = min(100, sorted_main.height)
+        pool = sorted_main.head(n_pool).filter(
+            pl.col("name").is_not_null() & (pl.col("athlete_slug") != "")
+        )
+        if not pool.is_empty():
+            athlete_counts = (
+                pool.group_by(["name", "country", "athlete_slug"])
+                .len()
+                .rename({"len": "count"})
+                .filter(pl.col("count") > 1)
+                .sort("count", descending=True)
+                .head(8)
+            )
+            if not athlete_counts.is_empty():
+                max_count = int(athlete_counts["count"].max())
+                top_athletes = [
+                    {
+                        "name": r["name"],
+                        "country": r["country"],
+                        "athlete_slug": r["athlete_slug"],
+                        "count": int(r["count"]),
+                        "share": int(r["count"]) / max_count,
+                    }
+                    for r in athlete_counts.to_dicts()
+                ]
+
     return {
         "best_per_year": best_per_year,
         "entries_per_year": entries_per_year,
         "age_scatter": age_scatter,
         "top_countries": top_countries,
+        "decade_leaders": decade_leaders,
+        "top_athletes": top_athletes,
         "summary": summary,
     }
 
@@ -1107,6 +1164,7 @@ def _compute_event_meta(df: pl.DataFrame, slug: str) -> dict[str, Any]:
         "sections": sections,
         "wr_progression": wr_rows,
         "descending": descending,
+        "family": family,
         "n_wrs": len(wr_rows),
     }
 
