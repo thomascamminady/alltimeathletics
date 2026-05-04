@@ -18,9 +18,7 @@ from alltimeathletics.parse import ParseDiagnostic, parse_page
 
 # Step names produced by the individual + relay extractors. New steps must be
 # added here so a typo in one of them is caught instead of silently flying.
-KNOWN_STEPS = frozenset(
-    {"rank", "mark", "wind", "tail", "date", "country", "name", "relay_line"}
-)
+KNOWN_STEPS = frozenset({"rank", "mark", "wind", "tail", "date", "country", "name", "relay_line"})
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures"
 

@@ -51,9 +51,7 @@ def audit_run() -> tuple[set[str], set[str]]:
         html_total = sum(n for _, _, n in html_sections)
         sub = parquet_by_slug.get(ev.slug)
         parquet_total = sub.height if sub is not None else 0
-        parquet_section_count = (
-            sub.group_by("section").len().height if sub is not None else 0
-        )
+        parquet_section_count = sub.group_by("section").len().height if sub is not None else 0
         if html_total != parquet_total or len(html_sections) != parquet_section_count:
             mismatched.add(ev.slug)
             continue
@@ -61,10 +59,7 @@ def audit_run() -> tuple[set[str], set[str]]:
             for section, anchor, _n in html_sections:
                 first_html = rank1.get((section, anchor))
                 first_parq = (
-                    sub.filter(pl.col("section") == section)
-                    .sort("rank")
-                    .select("mark_raw")
-                    .head(1)
+                    sub.filter(pl.col("section") == section).sort("rank").select("mark_raw").head(1)
                 )
                 if first_html is None or first_parq.is_empty():
                     continue
@@ -98,9 +93,7 @@ def test_no_unexplained_parser_mismatches(audit_run: tuple[set[str], set[str]]) 
 def test_catalogued_issues_still_present(audit_run: tuple[set[str], set[str]]) -> None:
     """If Larsson fixes a catalogued upstream typo, drop the catalogue entry."""
     mismatched, all_with_html = audit_run
-    fixed_upstream = (
-        set(audit_pages.KNOWN_SOURCE_ISSUES.keys()) & all_with_html
-    ) - mismatched
+    fixed_upstream = (set(audit_pages.KNOWN_SOURCE_ISSUES.keys()) & all_with_html) - mismatched
     assert not fixed_upstream, (
         f"Larsson appears to have fixed these upstream — remove from "
         f"KNOWN_SOURCE_ISSUES: {sorted(fixed_upstream)}"

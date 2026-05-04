@@ -45,8 +45,7 @@ EXPECTED_SCHEMA: dict[str, pl.DataType] = {
 def df() -> pl.DataFrame:
     if not PARQUET.exists():
         pytest.skip(
-            f"{PARQUET} not present; "
-            "run `uv run python -m alltimeathletics.pipeline` first"
+            f"{PARQUET} not present; run `uv run python -m alltimeathletics.pipeline` first"
         )
     return pl.read_parquet(PARQUET)
 
@@ -136,9 +135,7 @@ def test_dob_precision_is_consistent_with_dob(df: pl.DataFrame) -> None:
     # day/month we fabricate when only `yy` is given).
     year_only = df.filter(pl.col("dob_precision") == "year").select("dob")
     if len(year_only) > 0:
-        bad = year_only.filter(
-            (pl.col("dob").dt.month() != 1) | (pl.col("dob").dt.day() != 1)
-        )
+        bad = year_only.filter((pl.col("dob").dt.month() != 1) | (pl.col("dob").dt.day() != 1))
         assert len(bad) == 0, f"{len(bad)} year-precision rows are not Jan 1"
 
 
@@ -149,8 +146,7 @@ def test_mark_annotation_carries_real_signal(df: pl.DataFrame) -> None:
     # across all events. A floor of 100 is well below what we see in practice
     # but high enough to fail loudly if we ever stop populating the column.
     assert len(annotated) >= 100, (
-        f"only {len(annotated)} rows have a mark_annotation — "
-        "did the extractor break?"
+        f"only {len(annotated)} rows have a mark_annotation — did the extractor break?"
     )
 
 

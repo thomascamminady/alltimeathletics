@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 {% block title %}{{ athlete.name }} ({{ athlete.country }}) — All-Time Athletics{% endblock %}
 {% block main %}
-<nav class="crumbs"><a href="{{ site_root }}index.html">&larr; All events</a></nav>
+<div class="table-toolbar">
+  <a href="{{ site_root }}index.html" class="btn">All events</a>
+  <a href="{{ site_root }}athlete/index.html" class="btn">All athletes</a>
+</div>
 
 <h1>
   {{ flag(athlete.country) }} {{ athlete.name }}
@@ -14,6 +17,67 @@
   {{ athlete.n_events }} event{% if athlete.n_events != 1 %}s{% endif %}.
   Click a column header to sort. Type into the column headers to filter.
 </p>
+
+{# ----- analytics section -------------------------------------------- #}
+{% if analytics %}
+<section class="card summary-card" aria-labelledby="athlete-analytics-heading">
+  <h2 id="athlete-analytics-heading" style="margin-top:0">Analytics — {{ analytics.primary_label }}</h2>
+  <div class="summary-grid">
+    {% if analytics.career_span %}
+    <div class="summary-cell">
+      <div class="summary-label">Career span</div>
+      <div class="summary-value">{{ analytics.career_span[0] }}–{{ analytics.career_span[1] }}</div>
+    </div>
+    {% endif %}
+    {% if analytics.best_rank is not none %}
+    <div class="summary-cell">
+      <div class="summary-label">Best all-time rank</div>
+      <div class="summary-value">#{{ analytics.best_rank }}</div>
+    </div>
+    {% endif %}
+    {% if analytics.best_entry %}
+    <div class="summary-cell">
+      <div class="summary-label">Best mark ({{ analytics.primary_label }})</div>
+      <div class="summary-value">{{ analytics.best_entry.mark_raw }}</div>
+      <div class="summary-meta">
+        {{ analytics.best_entry.date }}{% if analytics.best_entry.venue %} &middot; {{ analytics.best_entry.venue }}{% endif %}
+      </div>
+    </div>
+    {% endif %}
+    <div class="summary-cell">
+      <div class="summary-label">Appearances ({{ analytics.primary_label }})</div>
+      <div class="summary-value">{{ analytics.n_primary_entries }}</div>
+    </div>
+  </div>
+</section>
+
+{% if career_svg %}
+<details class="card chart-card" open>
+  <summary>
+    <span class="chart-title">Performance over time</span>
+    <span class="chart-meta">{{ analytics.primary_label }}</span>
+  </summary>
+  <div class="chart-body">
+    {{ career_svg|safe }}
+    <p class="chart-note">Each dot is one all-time list entry. Hover for details.
+    {% if analytics.n_events > 1 %}Showing primary event only ({{ analytics.primary_label }}).{% endif %}</p>
+  </div>
+</details>
+{% endif %}
+
+{% if age_svg %}
+<details class="card chart-card" open>
+  <summary>
+    <span class="chart-title">Performance by age</span>
+    <span class="chart-meta">{{ analytics.primary_label }}</span>
+  </summary>
+  <div class="chart-body">
+    {{ age_svg|safe }}
+    <p class="chart-note">Mark against the athlete's age on the day of the performance. Hover for details.</p>
+  </div>
+</details>
+{% endif %}
+{% endif %}
 
 <div id="table"></div>
 

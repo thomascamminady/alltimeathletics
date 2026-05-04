@@ -27,11 +27,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import shutil
 import unicodedata
-from collections import defaultdict
+from collections import Counter, defaultdict
 from collections.abc import Mapping
+from concurrent.futures import ProcessPoolExecutor
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -185,6 +187,8 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
     # next to a row instead of just its slug.
     event_labels = {ev.slug: ev.label for ev in EVENTS}
     event_sex = {ev.slug: ev.sex for ev in EVENTS}
+    event_family = {ev.slug: ev.family for ev in EVENTS}
+    event_descending = {ev.slug: ev.family in _DESC_FAMILIES for ev in EVENTS}
 
     # Per-event pages
     event_dir = out_dir / "event"
@@ -253,24 +257,294 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
 
     # Per-athlete pages — one HTML per (name, country, dob) so the name
     # column in event tables can link to a complete career view.
-    n_athletes = _render_athlete_pages(
+    n_athletes, athlete_index_records = _render_athlete_pages(
         df,
         out_dir / "athlete",
-        env=env,
         common=common,
         event_labels=event_labels,
         event_sex=event_sex,
+        event_family=event_family,
+        event_descending=event_descending,
         flags_json=flags_json,
+    )
+
+    # Athlete index — JSON sidecar + HTML page.
+    athlete_dir = out_dir / "athlete"
+    (athlete_dir / "index.json").write_text(
+        json.dumps(athlete_index_records, separators=(",", ":"), default=str)
+    )
+    (athlete_dir / "index.html").write_text(
+        env.get_template("athlete_index.html").render(
+            **common,
+            n_athletes=n_athletes,
+            flags_json=flags_json,
+        )
     )
 
     n_pages = sum(len(events_by_sex[s]) for s in ("men", "women", "mixed"))
     print(
         f"Rendered {n_pages} event pages, {n_pages} analytics pages, "
-        f"and {n_athletes} athlete pages to {out_dir}"
+        f"{n_athletes} athlete pages, and 1 athlete index to {out_dir}"
     )
 
 
 # ---------------------------------------------------------------- athletes --
+
+
+def _compute_athlete_analytics(
+    all_entries: list[dict[str, Any]],
+    event_labels: Mapping[str, str],
+    event_family: Mapping[str, str],
+    event_descending: Mapping[str, bool],
+) -> dict[str, Any]:
+    """Derive summary stats for one athlete's analytics panel."""
+    if not all_entries:
+        return {}
+    slug_counts: Counter[str] = Counter(e["event_slug"] for e in all_entries)
+    primary_slug = slug_counts.most_common(1)[0][0]
+    primary_entries = [e for e in all_entries if e["event_slug"] == primary_slug]
+    family = event_family.get(primary_slug, "track_time")
+    descending = event_descending.get(primary_slug, False)
+
+    years = [int(e["date"][:4]) for e in all_entries if e.get("date")]
+    career_span = (min(years), max(years)) if years else None
+
+    ranks = [e["rank"] for e in all_entries if e.get("rank") is not None]
+    best_rank = min(ranks) if ranks else None
+
+    valued = [e for e in primary_entries if e.get("mark_value") is not None]
+    best_entry: dict[str, Any] | None = None
+    if valued:
+        best_entry = (max if descending else min)(valued, key=lambda e: e["mark_value"])
+
+    return {
+        "primary_slug": primary_slug,
+        "primary_label": event_labels.get(primary_slug, primary_slug),
+        "family": family,
+        "descending": descending,
+        "career_span": career_span,
+        "best_rank": best_rank,
+        "best_entry": best_entry,
+        "n_primary_entries": len(primary_entries),
+        "n_events": len(slug_counts),
+    }
+
+
+def _render_athlete_year_scatter_svg(
+    primary_entries: list[dict[str, Any]],
+    family: str,
+    descending: bool,
+) -> str:
+    """Scatter of mark_value vs year for an athlete's primary event."""
+    pts = [
+        {
+            "year": int(e["date"][:4]),
+            "mark_value": e["mark_value"],
+            "mark_raw": e["mark_raw"],
+            "venue": e.get("venue") or "",
+            "date": e["date"],
+        }
+        for e in primary_entries
+        if e.get("date") and e.get("mark_value") is not None
+    ]
+    if len(pts) < 2:
+        return ""
+
+    W, H = 560, 200
+    M_L, M_R, M_T, M_B = 56, 12, 14, 28
+    plot_left, plot_right = M_L, W - M_R
+    plot_top, plot_bot = M_T, H - M_B
+
+    years: list[int] = [int(p["year"]) for p in pts]
+    values: list[float] = [float(p["mark_value"]) for p in pts]
+    x_min, x_max = min(years), max(years)
+    y_min, y_max = min(values), max(values)
+    if x_min == x_max:
+        x_min -= 1
+        x_max += 1
+    pad = (y_max - y_min) * 0.05 or 0.5
+    y_min -= pad
+    y_max += pad
+
+    def sx(yr: float) -> float:
+        return _scale(yr, x_min, x_max, plot_left, plot_right)
+
+    def sy(v: float) -> float:
+        return _scale(v, y_min, y_max, plot_bot, plot_top)
+
+    decade_years = _decade_ticks(x_min, x_max)
+    grid_x = "".join(
+        f'<line class="grid" x1="{sx(yr):.1f}" y1="{plot_top}" x2="{sx(yr):.1f}" y2="{plot_bot}" />'
+        for yr in decade_years
+    )
+    label_x = "".join(
+        f'<text x="{sx(yr):.1f}" y="{H - 8}" text-anchor="middle" class="ax-grid">{yr}</text>'
+        for yr in decade_years
+        if abs(yr - x_min) >= 2 and abs(yr - x_max) >= 2
+    )
+    extreme = max(values) if descending else min(values)
+    y_quarters = [y_min + (y_max - y_min) * f for f in (0.25, 0.5, 0.75)]
+    grid_y = "".join(
+        f'<line class="grid" x1="{plot_left}" y1="{sy(v):.1f}"'
+        f' x2="{plot_right}" y2="{sy(v):.1f}" />'
+        for v in y_quarters
+    )
+    _ep_px = [sy(extreme)]
+    label_y = "".join(
+        f'<text x="{plot_left - 4}" y="{sy(v):.1f}" dy="4" text-anchor="end" class="ax-grid">'
+        f"{_format_y_tick(v, family)}</text>"
+        for v in y_quarters
+        if _y_label_safe(sy(v), _ep_px)
+    )
+    box = (
+        f'<line class="grid grid-axis" x1="{plot_left}" y1="{plot_top}"'
+        f' x2="{plot_right}" y2="{plot_top}" />'
+        f'<line class="grid grid-axis" x1="{plot_left}" y1="{plot_bot}"'
+        f' x2="{plot_right}" y2="{plot_bot}" />'
+    )
+    label_best = (
+        f'<text x="{plot_left - 4}" y="{sy(extreme):.1f}" dy="4" text-anchor="end" class="ax">'
+        f"{_format_y_tick(extreme, family)}</text>"
+    )
+    x_first = (
+        f'<text x="{sx(x_min):.1f}" y="{H - 8}" text-anchor="middle" class="ax">{int(x_min)}</text>'
+    )
+    x_last = (
+        f'<text x="{sx(x_max):.1f}" y="{H - 8}" text-anchor="middle" class="ax">{int(x_max)}</text>'
+    )
+    dots = "".join(
+        '<circle class="scatter-dot" cx="{x:.1f}" cy="{y:.1f}" r="3.5">'
+        "<title>{tip}</title></circle>".format(
+            x=sx(int(p["year"])),
+            y=sy(float(p["mark_value"])),
+            tip=(f"{p['mark_raw']} — {p['date']}" + (f" ({p['venue']})" if p["venue"] else "")),
+        )
+        for p in pts
+    )
+    del descending
+    return (
+        f'<svg viewBox="0 0 {W} {H}" class="wr-chart" preserveAspectRatio="xMidYMid meet" '
+        f'role="img" aria-label="Performance over career ({len(pts)} entries)">'
+        f"{box}{grid_x}{grid_y}{label_x}{label_y}"
+        f"{dots}{label_best}{x_first}{x_last}"
+        "</svg>"
+    )
+
+
+def _render_athlete_age_scatter_svg(
+    primary_entries: list[dict[str, Any]],
+    dob_str: str | None,
+    family: str,
+    descending: bool,
+) -> str:
+    """Scatter of mark_value vs athlete age for their primary event."""
+    if not dob_str:
+        return ""
+    try:
+        dob = date.fromisoformat(dob_str)
+    except ValueError:
+        return ""
+
+    pts = []
+    for e in primary_entries:
+        if not e.get("date") or e.get("mark_value") is None:
+            continue
+        try:
+            perf_date = date.fromisoformat(e["date"])
+        except ValueError:
+            continue
+        age = (perf_date - dob).days / 365.25
+        if 12.0 <= age <= 60.0:
+            pts.append(
+                {
+                    "age": age,
+                    "mark_value": e["mark_value"],
+                    "mark_raw": e["mark_raw"],
+                    "date": e["date"],
+                    "venue": e.get("venue") or "",
+                }
+            )
+
+    if len(pts) < 2:
+        return ""
+
+    W, H = 560, 200
+    M_L, M_R, M_T, M_B = 56, 12, 14, 28
+    plot_left, plot_right = M_L, W - M_R
+    plot_top, plot_bot = M_T, H - M_B
+
+    ages: list[float] = [float(p["age"]) for p in pts]
+    values: list[float] = [float(p["mark_value"]) for p in pts]
+    a_min = max(14.0, min(ages) - 1)
+    a_max = min(50.0, max(ages) + 1)
+    y_min, y_max = min(values), max(values)
+    pad = (y_max - y_min) * 0.05 or 0.5
+    y_min -= pad
+    y_max += pad
+
+    def sx(a: float) -> float:
+        return _scale(a, a_min, a_max, plot_left, plot_right)
+
+    def sy(v: float) -> float:
+        return _scale(v, y_min, y_max, plot_bot, plot_top)
+
+    age_ticks = [t for t in range(int(a_min // 2) * 2, int(a_max) + 3, 2) if a_min <= t <= a_max]
+    grid_x = "".join(
+        f'<line class="grid" x1="{sx(t):.1f}" y1="{plot_top}" x2="{sx(t):.1f}" y2="{plot_bot}" />'
+        for t in age_ticks
+    )
+    label_x = "".join(
+        f'<text x="{sx(t):.1f}" y="{H - 8}" text-anchor="middle" class="ax-grid">{t}</text>'
+        for t in age_ticks
+    )
+    extreme = max(values) if descending else min(values)
+    y_quarters = [y_min + (y_max - y_min) * f for f in (0.25, 0.5, 0.75)]
+    grid_y = "".join(
+        f'<line class="grid" x1="{plot_left}" y1="{sy(v):.1f}"'
+        f' x2="{plot_right}" y2="{sy(v):.1f}" />'
+        for v in y_quarters
+    )
+    _ep_px = [sy(extreme)]
+    label_y = "".join(
+        f'<text x="{plot_left - 4}" y="{sy(v):.1f}" dy="4" text-anchor="end" class="ax-grid">'
+        f"{_format_y_tick(v, family)}</text>"
+        for v in y_quarters
+        if _y_label_safe(sy(v), _ep_px)
+    )
+    box = (
+        f'<line class="grid grid-axis" x1="{plot_left}" y1="{plot_top}"'
+        f' x2="{plot_right}" y2="{plot_top}" />'
+        f'<line class="grid grid-axis" x1="{plot_left}" y1="{plot_bot}"'
+        f' x2="{plot_right}" y2="{plot_bot}" />'
+    )
+    label_best = (
+        f'<text x="{plot_left - 4}" y="{sy(extreme):.1f}" dy="4" text-anchor="end" class="ax">'
+        f"{_format_y_tick(extreme, family)}</text>"
+    )
+    x_axis_label = (
+        f'<text x="{(plot_left + plot_right) / 2:.1f}" y="{H - 2}" '
+        f'text-anchor="middle" class="ax-grid">age (years)</text>'
+    )
+    dots = "".join(
+        '<circle class="scatter-dot" cx="{x:.1f}" cy="{y:.1f}" r="3.5">'
+        "<title>{tip}</title></circle>".format(
+            x=sx(float(p["age"])),
+            y=sy(float(p["mark_value"])),
+            tip=(
+                f"{p['mark_raw']} @ age {float(p['age']):.1f} — {p['date']}"
+                + (f" ({p['venue']})" if p["venue"] else "")
+            ),
+        )
+        for p in pts
+    )
+    del descending
+    return (
+        f'<svg viewBox="0 0 {W} {H}" class="wr-chart" preserveAspectRatio="xMidYMid meet" '
+        f'role="img" aria-label="Performance vs age ({len(pts)} entries)">'
+        f"{box}{grid_x}{grid_y}{label_x}{label_y}"
+        f"{dots}{label_best}{x_axis_label}"
+        "</svg>"
+    )
 
 
 def _athlete_slug(name: str | None, country: str | None, dob: date | None) -> str:
@@ -310,16 +584,123 @@ def _athlete_slug_expr() -> pl.Expr:
     return pl.struct(["family", "name", "country", "dob"]).map_elements(_slug, return_dtype=pl.Utf8)
 
 
+# ---- per-process worker state (initialised once per worker by _athlete_worker_init) ----
+
+_W_EVENT_LABELS: dict[str, str] = {}
+_W_EVENT_FAMILY: dict[str, str] = {}
+_W_EVENT_DESCENDING: dict[str, bool] = {}
+_W_COMMON: dict[str, Any] = {}
+_W_FLAGS_JSON: str = ""
+_W_OUT_DIR: str = ""
+_W_TEMPLATE: Any = None
+_W_FLAG_FN: Any = None
+
+
+def _athlete_worker_init(
+    event_labels: dict[str, str],
+    event_family: dict[str, str],
+    event_descending: dict[str, bool],
+    template_dir: str,
+    common: dict[str, Any],
+    flags_json: str,
+    out_dir: str,
+) -> None:
+    global _W_EVENT_LABELS, _W_EVENT_FAMILY, _W_EVENT_DESCENDING
+    global _W_COMMON, _W_FLAGS_JSON, _W_OUT_DIR, _W_TEMPLATE, _W_FLAG_FN
+    from jinja2 import Environment, FileSystemLoader, StrictUndefined  # noqa: PLC0415
+
+    from alltimeathletics.flags import ioc_to_emoji  # noqa: PLC0415
+
+    _W_EVENT_LABELS = event_labels
+    _W_EVENT_FAMILY = event_family
+    _W_EVENT_DESCENDING = event_descending
+    _W_COMMON = common
+    _W_FLAGS_JSON = flags_json
+    _W_OUT_DIR = out_dir
+    _W_FLAG_FN = ioc_to_emoji
+    _W_TEMPLATE = Environment(
+        loader=FileSystemLoader(template_dir),
+        autoescape=True,
+        undefined=StrictUndefined,
+    ).get_template("athlete.html")
+
+
+def _athlete_worker_task(
+    task: tuple[str, dict[str, Any], list[dict[str, Any]], int, str],
+) -> dict[str, Any]:
+    """Render one athlete page and return its index record.
+
+    Runs inside a worker process; reads only from module-level worker globals
+    set by ``_athlete_worker_init``.  Writes the HTML file directly so we
+    avoid pickling the rendered string back to the main process.
+    """
+    slug, meta, entries, n_events, sexes_label = task
+    entries.sort(
+        key=lambda e: (e["date"] or "0000-00-00", e["event_label"]),
+        reverse=True,
+    )
+    analytics = _compute_athlete_analytics(
+        entries, _W_EVENT_LABELS, _W_EVENT_FAMILY, _W_EVENT_DESCENDING
+    )
+    primary_slug_w = analytics.get("primary_slug", "")
+    primary_entries = [e for e in entries if e.get("event_slug") == primary_slug_w]
+    career_svg = _render_athlete_year_scatter_svg(
+        primary_entries,
+        analytics.get("family", "track_time"),
+        analytics.get("descending", False),
+    )
+    age_svg = _render_athlete_age_scatter_svg(
+        primary_entries,
+        meta.get("dob"),
+        analytics.get("family", "track_time"),
+        analytics.get("descending", False),
+    )
+    athlete = {
+        **meta,
+        "n_entries": len(entries),
+        "n_events": n_events,
+        "sexes_label": sexes_label,
+    }
+    html = _W_TEMPLATE.render(
+        **_W_COMMON,
+        athlete=athlete,
+        entries_json=json.dumps(entries, separators=(",", ":")),
+        analytics=analytics,
+        career_svg=career_svg,
+        age_svg=age_svg,
+        flags_json=_W_FLAGS_JSON,
+        flag=_W_FLAG_FN,
+    )
+    Path(_W_OUT_DIR, f"{slug}.html").write_text(html)
+    best = analytics.get("best_entry") or {}
+    cs = analytics.get("career_span")
+    return {
+        "slug": slug,
+        "name": meta["name"],
+        "country": meta["country"],
+        "dob": meta["dob"],
+        "primary_label": analytics.get("primary_label"),
+        "best_mark_raw": best.get("mark_raw"),
+        "best_mark_value": best.get("mark_value"),
+        "best_rank": analytics.get("best_rank"),
+        "career_start": cs[0] if cs else None,
+        "career_end": cs[1] if cs else None,
+        "n_events": analytics.get("n_events", 1),
+        "n_entries": len(entries),
+    }
+
+
 def _render_athlete_pages(
     df: pl.DataFrame,
     out_dir: Path,
     *,
-    env: Environment,
     common: dict[str, Any],
     event_labels: Mapping[str, str],
     event_sex: Mapping[str, str],
+    event_family: Mapping[str, str],
+    event_descending: Mapping[str, bool],
     flags_json: str,
-) -> int:
+) -> tuple[int, list[dict[str, Any]]]:
     """Render one HTML per athlete with all their entries inlined.
 
     Per-athlete data is small (median 4 rows, p99 ~150) so we inline it
@@ -328,7 +709,6 @@ def _render_athlete_pages(
     page does, so sorting/filtering still feels identical.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
-    template = env.get_template("athlete.html")
 
     athletes_df = df.filter(pl.col("athlete_slug") != "")
     rows = athletes_df.select(
@@ -381,31 +761,35 @@ def _render_athlete_pages(
             }
         )
 
-    for slug, meta in meta_by_slug.items():
-        entries = entries_by_slug[slug]
-        # Newest first by default; the table is sortable so this is just
-        # the initial view.
-        entries.sort(
-            key=lambda e: (e["date"] or "0000-00-00", e["event_label"]),
-            reverse=True,
+    tasks = [
+        (
+            slug,
+            meta_by_slug[slug],
+            entries_by_slug[slug],
+            len(events_by_slug[slug]),
+            ", ".join(sorted(sexes_by_slug[slug])),
         )
-        athlete = {
-            **meta,
-            "n_entries": len(entries),
-            "n_events": len(events_by_slug[slug]),
-            "sexes_label": ", ".join(sorted(sexes_by_slug[slug])),
-        }
-        (out_dir / f"{slug}.html").write_text(
-            template.render(
-                **common,
-                athlete=athlete,
-                entries_json=json.dumps(entries, separators=(",", ":")),
-                flags_json=flags_json,
-                flag=ioc_to_emoji,
-            )
-        )
+        for slug in meta_by_slug
+    ]
+    init_args = (
+        dict(event_labels),
+        dict(event_family),
+        dict(event_descending),
+        str(TEMPLATE_DIR),
+        common,
+        flags_json,
+        str(out_dir),
+    )
+    n_workers = os.cpu_count() or 4
+    chunksize = max(1, len(tasks) // (n_workers * 8))
+    with ProcessPoolExecutor(
+        max_workers=n_workers,
+        initializer=_athlete_worker_init,
+        initargs=init_args,
+    ) as pool:
+        index_records = list(pool.map(_athlete_worker_task, tasks, chunksize=chunksize))
 
-    return len(meta_by_slug)
+    return len(meta_by_slug), index_records
 
 
 # ---------------------------------------------------------------- analytics --
@@ -592,6 +976,14 @@ def _decade_ticks(year_min: int, year_max: int) -> list[int]:
     return list(range(lo, hi + 1, 10))
 
 
+_MIN_LABEL_GAP: float = 12.0
+
+
+def _y_label_safe(pix: float, endpoint_pixels: list[float]) -> bool:
+    """True if ``pix`` is at least _MIN_LABEL_GAP px from every endpoint label."""
+    return all(abs(pix - ep) >= _MIN_LABEL_GAP for ep in endpoint_pixels)
+
+
 def _render_year_line_svg(points: list[dict[str, Any]], family: str, descending: bool) -> str:
     """Best-mark-per-year line chart. Returns ``""`` when there's <2 years."""
     if len(points) < 2:
@@ -637,10 +1029,12 @@ def _render_year_line_svg(points: list[dict[str, Any]], family: str, descending:
         f'x2="{plot_right}" y2="{sy(v):.1f}" />'
         for v in y_quarters
     )
+    _ep_px = [sy(points[0]["mark_value"]), sy(points[-1]["mark_value"])]
     label_y = "".join(
         f'<text x="{plot_left - 4}" y="{sy(v):.1f}" dy="4" '
         f'text-anchor="end" class="ax-grid">{_format_y_tick(v, family)}</text>'
         for v in y_quarters
+        if _y_label_safe(sy(v), _ep_px)
     )
 
     # Bounding box
@@ -801,10 +1195,12 @@ def _render_age_scatter_svg(points: list[dict[str, Any]], family: str, descendin
         f'x2="{plot_right}" y2="{sy(v):.1f}" />'
         for v in y_quarters
     )
+    _ep_px = [sy(max(ys) if descending else min(ys))]
     label_y = "".join(
         f'<text x="{plot_left - 4}" y="{sy(v):.1f}" dy="4" '
         f'text-anchor="end" class="ax-grid">{_format_y_tick(v, family)}</text>'
         for v in y_quarters
+        if _y_label_safe(sy(v), _ep_px)
     )
 
     box = (
@@ -1106,6 +1502,7 @@ def _render_wr_chart_svg(
         f'<text x="{plot_left - 4}" y="{sy(yv):.1f}" dy="4" '
         f'text-anchor="end" class="ax-grid">{intermediate_fmt(yv)}</text>'
         for yv in y_quarters
+        if _y_label_safe(sy(yv), [plot_bot, plot_top])
     )
 
     # Bounding box

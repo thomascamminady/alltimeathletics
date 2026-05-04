@@ -51,9 +51,7 @@ def test_source_line_contains_mark_raw(df: pl.DataFrame) -> None:
     A regression that re-formats the mark token (decimal swap, annotation
     stripping, leading-zero fix) before recording would break this.
     """
-    mismatch = df.filter(
-        ~pl.col("source_line").str.contains(pl.col("mark_raw"), literal=True)
-    )
+    mismatch = df.filter(~pl.col("source_line").str.contains(pl.col("mark_raw"), literal=True))
     assert mismatch.height == 0, (
         f"{mismatch.height} rows have mark_raw not in source_line; e.g. "
         f"{mismatch.select('mark_raw', 'source_line').head(3).to_dicts()}"
@@ -81,19 +79,14 @@ def test_no_html_tags_in_name(df: pl.DataFrame) -> None:
     """Names must not carry stray HTML tags or named entities."""
     bad = df.filter(pl.col("name").str.contains(_HTML_TAG_RE))
     assert bad.height == 0, (
-        f"{bad.height} names contain HTML/entities: "
-        f"{bad['name'].head(5).to_list()}"
+        f"{bad.height} names contain HTML/entities: {bad['name'].head(5).to_list()}"
     )
 
 
 def test_no_html_tags_in_venue(df: pl.DataFrame) -> None:
-    bad = df.filter(
-        pl.col("venue").is_not_null()
-        & pl.col("venue").str.contains(_HTML_TAG_RE)
-    )
+    bad = df.filter(pl.col("venue").is_not_null() & pl.col("venue").str.contains(_HTML_TAG_RE))
     assert bad.height == 0, (
-        f"{bad.height} venues contain HTML/entities: "
-        f"{bad['venue'].head(5).to_list()}"
+        f"{bad.height} venues contain HTML/entities: {bad['venue'].head(5).to_list()}"
     )
 
 
@@ -103,8 +96,7 @@ def test_no_mojibake_in_name(df: pl.DataFrame) -> None:
     mojibake_re = r"Ã[\x80-\xbf]|Â[\x80-\xbf]|â\x80|�"
     bad = df.filter(pl.col("name").str.contains(mojibake_re))
     assert bad.height == 0, (
-        f"{bad.height} names show encoding mojibake: "
-        f"{bad['name'].head(5).to_list()}"
+        f"{bad.height} names show encoding mojibake: {bad['name'].head(5).to_list()}"
     )
 
 
@@ -147,8 +139,7 @@ def test_position_values_are_short_and_clean(df: pl.DataFrame) -> None:
         f"{too_long['position'].head(5).to_list()}"
     )
     assert has_html.height == 0, (
-        f"{has_html.height} positions contain HTML chars: "
-        f"{has_html['position'].head(5).to_list()}"
+        f"{has_html.height} positions contain HTML chars: {has_html['position'].head(5).to_list()}"
     )
 
 
@@ -186,15 +177,12 @@ def test_one_source_url_per_event_section(df: pl.DataFrame) -> None:
     )
     bad = by_section.filter(pl.col("n") > 1)
     assert bad.height == 0, (
-        f"{bad.height} sections map to multiple source URLs: "
-        f"{bad.head(3).to_dicts()}"
+        f"{bad.height} sections map to multiple source URLs: {bad.head(3).to_dicts()}"
     )
 
 
 def test_section_names_are_never_empty(df: pl.DataFrame) -> None:
-    bad = df.filter(
-        pl.col("section").is_null() | (pl.col("section").str.strip_chars() == "")
-    )
+    bad = df.filter(pl.col("section").is_null() | (pl.col("section").str.strip_chars() == ""))
     assert bad.height == 0, f"{bad.height} rows have empty section"
 
 
@@ -259,26 +247,24 @@ def test_decade_coverage_on_top_track_events(df: pl.DataFrame) -> None:
 # that doubles rows. Bands are 0.5×–3× the 2026-04 baseline and intentionally
 # generous, so genuine list growth doesn't make the test flap.
 EVENT_VOLUME_BANDS: list[tuple[str, int, int]] = [
-    ("m_100ok",   3000, 15000),
-    ("m_200ok",   3000, 15000),
-    ("m_400ok",   3000, 15000),
-    ("m_800ok",   3000, 15000),
-    ("m_1500ok",  3000, 15000),
-    ("m_5000ok",  3000, 15000),
-    ("m_10kok",   2000, 15000),
-    ("mmaraok",   2000, 30000),
-    ("wmaraok",   1000, 20000),
-    ("mlongok",   2000, 12000),
-    ("mhighok",    800,  6000),
-    ("mdecaok",    500,  4000),
-    ("m4x100ok",   400,  6000),
+    ("m_100ok", 3000, 15000),
+    ("m_200ok", 3000, 15000),
+    ("m_400ok", 3000, 15000),
+    ("m_800ok", 3000, 15000),
+    ("m_1500ok", 3000, 15000),
+    ("m_5000ok", 3000, 15000),
+    ("m_10kok", 2000, 15000),
+    ("mmaraok", 2000, 30000),
+    ("wmaraok", 1000, 20000),
+    ("mlongok", 2000, 12000),
+    ("mhighok", 800, 6000),
+    ("mdecaok", 500, 4000),
+    ("m4x100ok", 400, 6000),
 ]
 
 
 @pytest.mark.parametrize(("slug", "lo", "hi"), EVENT_VOLUME_BANDS)
-def test_event_row_count_in_band(
-    df: pl.DataFrame, slug: str, lo: int, hi: int
-) -> None:
+def test_event_row_count_in_band(df: pl.DataFrame, slug: str, lo: int, hi: int) -> None:
     n = df.filter(pl.col("event_slug") == slug).height
     assert lo <= n <= hi, f"{slug}: {n} rows not in [{lo}, {hi}] — parser regression?"
 

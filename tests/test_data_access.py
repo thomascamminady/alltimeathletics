@@ -158,12 +158,7 @@ def test_sort_by_mark_value_produces_real_ranking(df: pl.DataFrame) -> None:
 def test_group_by_country_finds_top_nations(df: pl.DataFrame) -> None:
     """Common analyst question: which countries dominate the all-time lists?"""
     sub = df.filter(pl.col("event_slug") == "m_100ok")
-    by_country = (
-        sub.group_by("country")
-        .agg(pl.len().alias("n"))
-        .sort("n", descending=True)
-        .head(5)
-    )
+    by_country = sub.group_by("country").agg(pl.len().alias("n")).sort("n", descending=True).head(5)
     countries = by_country["country"].to_list()
     assert "USA" in countries
     assert "JAM" in countries
@@ -235,8 +230,7 @@ def test_name_is_never_empty(df: pl.DataFrame) -> None:
 
 def test_country_codes_are_2_or_3_chars(df: pl.DataFrame) -> None:
     bad = df.filter(
-        pl.col("country").is_not_null()
-        & ~pl.col("country").str.contains(r"^[A-Z]{2,3}\d?$")
+        pl.col("country").is_not_null() & ~pl.col("country").str.contains(r"^[A-Z]{2,3}\d?$")
     )
     assert bad.is_empty(), (
         f"{len(bad)} rows have weird country codes; sample: "
@@ -306,9 +300,7 @@ def test_per_event_json_row_counts_match_parquet(df: pl.DataFrame) -> None:
     events_dir = _per_event_json_dir()
     if events_dir is None:
         pytest.skip("per-event JSON not generated; run `make site`")
-    counts_parquet = (
-        df.group_by("event_slug").agg(pl.len().alias("n")).to_dicts()
-    )
+    counts_parquet = df.group_by("event_slug").agg(pl.len().alias("n")).to_dicts()
     by_slug_count = {r["event_slug"]: r["n"] for r in counts_parquet}
     for slug, expected in by_slug_count.items():
         f = events_dir / f"{slug}.json"

@@ -51,9 +51,7 @@ _SECTION_RE = re.compile(
 # which are inconsistently placed (sometimes before, sometimes after, sometimes
 # missing for the main list entirely).
 _JUMP_NAV_RE = re.compile(r"jump to:.*?</td>", re.IGNORECASE | re.DOTALL)
-_JUMP_LINK_RE = re.compile(
-    r'href=["]?#(\d+)["]?[^>]*>([^<]+)</a>', re.IGNORECASE
-)
+_JUMP_LINK_RE = re.compile(r'href=["]?#(\d+)["]?[^>]*>([^<]+)</a>', re.IGNORECASE)
 _ANAME_ALL_RE = re.compile(r'<a\s+name="(\d+)"[^>]*>', re.IGNORECASE)
 # Used to classify each <A name> match. Three Larsson patterns:
 #   <A name="N"><H1>...        section (H1)
@@ -247,9 +245,7 @@ def _inline_title_for_anchor(text: str, anchor_end: int) -> str | None:
     leaving e.g. ``<A name="3">indoor performances</h3></a>``.
     """
     tail = text[anchor_end : anchor_end + 300]
-    m = re.match(
-        r'\s*<h[13][^>]*>(.*?)</h[13]>', tail, re.IGNORECASE | re.DOTALL
-    )
+    m = re.match(r"\s*<h[13][^>]*>(.*?)</h[13]>", tail, re.IGNORECASE | re.DOTALL)
     if m is not None:
         return _TAGS_RE.sub("", m.group(1)).strip() or None
     # Fallback for missing opening tag: take everything up to </h3>.
@@ -316,9 +312,7 @@ def _parse_block(
             if row is None:
                 # try as a member of the previous team line
                 if pending_relay_row is not None and _looks_like_relay_member(tokens):
-                    pending_relay_row.setdefault("members", []).append(
-                        _parse_relay_member(tokens)
-                    )
+                    pending_relay_row.setdefault("members", []).append(_parse_relay_member(tokens))
                 elif _is_orphan_country_line(tokens):
                     # Larsson sometimes has a stray country-code line with no
                     # athlete name. Silently drop it.
@@ -343,7 +337,10 @@ def _parse_block(
         except _StepError as exc:
             diagnostics.append(
                 ParseDiagnostic(
-                    section=section, line=line, step=exc.step, reason=exc.reason,
+                    section=section,
+                    line=line,
+                    step=exc.step,
+                    reason=exc.reason,
                 )
             )
             continue
@@ -404,9 +401,7 @@ def _maybe_extract_wind(tokens: list[str], idx: int) -> tuple[float | None, int]
     return None, idx
 
 
-def _extract_tail(
-    tokens: list[str], idx: int
-) -> tuple[list[str], date | None, str]:
+def _extract_tail(tokens: list[str], idx: int) -> tuple[list[str], date | None, str]:
     """Pull the trailing date+venue off the line.
 
     Returns (middle_tokens, parsed_date, venue). ``parsed_date`` may be None
@@ -436,11 +431,7 @@ def _extract_tail(
     # spurious '69.4' field after the date; w5kwno rank 1 has '21.00').
     # If the second-to-last token is a real date and the last isn't, the
     # last is editorial debris.
-    if (
-        len(tokens) >= 2
-        and not _DATE_RE.match(tokens[-1])
-        and _DATE_RE.match(tokens[-2])
-    ):
+    if len(tokens) >= 2 and not _DATE_RE.match(tokens[-1]) and _DATE_RE.match(tokens[-2]):
         tokens = tokens[:-1]
     # Heal venue+date fusion: if the last token ends with a date but has
     # extra text in front, peel the date off and treat the rest as venue.
@@ -468,7 +459,7 @@ def _extract_country(middle: list[str]) -> tuple[str, list[str], list[str]]:
     """
     for i in range(len(middle) - 1, 0, -1):
         if _COUNTRY_RE.match(middle[i]):
-            return middle[i], middle[:i], middle[i + 1:]
+            return middle[i], middle[:i], middle[i + 1 :]
 
     country, name_tokens, after_country = _split_embedded_country(middle)
     if country is None:
@@ -788,9 +779,7 @@ def _split_mark_annotation(raw: str) -> tuple[str, str | None]:
     return s[: m.start()], m.group(0)
 
 
-def _normalize_mark_with_annotation(
-    raw: str, family: str
-) -> tuple[float | None, str | None]:
+def _normalize_mark_with_annotation(raw: str, family: str) -> tuple[float | None, str | None]:
     """Convert a printed mark to ``(numeric_value, annotation)``.
 
     - track_time / track_time_wind: seconds (floats; supports h:mm:ss, m:ss.cc, ss.cc)

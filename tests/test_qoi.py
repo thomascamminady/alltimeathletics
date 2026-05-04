@@ -70,12 +70,35 @@ KNOWN_BAD_AGE_ROWS: set[tuple[str, str, date]] = {
 # us to either accept a new annotation or fix the parser if the letter is bleeding
 # in from elsewhere.
 KNOWN_MARK_ANNOTATIONS: set[str] = {
-    "+", "A", "a", "*", "y", "i", "h", "m", "p", "e", "x", "d",
-    "*A", "yA", "A*", "m+", "a+", "Ay", "B", "Y",
+    "+",
+    "A",
+    "a",
+    "*",
+    "y",
+    "i",
+    "h",
+    "m",
+    "p",
+    "e",
+    "x",
+    "d",
+    "*A",
+    "yA",
+    "A*",
+    "m+",
+    "a+",
+    "Ay",
+    "B",
+    "Y",
     # Symbols Larsson uses on a handful of marks. Origin varies (en route,
     # short-track, hand-timed variant, indoor mat, etc.); we keep them as raw
     # annotations so consumers can filter without re-parsing mark_raw.
-    "#", "'", "´", "@", "-", "A@",
+    "#",
+    "'",
+    "´",
+    "@",
+    "-",
+    "A@",
 }
 
 
@@ -160,9 +183,7 @@ ACTIVE_RECORD_BOUNDS: list[tuple[str, float, float]] = [
 
 
 @pytest.mark.parametrize(("slug", "lo", "hi"), ACTIVE_RECORD_BOUNDS)
-def test_active_era_records_in_bounds(
-    df: pl.DataFrame, slug: str, lo: float, hi: float
-) -> None:
+def test_active_era_records_in_bounds(df: pl.DataFrame, slug: str, lo: float, hi: float) -> None:
     best = _best_mark(df, slug, exclude_annotations={"*", "h"})
     v = best["mark_value"]
     assert lo <= v <= hi, f"{slug}: top mark {v} not in [{lo}, {hi}]; row={best}"
@@ -177,9 +198,7 @@ def _ages(df: pl.DataFrame) -> pl.DataFrame:
         pl.col("dob").is_not_null()
         & pl.col("date").is_not_null()
         & (pl.col("dob_precision") == "day")
-    ).with_columns(
-        ((pl.col("date") - pl.col("dob")).dt.total_days() / 365.25).alias("age_years")
-    )
+    ).with_columns(((pl.col("date") - pl.col("dob")).dt.total_days() / 365.25).alias("age_years"))
 
 
 def test_athlete_ages_at_performance_are_plausible(df: pl.DataFrame) -> None:
@@ -197,8 +216,7 @@ def test_athlete_ages_at_performance_are_plausible(df: pl.DataFrame) -> None:
     }
     unexpected = keys - KNOWN_BAD_AGE_ROWS
     assert not unexpected, (
-        f"{len(unexpected)} new implausible-age rows not in catalogue: "
-        f"{sorted(unexpected)[:5]}"
+        f"{len(unexpected)} new implausible-age rows not in catalogue: {sorted(unexpected)[:5]}"
     )
 
 
@@ -224,7 +242,7 @@ def test_catalogued_bad_age_rows_still_present(df: pl.DataFrame) -> None:
 # mark). Loose bounds — a real parser bug that mangled the country column would
 # crash these to ~0; normal year-to-year drift is much smaller than the slack.
 COUNTRY_DOMINANCE: list[tuple[str, set[str], int]] = [
-    ("m_100ok", {"USA", "JAM"}, 6),     # actually 8 of 10 currently
+    ("m_100ok", {"USA", "JAM"}, 6),  # actually 8 of 10 currently
     ("w_100ok", {"USA", "JAM"}, 7),
     ("m_200ok", {"USA", "JAM"}, 7),
     ("m_5000ok", {"KEN", "ETH", "UGA"}, 8),
@@ -239,26 +257,19 @@ COUNTRY_DOMINANCE: list[tuple[str, set[str], int]] = [
 def test_country_dominance_in_top_10(
     df: pl.DataFrame, slug: str, countries: set[str], min_count: int
 ) -> None:
-    sub = df.filter(
-        (pl.col("event_slug") == slug) & pl.col("mark_value").is_not_null()
-    )
+    sub = df.filter((pl.col("event_slug") == slug) & pl.col("mark_value").is_not_null())
     family = sub["family"][0]
     desc = family in ("field_distance", "field_distance_wind", "combined_points")
     best_per_athlete = (
         sub.group_by("name", "country")
-        .agg(
-            (pl.col("mark_value").max() if desc else pl.col("mark_value").min()).alias(
-                "best"
-            )
-        )
+        .agg((pl.col("mark_value").max() if desc else pl.col("mark_value").min()).alias("best"))
         .sort("best", descending=desc)
         .head(10)
     )
     found = best_per_athlete["country"].to_list()
     hits = sum(1 for c in found if c in countries)
     assert hits >= min_count, (
-        f"{slug}: only {hits} of top-10 from {countries}, expected ≥ {min_count}; "
-        f"got {found}"
+        f"{slug}: only {hits} of top-10 from {countries}, expected ≥ {min_count}; got {found}"
     )
 
 
@@ -310,6 +321,7 @@ def test_dob_inconsistency_rate_is_small(df: pl.DataFrame) -> None:
 
 # -------------------------------------------------------------- physics --
 
+
 # Per-event-family physical bounds on every parsed mark. These wouldn't catch
 # fine-grained errors, but they crash through the floor if family dispatch
 # breaks and a track time gets parsed as metres.
@@ -329,7 +341,7 @@ def test_field_marks_within_physical_bounds(df: pl.DataFrame) -> None:
         pl.col("family").is_in(["field_distance", "field_distance_wind"])
         & pl.col("mark_value").is_not_null()
     )
-    assert field["mark_value"].min() > 1.0    # a 1m HJ would be weirdly low
+    assert field["mark_value"].min() > 1.0  # a 1m HJ would be weirdly low
     assert field["mark_value"].max() < 110.0  # Železný-era javelin pre-1986 spec
 
 
@@ -388,20 +400,16 @@ def test_categorical_columns_have_closed_vocabulary(df: pl.DataFrame) -> None:
 def test_country_column_is_iso_shaped(df: pl.DataFrame) -> None:
     """Every non-null country is 2-3 uppercase letters + optional digit."""
     bad = df.filter(
-        pl.col("country").is_not_null()
-        & ~pl.col("country").str.contains(r"^[A-Z]{2,3}\d?$")
+        pl.col("country").is_not_null() & ~pl.col("country").str.contains(r"^[A-Z]{2,3}\d?$")
     )
     assert bad.height == 0, (
-        f"{bad.height} rows have non-IOC-shaped country: "
-        f"{bad['country'].unique().to_list()[:10]}"
+        f"{bad.height} rows have non-IOC-shaped country: {bad['country'].unique().to_list()[:10]}"
     )
 
 
 def test_date_year_distribution_is_modern(df: pl.DataFrame) -> None:
     """≥ 95 % of performance dates fall within Larsson's coverage window."""
-    years = df.filter(pl.col("date").is_not_null()).select(
-        pl.col("date").dt.year().alias("y")
-    )
+    years = df.filter(pl.col("date").is_not_null()).select(pl.col("date").dt.year().alias("y"))
     in_window = years.filter((pl.col("y") >= 1960) & (pl.col("y") <= date.today().year + 1))
     ratio = in_window.height / max(1, years.height)
     assert ratio >= 0.95, f"only {ratio:.3%} of dates fall in [1960, this year+1]"
@@ -410,9 +418,7 @@ def test_date_year_distribution_is_modern(df: pl.DataFrame) -> None:
 def test_dob_year_distribution_covers_century(df: pl.DataFrame) -> None:
     """Athletes' birth years span at least 70 years and stay before today."""
     today_year = date.today().year
-    dobs = df.filter(pl.col("dob").is_not_null()).select(
-        pl.col("dob").dt.year().alias("y")
-    )["y"]
+    dobs = df.filter(pl.col("dob").is_not_null()).select(pl.col("dob").dt.year().alias("y"))["y"]
     assert dobs.max() <= today_year, f"future dob seen: {dobs.max()}"
     assert dobs.max() - dobs.min() >= 70, (
         f"dob span only {dobs.max() - dobs.min()} years; expected ≥ 70"
@@ -433,12 +439,12 @@ def test_wind_distribution_is_centered_and_bounded(df: pl.DataFrame) -> None:
 def test_mark_value_per_family_in_band(df: pl.DataFrame) -> None:
     """Per-family mark_value range — catches a family-dispatch swap."""
     bands: dict[str, tuple[float, float]] = {
-        "track_time": (5.0, 90_000.0),         # 60m up to 24-hour run
-        "track_time_wind": (5.0, 30.0),         # short sprint times only
-        "field_distance": (0.5, 110.0),         # HJ floor to javelin (old spec)
-        "field_distance_wind": (0.5, 25.0),     # LJ/TJ wind-aided
-        "combined_points": (50.0, 10_000.0),    # decathlon/heptathlon
-        "relay": (30.0, 2_000.0),               # 4x100 up to 4x1500
+        "track_time": (5.0, 90_000.0),  # 60m up to 24-hour run
+        "track_time_wind": (5.0, 30.0),  # short sprint times only
+        "field_distance": (0.5, 110.0),  # HJ floor to javelin (old spec)
+        "field_distance_wind": (0.5, 25.0),  # LJ/TJ wind-aided
+        "combined_points": (50.0, 10_000.0),  # decathlon/heptathlon
+        "relay": (30.0, 2_000.0),  # 4x100 up to 4x1500
     }
     for family, (lo, hi) in bands.items():
         sub = df.filter(pl.col("family") == family)["mark_value"]

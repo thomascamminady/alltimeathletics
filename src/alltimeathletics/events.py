@@ -38,8 +38,8 @@ Family = Literal[
 
 @dataclass(frozen=True, slots=True)
 class Event:
-    slug: str       # URL filename without `.htm`; also the canonical event id
-    label: str      # human-readable, e.g. "100 metres"
+    slug: str  # URL filename without `.htm`; also the canonical event id
+    label: str  # human-readable, e.g. "100 metres"
     sex: Sex
     legality: Legality
     family: Family
@@ -67,7 +67,6 @@ _RAW: tuple[tuple[str, str, Sex, Legality, Family], ...] = (
     ("m_60mhno", "60m hurdles", "men", "non-legal", "track_time_wind"),
     ("m_100yno", "100 yards", "men", "non-legal", "track_time_wind"),
     ("m_200hno", "200m hurdles", "men", "non-legal", "track_time_wind"),
-
     # ---------- MEN — track times without wind (track_time) ----------
     ("m_400ok", "400 metres", "men", "legal", "track_time"),
     ("m_800ok", "800 metres", "men", "legal", "track_time"),
@@ -126,13 +125,11 @@ _RAW: tuple[tuple[str, str, Sex, Legality, Family], ...] = (
     ("m20kwno", "20km race walk", "men", "non-legal", "track_time"),
     ("m50kwno", "50km race walk", "men", "non-legal", "track_time"),
     ("m10kwno", "10000m track walk", "men", "non-legal", "track_time"),
-
     # ---------- MEN — horizontal jumps (field_distance_wind) ----------
     ("mlongok", "Long jump", "men", "legal", "field_distance_wind"),
     ("mtripok", "Triple jump", "men", "legal", "field_distance_wind"),
     ("mlongno", "Long jump", "men", "non-legal", "field_distance_wind"),
     ("mtripno", "Triple jump", "men", "non-legal", "field_distance_wind"),
-
     # ---------- MEN — vertical jumps + throws (field_distance) ----------
     ("mhighok", "High jump", "men", "legal", "field_distance"),
     ("mpoleok", "Pole vault", "men", "legal", "field_distance"),
@@ -148,7 +145,6 @@ _RAW: tuple[tuple[str, str, Sex, Legality, Family], ...] = (
     ("mhammno", "Hammer throw", "men", "non-legal", "field_distance"),
     ("mjaveno", "Javelin throw", "men", "non-legal", "field_distance"),
     ("mjaveoldno", "Javelin throw (old specs)", "men", "non-legal", "field_distance"),
-
     # ---------- MEN — combined / relays ----------
     ("mdecaok", "Decathlon", "men", "legal", "combined_points"),
     ("mdecano", "Decathlon", "men", "non-legal", "combined_points"),
@@ -162,7 +158,6 @@ _RAW: tuple[tuple[str, str, Sex, Legality, Family], ...] = (
     ("m4x400no", "4x400m relay", "men", "non-legal", "relay"),
     ("m4x200no", "4x200m relay", "men", "non-legal", "relay"),
     ("m4x800no", "4x800m relay", "men", "non-legal", "relay"),
-
     # ---------- WOMEN — wind-legal sprints / hurdles ----------
     ("w_100ok", "100 metres", "women", "legal", "track_time_wind"),
     ("w_200ok", "200 metres", "women", "legal", "track_time_wind"),
@@ -174,7 +169,6 @@ _RAW: tuple[tuple[str, str, Sex, Legality, Family], ...] = (
     ("w_100hno", "100m hurdles", "women", "non-legal", "track_time_wind"),
     ("w60mno", "60 metres", "women", "non-legal", "track_time_wind"),
     ("w_60mhno", "60m hurdles", "women", "non-legal", "track_time_wind"),
-
     # ---------- WOMEN — track times no wind ----------
     ("w_400ok", "400 metres", "women", "legal", "track_time"),
     ("w_800ok", "800 metres", "women", "legal", "track_time"),
@@ -229,13 +223,11 @@ _RAW: tuple[tuple[str, str, Sex, Legality, Family], ...] = (
     ("w20kwno", "20km race walk", "women", "non-legal", "track_time"),
     ("w5kwno", "5000m track walk", "women", "non-legal", "track_time"),
     ("w10kwno", "10km race walk", "women", "non-legal", "track_time"),
-
     # ---------- WOMEN — horizontal jumps ----------
     ("wlongok", "Long jump", "women", "legal", "field_distance_wind"),
     ("wtripleok", "Triple jump", "women", "legal", "field_distance_wind"),
     ("wlongno", "Long jump", "women", "non-legal", "field_distance_wind"),
     ("wtripleno", "Triple jump", "women", "non-legal", "field_distance_wind"),
-
     # ---------- WOMEN — vertical jumps + throws ----------
     ("whighok", "High jump", "women", "legal", "field_distance"),
     ("wpoleok", "Pole vault", "women", "legal", "field_distance"),
@@ -250,7 +242,6 @@ _RAW: tuple[tuple[str, str, Sex, Legality, Family], ...] = (
     ("wdiscno", "Discus throw", "women", "non-legal", "field_distance"),
     ("whammno", "Hammer throw", "women", "non-legal", "field_distance"),
     ("wjaveno", "Javelin throw", "women", "non-legal", "field_distance"),
-
     # ---------- WOMEN — combined / relays ----------
     ("whepaok", "Heptathlon", "women", "legal", "combined_points"),
     ("whepano", "Heptathlon", "women", "non-legal", "combined_points"),
@@ -261,7 +252,6 @@ _RAW: tuple[tuple[str, str, Sex, Legality, Family], ...] = (
     ("w4x100no", "4x100m relay", "women", "non-legal", "relay"),
     ("w4x400no", "4x400m relay", "women", "non-legal", "relay"),
     ("w4x800no", "4x800m relay", "women", "non-legal", "relay"),
-
     # ---------- MIXED ----------
     ("x4x400ok", "4x400m relay", "mixed", "legal", "relay"),
     ("x4x400no", "4x400m relay", "mixed", "non-legal", "relay"),
@@ -269,8 +259,7 @@ _RAW: tuple[tuple[str, str, Sex, Legality, Family], ...] = (
 
 
 EVENTS: tuple[Event, ...] = tuple(
-    Event(slug=s, label=lbl, sex=x, legality=g, family=f)
-    for (s, lbl, x, g, f) in _RAW
+    Event(slug=s, label=lbl, sex=x, legality=g, family=f) for (s, lbl, x, g, f) in _RAW
 )
 
 

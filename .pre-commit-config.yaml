@@ -1,0 +1,32 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff format (check)
+        language: system
+        entry: uv run ruff format --check
+        types: [python]
+        args: [src, tests]
+        pass_filenames: false
+
+      - id: ruff-lint
+        name: ruff lint
+        language: system
+        entry: uv run ruff check
+        types: [python]
+        args: [src, tests]
+        pass_filenames: false
+
+      - id: ty-typecheck
+        name: ty typecheck
+        language: system
+        entry: uv run ty check src
+        pass_filenames: false
+        always_run: true
+
+      - id: pytest
+        name: pytest
+        language: system
+        entry: uv run pytest
+        pass_filenames: false
+        always_run: true

@@ -1,14 +1,13 @@
 {% extends "base.html" %}
 {% block title %}{{ event.label }} ({{ event.sex }}, {{ event.legality }}) — All-Time Athletics{% endblock %}
 {% block main %}
-<nav class="crumbs"><a href="{{ site_root }}index.html">&larr; All events</a></nav>
+<div class="table-toolbar">
+  <a href="{{ site_root }}index.html" class="btn">All events</a>
+  <a href="{{ site_root }}analytics/{{ event.slug }}.html" class="btn">View analytics</a>
+  <a href="{{ event.url }}" class="btn" rel="external noopener" target="_blank">View source</a>
+</div>
 
 <h1>{{ event.label }} <span class="meta-tag">{{ event.sex }}</span> <span class="meta-tag">{{ event.legality }}</span></h1>
-
-<p class="lede">
-  <a href="{{ site_root }}analytics/{{ event.slug }}.html">View analytics &rarr;</a>
-  &mdash; WR progression, year-by-year trends, age curve, and stats.
-</p>
 
 {# ----- toolbar: WR-only toggle (#1) + section dropdown (#2 redux) ------ #}
 <div class="table-toolbar" role="toolbar" aria-label="Table filters">
@@ -45,8 +44,7 @@
 
 <p class="lede">
   Showing <span id="visible-count">{{ row_count }}</span> performances. Click a column header to sort.
-  Type into the column headers to filter. The <strong>↗</strong> column links to the source
-  section on alltime-athletics.com — hover it to see the raw line each row was parsed from.
+  Type into the column headers to filter.
 </p>
 
 {% if family == 'relay' %}
@@ -54,12 +52,6 @@
 {% endif %}
 
 <div id="table"></div>
-
-<p class="source-link">
-  <strong>Source:</strong>
-  <a href="{{ event.url }}" rel="external">{{ event.url }}</a>
-  &middot; maintained by Peter Larsson
-</p>
 
 <script src="{{ static_root }}tabulator.min.js"></script>
 <script>
@@ -121,14 +113,6 @@ if (!isRelay) {
 columns.push(
   { title: "Venue", field: "venue", headerFilter: "input", minWidth: 160 },
   { title: "Date", field: "date", width: 120, sorter: "date", headerFilter: "input" },
-  { title: "Source", field: "source_url", width: 80, headerSort: false, headerFilter: false,
-    tooltip: (_e, cell) => cell.getRow().getData().source_line || "",
-    formatter: (cell) => {
-      const url = cell.getValue();
-      if (!url) return "";
-      return `<a href="${url}" rel="external noopener" title="Open this section on alltime-athletics.com">↗</a>`;
-    },
-  },
   { title: "Section", field: "section", visible: false, headerFilter: "input" },
   { title: "Mark annotation", field: "mark_annotation", visible: false, headerFilter: "input" },
   { title: "DOB precision", field: "dob_precision", visible: false, headerFilter: "input" },
