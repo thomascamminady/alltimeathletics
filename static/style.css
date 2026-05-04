@@ -371,6 +371,36 @@ footer {
 .wr-chart .scatter-dot { fill: var(--accent); fill-opacity: 0.35; stroke: none; }
 .wr-chart .scatter-dot:hover { fill-opacity: 1; }
 
+/* ---- interactive athlete chart controls ----------------------- */
+.chart-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem var(--space-3);
+  margin-top: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+}
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.chart-legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
 /* ---- table toolbar (WR-only + section dropdown) --------------- */
 
 .table-toolbar {

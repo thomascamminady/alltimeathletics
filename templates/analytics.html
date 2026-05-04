@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block title %}{{ event.label }} ({{ event.sex }}, {{ event.legality }}) — Analytics{% endblock %}
 {% block main %}
-<nav class="crumbs">
-  <a href="{{ site_root }}index.html">&larr; All events</a> &middot;
-  <a href="{{ site_root }}event/{{ event.slug }}.html">{{ event.label }} ({{ event.sex }}) table</a>
-</nav>
+<div class="table-toolbar">
+  <a href="{{ site_root }}index.html" class="btn">All events</a>
+  <a href="{{ site_root }}event/{{ event.slug }}.html" class="btn">{{ event.label }} table</a>
+</div>
 
 <h1>
   {{ event.label }}
@@ -144,11 +144,6 @@
   </summary>
   <div class="chart-body">
     {{ year_bars_svg|safe }}
-    <p class="chart-note">
-      How many performances on the canonical list belong to each year.
-      Bars trending up = the event is getting deeper (or sample bias as the
-      list cutoff stays put while modern fields grow).
-    </p>
   </div>
 </details>
 {% endif %}
@@ -172,10 +167,6 @@
       </li>
       {% endfor %}
     </ol>
-    <p class="chart-note">
-      Number of athletes from each country in the all-time top 100 of the
-      canonical list. Wider bar = more representation.
-    </p>
   </div>
 </details>
 {% endif %}
@@ -191,11 +182,6 @@
   </summary>
   <div class="chart-body">
     {{ age_scatter_svg|safe }}
-    <p class="chart-note">
-      Each dot is one canonical performance plotted against the athlete's
-      age on the day of the mark. The cloud shows when athletes typically
-      run their fastest in this event.
-    </p>
   </div>
 </details>
 {% endif %}
