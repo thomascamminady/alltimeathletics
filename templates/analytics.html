@@ -4,6 +4,7 @@
 <div class="table-toolbar">
   <a href="{{ site_root }}index.html" class="btn">Home</a>
   <a href="{{ site_root }}event/{{ event.slug }}.html" class="btn">{{ event.label }} table</a>
+  <a href="{{ event.url }}" class="btn" rel="external noopener" target="_blank">View source</a>
 </div>
 
 <h1>
@@ -239,9 +240,4 @@
 </details>
 {% endif %}
 
-<p class="source-link">
-  <strong>Source:</strong>
-  <a href="{{ event.url }}" rel="external">{{ event.url }}</a>
-  &middot; maintained by Peter Larsson
-</p>
 {% endblock %}

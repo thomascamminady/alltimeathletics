@@ -144,7 +144,7 @@ footer p { margin: var(--space-1) 0; }
 .card > h2:first-child { margin-top: 0; }
 
 /* Aliases — every "panel" on the site uses the same card chrome.   */
-.source-link, .download-bar, .recent-panel, .summary-card {
+.download-bar, .recent-panel, .summary-card {
   margin: var(--space-3) 0;
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border);

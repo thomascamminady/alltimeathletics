@@ -51,12 +51,6 @@
 
 <div id="sql-result"></div>
 
-<p class="source-link">
-  Powered by <a href="https://duckdb.org/docs/api/wasm/overview" rel="external">DuckDB-WASM</a>.
-  Data &copy;
-  <a href="https://www.alltime-athletics.com/" rel="external">Peter Larsson</a>.
-</p>
-
 <script type="module">
 const PARQUET_URL = "{{ site_root }}data/alltime_athletics.parquet";
 const EXAMPLE = {{ example_query|tojson }};
