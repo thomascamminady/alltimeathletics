@@ -6,8 +6,8 @@
 <h1>{{ event.label }} <span class="meta-tag">{{ event.sex }}</span> <span class="meta-tag">{{ event.legality }}</span></h1>
 
 <p class="lede">
-  <a href="{{ site_root }}analytics/{{ event.slug }}.html" class="btn">Analytics</a>
-  WR progression, year-by-year trends, age curve, and stats.
+  <a href="{{ site_root }}analytics/{{ event.slug }}.html">View analytics &rarr;</a>
+  &mdash; WR progression, year-by-year trends, age curve, and stats.
 </p>
 
 {# ----- toolbar: WR-only toggle (#1) + section dropdown (#2 redux) ------ #}
@@ -45,7 +45,8 @@
 
 <p class="lede">
   Showing <span id="visible-count">{{ row_count }}</span> performances. Click a column header to sort.
-  Type into the column headers to filter.
+  Type into the column headers to filter. The <strong>↗</strong> column links to the source
+  section on alltime-athletics.com — hover it to see the raw line each row was parsed from.
 </p>
 
 {% if family == 'relay' %}
@@ -120,9 +121,23 @@ if (!isRelay) {
 columns.push(
   { title: "Venue", field: "venue", headerFilter: "input", minWidth: 160 },
   { title: "Date", field: "date", width: 120, sorter: "date", headerFilter: "input" },
+  { title: "Source", field: "source_url", width: 80, headerSort: false, headerFilter: false,
+    tooltip: (_e, cell) => cell.getRow().getData().source_line || "",
+    formatter: (cell) => {
+      const url = cell.getValue();
+      if (!url) return "";
+      return `<a href="${url}" rel="external noopener" title="Open this section on alltime-athletics.com">↗</a>`;
+    },
+  },
   { title: "Section", field: "section", visible: false, headerFilter: "input" },
   { title: "Mark annotation", field: "mark_annotation", visible: false, headerFilter: "input" },
   { title: "DOB precision", field: "dob_precision", visible: false, headerFilter: "input" },
+  { title: "Raw line", field: "source_line", visible: false, headerFilter: "input",
+    formatter: (cell) => {
+      const v = cell.getValue() || "";
+      return `<code class="raw-line">${v.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</code>`;
+    },
+  },
 );
 
 // State for our two custom filters: WR-only toggle + active sections.

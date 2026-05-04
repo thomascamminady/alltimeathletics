@@ -13,6 +13,8 @@
   --bg-soft:   #f4f3ef;   /* faint stripe / inline code background */
   --border:    #d8d6d1;
   --accent:    #1a73e8;
+  --warn:      #b87900;   /* sparingly: warning text */
+  --err:       #c0392b;   /* sparingly: error text + border */
 }
 :root[data-theme="dark"] {
   --fg:        #ededed;
@@ -21,6 +23,8 @@
   --bg-soft:   #1b1b1b;
   --border:    #2f2f2f;
   --accent:    #7aa9ff;
+  --warn:      #e0a04a;
+  --err:       #e57363;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
@@ -30,6 +34,8 @@
     --bg-soft:  #1b1b1b;
     --border:   #2f2f2f;
     --accent:   #7aa9ff;
+    --warn:     #e0a04a;
+    --err:      #e57363;
   }
 }
 
@@ -118,23 +124,12 @@ footer {
 .card > h2:first-child { margin-top: 0; }
 
 /* Aliases — every "panel" on the site uses the same card chrome.   */
-.source-link, .download-bar, .recent-panel, .summary-card, .updated-banner {
+.source-link, .download-bar, .recent-panel, .summary-card {
   margin: var(--space-3) 0;
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border);
   background: transparent;
 }
-
-/* The "last updated" banner is intentionally lighter than other cards. */
-.updated-banner {
-  font-size: var(--fs-sm);
-  color: var(--fg-muted);
-  border: none;
-  border-left: 2px solid var(--accent);
-  padding-left: var(--space-3);
-  margin: var(--space-2) 0 var(--space-3);
-}
-.updated-banner strong { color: var(--fg); font-weight: 600; }
 
 /* ---- meta tags ------------------------------------------------- */
 
@@ -457,8 +452,8 @@ footer {
   margin-left: auto;
 }
 .sql-status-ok   { color: var(--fg); }
-.sql-status-warn { color: #b87900; }
-.sql-status-err  { color: #c0392b; }
+.sql-status-warn { color: var(--warn); }
+.sql-status-err  { color: var(--err); }
 
 #sql-input {
   width: 100%;
@@ -527,12 +522,58 @@ footer {
   padding: var(--space-2) 0.8rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: var(--fs-sm);
-  color: #c0392b;
+  color: var(--err);
   background: var(--bg-soft);
-  border: 1px solid #c0392b;
+  border: 1px solid var(--err);
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+code.raw-line {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: var(--fs-xs);
+  white-space: pre;
+  color: var(--fg-muted);
+  background: transparent;
+  padding: 0;
+}
+
+/* ---- CodeMirror SQL editor (sql.html) ----------------------------- */
+/* Three-colour palette: keywords pick up the site accent, comments fade to
+   muted, everything else is body text. Keeps highlighting useful but
+   doesn't introduce new colours the rest of the site doesn't already have. */
+.CodeMirror {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+  height: auto;
+  min-height: 14em;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+}
+.CodeMirror-gutters {
+  background: var(--bg-soft);
+  border-right: 1px solid var(--border);
+}
+.CodeMirror-linenumber { color: var(--fg-muted); }
+.CodeMirror-cursor { border-left-color: var(--fg); }
+.CodeMirror-focused { outline: 2px solid var(--accent); outline-offset: -1px; }
+.CodeMirror-selected { background: var(--bg-soft) !important; }
+.CodeMirror-focused .CodeMirror-selected {
+  background: rgba(125, 125, 125, 0.35) !important;
+}
+.cm-s-default .cm-keyword,
+.cm-s-default .cm-builtin,
+.cm-s-default .cm-atom         { color: var(--accent); font-weight: 600; }
+.cm-s-default .cm-comment      { color: var(--fg-muted); font-style: italic; }
+.cm-s-default .cm-operator,
+.cm-s-default .cm-punctuation  { color: var(--fg-muted); }
+.cm-s-default .cm-string,
+.cm-s-default .cm-string-2,
+.cm-s-default .cm-number,
+.cm-s-default .cm-variable,
+.cm-s-default .cm-variable-2   { color: var(--fg); }
 
 /* ---- Tabulator overrides -------------------------------------- */
 

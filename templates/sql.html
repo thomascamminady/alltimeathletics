@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% block title %}SQL playground — All-Time Athletics{% endblock %}
 {% block main %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
 <nav class="crumbs"><a href="{{ site_root }}index.html">&larr; All events</a></nav>
 
 <h1>SQL playground</h1>
@@ -28,7 +31,9 @@
       <li><code>rank</code>, <code>mark_raw</code>, <code>mark_value</code> (numeric: seconds / metres / points)</li>
       <li><code>mark_annotation</code> (e.g. <code>'A'</code>, <code>'+'</code>, <code>'*'</code>), <code>wind</code></li>
       <li><code>name</code>, <code>country</code> (IOC code), <code>dob</code> (date), <code>dob_precision</code></li>
-      <li><code>position</code>, <code>venue</code>, <code>date</code> (perf date), <code>source_url</code></li>
+      <li><code>position</code>, <code>venue</code>, <code>date</code> (perf date)</li>
+      <li><code>source_url</code> — anchor link to the source section on alltime-athletics.com</li>
+      <li><code>source_line</code> — the raw text line each row was parsed from (for verification)</li>
     </ul>
   </div>
 </details>
@@ -61,6 +66,31 @@ const $result = document.getElementById('sql-result');
 
 let _db = null;          // duckdb instance, cached after first init
 let _registered = false; // whether the parquet has been registered
+let _cm = null;          // CodeMirror instance once the bundle has loaded
+
+function readSql()  { return _cm ? _cm.getValue() : $input.value; }
+function writeSql(s) { if (_cm) _cm.setValue(s); else $input.value = s; }
+
+function initCodeMirror() {
+  if (_cm || typeof CodeMirror === 'undefined') return;
+  _cm = CodeMirror.fromTextArea($input, {
+    mode: 'text/x-sql',
+    lineNumbers: true,
+    indentUnit: 2,
+    tabSize: 2,
+    lineWrapping: true,
+    extraKeys: {
+      'Cmd-Enter': runQuery,
+      'Ctrl-Enter': runQuery,
+    },
+  });
+}
+// CodeMirror scripts are loaded with `defer`, so they're ready at DOMContentLoaded.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initCodeMirror);
+} else {
+  initCodeMirror();
+}
 
 function setStatus(msg, kind) {
   $status.textContent = msg;
@@ -142,7 +172,7 @@ function renderTable(rows, columns, types) {
 
 async function runQuery() {
   $run.disabled = true;
-  const sql = $input.value.trim();
+  const sql = readSql().trim();
   if (!sql) {
     setStatus('Enter a query first.', 'warn');
     $run.disabled = false;
@@ -171,8 +201,9 @@ async function runQuery() {
 }
 
 $run.addEventListener('click', runQuery);
-$reset.addEventListener('click', () => { $input.value = EXAMPLE; });
-// Cmd/Ctrl-Enter to run.
+$reset.addEventListener('click', () => { writeSql(EXAMPLE); });
+// Cmd/Ctrl-Enter to run — fallback for the textarea before CodeMirror takes over,
+// or if the CDN script fails to load. CodeMirror has its own extraKeys binding.
 $input.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); runQuery(); }
 });

@@ -1,11 +1,11 @@
 {
-  "scraped_at": "2026-05-01T06:36:19.328023+00:00",
-  "n_rows": 371534,
+  "scraped_at": "2026-05-04T08:45:13.129500+00:00",
+  "n_rows": 371060,
   "n_events": 190,
   "unparsed_by_step": {
     "date": 48,
     "country": 2,
-    "rank": 7,
+    "rank": 6,
     "relay_line": 7
   },
   "events": [
@@ -15,7 +15,7 @@
       "sex": "men",
       "legality": "legal",
       "family": "track_time_wind",
-      "n_rows": 5000,
+      "n_rows": 4962,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_100ok.htm"
@@ -26,7 +26,7 @@
       "sex": "men",
       "legality": "legal",
       "family": "track_time_wind",
-      "n_rows": 5331,
+      "n_rows": 5288,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_200ok.htm"
@@ -96,7 +96,7 @@
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time_wind",
-      "n_rows": 2455,
+      "n_rows": 2418,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m100mno.htm"
@@ -107,7 +107,7 @@
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time_wind",
-      "n_rows": 1277,
+      "n_rows": 1266,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_200no.htm"
@@ -175,7 +175,7 @@
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 5369,
+      "n_rows": 5327,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_400ok.htm"
@@ -186,7 +186,7 @@
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 9734,
+      "n_rows": 9698,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_800ok.htm"
@@ -197,7 +197,7 @@
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 12503,
+      "n_rows": 12455,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_1500ok.htm"
@@ -230,7 +230,7 @@
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 10056,
+      "n_rows": 9995,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_5000ok.htm"
@@ -287,7 +287,7 @@
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 4481,
+      "n_rows": 4473,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_400hok.htm"
@@ -870,7 +870,7 @@
       "sex": "men",
       "legality": "legal",
       "family": "field_distance",
-      "n_rows": 3025,
+      "n_rows": 2960,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mdiscok.htm"
@@ -881,7 +881,7 @@
       "sex": "men",
       "legality": "legal",
       "family": "field_distance",
-      "n_rows": 2518,
+      "n_rows": 2510,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mhammok.htm"
@@ -892,7 +892,7 @@
       "sex": "men",
       "legality": "legal",
       "family": "field_distance",
-      "n_rows": 2669,
+      "n_rows": 2666,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/mjaveok.htm"
@@ -1123,7 +1123,7 @@
       "sex": "women",
       "legality": "legal",
       "family": "track_time_wind",
-      "n_rows": 3498,
+      "n_rows": 3472,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_100ok.htm"
@@ -1134,7 +1134,7 @@
       "sex": "women",
       "legality": "legal",
       "family": "track_time_wind",
-      "n_rows": 2916,
+      "n_rows": 2900,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_200ok.htm"
@@ -1145,7 +1145,7 @@
       "sex": "women",
       "legality": "legal",
       "family": "track_time_wind",
-      "n_rows": 2444,
+      "n_rows": 2442,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_100hok.htm"
@@ -1180,7 +1180,7 @@
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time_wind",
-      "n_rows": 1220,
+      "n_rows": 1200,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_100no.htm"
@@ -1191,7 +1191,7 @@
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time_wind",
-      "n_rows": 532,
+      "n_rows": 528,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_200no.htm"
@@ -1235,7 +1235,7 @@
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 4364,
+      "n_rows": 4348,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_400ok.htm"
@@ -1246,7 +1246,7 @@
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 2616,
+      "n_rows": 2612,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_800ok.htm"
@@ -1257,11 +1257,9 @@
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 3789,
-      "n_unparsed": 1,
-      "unparsed_by_step": {
-        "rank": 1
-      },
+      "n_rows": 4087,
+      "n_unparsed": 0,
+      "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_1500ok.htm"
     },
     {
@@ -1336,7 +1334,7 @@
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 31682,
+      "n_rows": 31539,
       "n_unparsed": 1,
       "unparsed_by_step": {
         "rank": 1
@@ -1349,7 +1347,7 @@
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 3180,
+      "n_rows": 3176,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_400hok.htm"
@@ -1371,7 +1369,7 @@
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 274,
+      "n_rows": 271,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w_600ok.htm"
@@ -1815,7 +1813,7 @@
       "sex": "women",
       "legality": "legal",
       "family": "field_distance_wind",
-      "n_rows": 2017,
+      "n_rows": 2014,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wlongok.htm"
@@ -1837,7 +1835,7 @@
       "sex": "women",
       "legality": "non-legal",
       "family": "field_distance_wind",
-      "n_rows": 425,
+      "n_rows": 424,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/wlongno.htm"
@@ -1903,7 +1901,7 @@
       "sex": "women",
       "legality": "legal",
       "family": "field_distance",
-      "n_rows": 17804,
+      "n_rows": 17675,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/whammok.htm"
@@ -2051,7 +2049,7 @@
       "sex": "women",
       "legality": "legal",
       "family": "relay",
-      "n_rows": 195,
+      "n_rows": 194,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/w4x800ok.htm"

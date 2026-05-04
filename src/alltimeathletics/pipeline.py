@@ -132,6 +132,7 @@ def _to_dataframe(rows: list[dict[str, Any]]) -> pl.DataFrame:
             "venue": pl.Utf8,
             "date": pl.Date,
             "source_url": pl.Utf8,
+            "source_line": pl.Utf8,
         },
         strict=False,
     )

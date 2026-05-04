@@ -37,6 +37,7 @@ EXPECTED_SCHEMA: dict[str, pl.DataType] = {
     "venue": pl.Utf8,
     "date": pl.Date,
     "source_url": pl.Utf8,
+    "source_line": pl.Utf8,
 }
 
 

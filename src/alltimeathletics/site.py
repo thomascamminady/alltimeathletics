@@ -1248,16 +1248,20 @@ def _write_per_event_json(
     """One JSON file per event slug for the static frontend.
 
     Drops fields that are constant across every row (event/event_slug/sex/
-    legality/family/source_url) and adds two derived fields:
+    legality/family) and adds two derived fields:
 
     - ``is_main``: True if this row is in the canonical (rank-1) section
     - ``is_wr``: True if this row was a world record at some point
+
+    ``source_url`` (varies by section anchor) and ``source_line`` (the raw
+    Larsson line behind each row) are kept so the table can offer a
+    "verify" link and a hidden raw-line column for spot-checking the parser.
 
     Tabulator's ajaxURL fetches these directly. The two booleans are what
     the section-chip filter and the "WRs only" toggle pivot on.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
-    drop_cols = ["event", "event_slug", "sex", "legality", "family", "source_url"]
+    drop_cols = ["event", "event_slug", "sex", "legality", "family"]
     for slug in df.select("event_slug").unique().to_series().to_list():
         meta = event_meta[slug]
         wr_keys = {(w["name"], w["date"], w["mark_raw"]) for w in meta["wr_progression"]}

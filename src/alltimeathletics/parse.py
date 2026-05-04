@@ -312,7 +312,7 @@ def _parse_block(
         tokens = _MULTISPACE_RE.split(line.strip())
 
         if event.family == "relay":
-            row = _try_parse_relay_line(tokens, event, section, source_url)
+            row = _try_parse_relay_line(tokens, event, section, source_url, line)
             if row is None:
                 # try as a member of the previous team line
                 if pending_relay_row is not None and _looks_like_relay_member(tokens):
@@ -339,7 +339,7 @@ def _parse_block(
             continue
 
         try:
-            row = _parse_individual_line(tokens, event, section, source_url)
+            row = _parse_individual_line(tokens, event, section, source_url, line)
         except _StepError as exc:
             diagnostics.append(
                 ParseDiagnostic(
@@ -505,7 +505,11 @@ def _assemble_name(name_tokens: list[str]) -> str:
 
 
 def _parse_individual_line(
-    tokens: list[str], event: Event, section: str, source_url: str
+    tokens: list[str],
+    event: Event,
+    section: str,
+    source_url: str,
+    source_line: str,
 ) -> dict[str, Any]:
     rank = _extract_rank(tokens)
     tokens = _heal_mark_name_fusion(tokens)
@@ -545,6 +549,7 @@ def _parse_individual_line(
         "date": parsed_date,
         "members": None,
         "source_url": source_url,
+        "source_line": source_line,
     }
 
 
@@ -552,7 +557,11 @@ def _parse_individual_line(
 
 
 def _try_parse_relay_line(
-    tokens: list[str], event: Event, section: str, source_url: str
+    tokens: list[str],
+    event: Event,
+    section: str,
+    source_url: str,
+    source_line: str,
 ) -> dict[str, Any] | None:
     """Return a relay team row, or ``None`` if this line is not a team line.
 
@@ -609,6 +618,7 @@ def _try_parse_relay_line(
         "date": _parse_date(date_str),
         "members": [],
         "source_url": source_url,
+        "source_line": source_line,
     }
 
 
