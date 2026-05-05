@@ -51,7 +51,7 @@
   </div>
 </section>
 
-<div class="card chart-panel">
+<div class="card">
   <div class="chart-controls">
     <span id="chart-event-wrap">
       <select id="chart-event" class="btn" aria-label="Select event"></select>
@@ -78,8 +78,10 @@ const DOB = {{ athlete.dob|tojson }};
 // ---- Chart state ----
 const state = { mode: "single", eventSlug: null, xAxis: "year", yMode: "mark" };
 const PALETTE = ["#4c78a8","#f58518","#e45756","#72b7b2","#54a24b","#eeca3b","#b279a2","#ff9da6","#9d755d","#bab0ac"];
-const CW = 560, CH = 220, ML = 60, MR = 16, MT = 16, MB = 32;
+const CW = 560, CH = 240, ML = 60, MR = 16, MT = 16, MB = 50;
 const PL = ML, PR = CW - MR, PT = MT, PB = CH - MB;
+const TICK_Y = PB + 18;        // x-axis tick label baseline
+const AXIS_LABEL_Y = PB + 38;  // x-axis title baseline (age mode)
 const MIN_GAP = 12;
 
 function scl(v, lo, hi, oLo, oHi) {
@@ -157,19 +159,19 @@ function buildSVG(pts, extremeY, extremeLabel, family) {
       const x = sx(t).toFixed(1);
       parts.push(`<line class="grid" x1="${x}" y1="${PT}" x2="${x}" y2="${PB}"/>`);
       if (Math.abs(t - xFirst) >= 4 && Math.abs(t - xLast) >= 4)
-        parts.push(`<text x="${x}" y="${CH - 8}" text-anchor="middle" class="ax-grid">${t}</text>`);
+        parts.push(`<text x="${x}" y="${TICK_Y}" text-anchor="middle" class="ax-grid">${t}</text>`);
     }
-    parts.push(`<text x="${sx(xFirst).toFixed(1)}" y="${CH - 8}" text-anchor="middle" class="ax">${xFirst}</text>`);
+    parts.push(`<text x="${sx(xFirst).toFixed(1)}" y="${TICK_Y}" text-anchor="middle" class="ax">${xFirst}</text>`);
     if (xLast !== xFirst)
-      parts.push(`<text x="${sx(xLast).toFixed(1)}" y="${CH - 8}" text-anchor="middle" class="ax">${xLast}</text>`);
+      parts.push(`<text x="${sx(xLast).toFixed(1)}" y="${TICK_Y}" text-anchor="middle" class="ax">${xLast}</text>`);
   } else {
     const ticks = ageTicks(xMin, xMax);
     for (const t of ticks) {
       const x = sx(t).toFixed(1);
       parts.push(`<line class="grid" x1="${x}" y1="${PT}" x2="${x}" y2="${PB}"/>`);
-      parts.push(`<text x="${x}" y="${CH - 8}" text-anchor="middle" class="ax-grid">${t}</text>`);
+      parts.push(`<text x="${x}" y="${TICK_Y}" text-anchor="middle" class="ax-grid">${t}</text>`);
     }
-    parts.push(`<text x="${((PL+PR)/2).toFixed(1)}" y="${CH - 2}" text-anchor="middle" class="ax-grid">age (years)</text>`);
+    parts.push(`<text x="${((PL+PR)/2).toFixed(1)}" y="${AXIS_LABEL_Y}" text-anchor="middle" class="ax-grid">age (years)</text>`);
   }
 
   const epPx = (extremeY != null && extremeY >= yMin && extremeY <= yMax) ? [sy(extremeY)] : [];

@@ -135,21 +135,17 @@ footer p { margin: var(--space-1) 0; }
 
 /* ---- single card style ----------------------------------------- */
 
-.card {
+/* Every "panel" on the site shares the same card chrome.   */
+.card,
+.download-bar,
+.recent-panel,
+.summary-card {
   margin: var(--space-3) 0;
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border);
   background: transparent;
 }
 .card > h2:first-child { margin-top: 0; }
-
-/* Aliases — every "panel" on the site uses the same card chrome.   */
-.download-bar, .recent-panel, .summary-card {
-  margin: var(--space-3) 0;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border);
-  background: transparent;
-}
 
 /* ---- meta tags ------------------------------------------------- */
 
@@ -179,9 +175,14 @@ footer p { margin: var(--space-1) 0; }
   text-decoration: none;
   display: inline-block;
 }
-.btn:hover { border-color: var(--fg-muted); text-decoration: none; }
+.btn:hover { border-color: var(--fg-muted); }
 .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.btn-on  { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.btn-on,
+.legality-tabs .tab[aria-pressed="true"] {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
 .btn-sm  { font-size: var(--fs-xs); padding: 0.15rem 0.5rem; }
 
 /* ---- index: filter input + event grid -------------------------- */
@@ -215,11 +216,6 @@ footer p { margin: var(--space-1) 0; }
   border: 1px solid var(--border);
   border-radius: 0;
   color: var(--fg-muted);
-}
-.legality-tabs .tab[aria-pressed="true"] {
-  background: var(--fg);
-  color: var(--bg);
-  border-color: var(--fg);
 }
 
 .event-list { list-style: none; padding: 0; margin: 0; }
@@ -305,8 +301,7 @@ footer p { margin: var(--space-1) 0; }
 .chart-card > summary:hover .chart-title { text-decoration: underline; }
 .chart-title { font-weight: 600; }
 .chart-meta { color: var(--fg-muted); font-size: var(--fs-sm); }
-.chart-body,
-.chart-panel { padding: var(--space-2) var(--space-3) var(--space-3); position: relative; }
+.chart-body { padding: var(--space-2) var(--space-3) var(--space-3); position: relative; }
 .chart-note { margin: var(--space-2) 0 0; font-size: var(--fs-sm); color: var(--fg-muted); }
 .chart-note em { font-style: italic; color: var(--fg); }
 
@@ -316,9 +311,10 @@ footer p { margin: var(--space-1) 0; }
   margin-bottom: var(--space-2);
 }
 
-/* ---- analytics: top-countries bars ----------------------------- */
+/* ---- analytics: horizontal-bar lists (top countries / prolific) ---- */
 
-.country-bars {
+.country-bars,
+.athlete-bars {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -326,14 +322,22 @@ footer p { margin: var(--space-1) 0; }
   gap: 0.3rem;
   max-width: 36rem;
 }
-.country-bars li {
+.country-bars li,
+.athlete-bars li {
   display: grid;
-  grid-template-columns: 5.5rem 1fr 2.5rem;
   gap: var(--space-2);
   align-items: center;
   font-size: var(--fs-sm);
 }
+.country-bars li { grid-template-columns: 5.5rem 1fr 2.5rem; }
+.athlete-bars li { grid-template-columns: 12rem  1fr 2.5rem; }
+
 .country-cell { font-variant-numeric: tabular-nums; }
+.athlete-cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .country-bar {
   display: block;
   height: 0.7rem;
@@ -347,29 +351,6 @@ footer p { margin: var(--space-1) 0; }
   opacity: 0.85;
 }
 .country-count { font-variant-numeric: tabular-nums; text-align: right; color: var(--fg-muted); }
-
-/* ---- analytics: most-prolific athletes (mirrors country-bars) -- */
-
-.athlete-bars {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 0.3rem;
-  max-width: 36rem;
-}
-.athlete-bars li {
-  display: grid;
-  grid-template-columns: 12rem 1fr 2.5rem;
-  gap: var(--space-2);
-  align-items: center;
-  font-size: var(--fs-sm);
-}
-.athlete-cell {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
 /* ---- analytics: decade leaders --------------------------------- */
 
@@ -511,6 +492,7 @@ footer p { margin: var(--space-1) 0; }
   font-size: 0.75em;
   color: var(--fg-muted);
 }
+.dropdown:not([open]) > summary::after { content: "▸"; }
 .dropdown-panel {
   position: absolute;
   top: calc(100% + 4px);
@@ -562,6 +544,11 @@ footer p { margin: var(--space-1) 0; }
   margin: var(--space-2) 0;
   flex-wrap: wrap;
 }
+.sql-examples-label {
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+}
+#sql-examples { max-width: 22rem; }
 .sql-status {
   font-size: var(--fs-sm);
   color: var(--fg-muted);
