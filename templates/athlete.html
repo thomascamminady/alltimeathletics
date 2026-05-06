@@ -78,17 +78,9 @@ const DOB = {{ athlete.dob|tojson }};
 // ---- Chart state ----
 const state = { mode: "single", eventSlug: null, xAxis: "year", yMode: "mark" };
 const PALETTE = ["#4c78a8","#f58518","#e45756","#72b7b2","#54a24b","#eeca3b","#b279a2","#ff9da6","#9d755d","#bab0ac"];
-const CW = 560, CH = 240, ML = 60, MR = 16, MT = 16, MB = 50;
-const PL = ML, PR = CW - MR, PT = MT, PB = CH - MB;
-const TICK_Y = PB + 18;        // x-axis tick label baseline
-const AXIS_LABEL_Y = PB + 38;  // x-axis title baseline (age mode)
-const MIN_GAP = 12;
-
-function scl(v, lo, hi, oLo, oHi) {
-  if (hi === lo) return (oLo + oHi) / 2;
-  return oLo + (oHi - oLo) * (v - lo) / (hi - lo);
-}
-function safePx(pix, eps) { return eps.every(ep => Math.abs(pix - ep) >= MIN_GAP); }
+const CHART_HEIGHT = 280;
+let _uplot = null;
+const _container = document.getElementById("perf-chart");
 
 function ageAt(dobStr, perfStr) {
   if (!dobStr || !perfStr) return null;
@@ -104,169 +96,158 @@ function pctOfWR(entry) {
     : (wr / entry.mark_value) * 100;
 }
 
-function fmtMark(v, family) {
-  if (family && (family.includes("field") || family === "combined_points"))
-    return v.toFixed(2).replace(/\.?0+$/, "");
-  if (v < 60) return v.toFixed(2);
-  const m = Math.floor(v / 60), s = v - m * 60;
-  return `${m}:${s < 10 ? "0" : ""}${s.toFixed(2)}`;
-}
-
-function fmtY(v, family, yMode) {
-  return yMode === "pct_wr" ? v.toFixed(1) + "%" : fmtMark(v, family);
-}
-
-function decadeTicks(xMin, xMax) {
-  const lo = Math.ceil(xMin / 10) * 10, hi = Math.floor(xMax / 10) * 10;
-  const out = [];
-  for (let y = lo; y <= hi; y += 10) out.push(y);
-  return out;
-}
-
-function ageTicks(aMin, aMax) {
-  const lo = Math.ceil(aMin / 2) * 2, out = [];
-  for (let t = lo; t <= aMax; t += 2) out.push(t);
-  return out;
-}
-
 function getXVal(entry) {
   if (state.xAxis === "age") return ageAt(DOB, entry.date);
   return entry.date ? parseInt(entry.date.slice(0, 4), 10) : null;
 }
 
-function buildSVG(pts, extremeY, extremeLabel, family) {
-  const yMode = state.mode === "all" ? "pct_wr" : state.yMode;
-  if (!pts.length) return '<p class="chart-note">No data to display.</p>';
-  const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
-  let xMin = Math.min(...xs), xMax = Math.max(...xs);
-  let yMin = Math.min(...ys), yMax = Math.max(...ys);
-  if (xMin === xMax) { xMin -= 1; xMax += 1; }
-  if (yMin === yMax) { yMin -= 0.5; yMax += 0.5; }
-  const yPad = (yMax - yMin) * 0.05 || 0.5;
-  yMin -= yPad; yMax += yPad;
+function escHtml(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;",
+  }[c]));
+}
 
-  const sx = v => scl(v, xMin, xMax, PL, PR);
-  const sy = v => scl(v, yMin, yMax, PB, PT);
-  const parts = [];
+// `used` is rebuilt on each render; tooltip + click handlers close over it.
+let _used = [];
 
-  parts.push(`<line class="grid grid-axis" x1="${PL}" y1="${PT}" x2="${PR}" y2="${PT}"/>`);
-  parts.push(`<line class="grid grid-axis" x1="${PL}" y1="${PB}" x2="${PR}" y2="${PB}"/>`);
-
-  if (state.xAxis === "year") {
-    const ticks = decadeTicks(xMin, xMax);
-    const xFirst = Math.round(Math.min(...xs)), xLast = Math.round(Math.max(...xs));
-    for (const t of ticks) {
-      const x = sx(t).toFixed(1);
-      parts.push(`<line class="grid" x1="${x}" y1="${PT}" x2="${x}" y2="${PB}"/>`);
-      if (Math.abs(t - xFirst) >= 4 && Math.abs(t - xLast) >= 4)
-        parts.push(`<text x="${x}" y="${TICK_Y}" text-anchor="middle" class="ax-grid">${t}</text>`);
-    }
-    parts.push(`<text x="${sx(xFirst).toFixed(1)}" y="${TICK_Y}" text-anchor="middle" class="ax">${xFirst}</text>`);
-    if (xLast !== xFirst)
-      parts.push(`<text x="${sx(xLast).toFixed(1)}" y="${TICK_Y}" text-anchor="middle" class="ax">${xLast}</text>`);
-  } else {
-    const ticks = ageTicks(xMin, xMax);
-    for (const t of ticks) {
-      const x = sx(t).toFixed(1);
-      parts.push(`<line class="grid" x1="${x}" y1="${PT}" x2="${x}" y2="${PB}"/>`);
-      parts.push(`<text x="${x}" y="${TICK_Y}" text-anchor="middle" class="ax-grid">${t}</text>`);
-    }
-    parts.push(`<text x="${((PL+PR)/2).toFixed(1)}" y="${AXIS_LABEL_Y}" text-anchor="middle" class="ax-grid">age (years)</text>`);
-  }
-
-  const epPx = (extremeY != null && extremeY >= yMin && extremeY <= yMax) ? [sy(extremeY)] : [];
-  if (epPx.length) {
-    const lbl = extremeLabel || fmtY(extremeY, family, yMode);
-    parts.push(`<text x="${PL - 4}" y="${epPx[0].toFixed(1)}" dy="4" text-anchor="end" class="ax">${lbl}</text>`);
-  }
-
-  const yQuarts = [0.25, 0.5, 0.75].map(f => yMin + (yMax - yMin) * f);
-  for (const v of yQuarts) {
-    const y = sy(v), yStr = y.toFixed(1);
-    parts.push(`<line class="grid" x1="${PL}" y1="${yStr}" x2="${PR}" y2="${yStr}"/>`);
-    if (safePx(y, epPx))
-      parts.push(`<text x="${PL - 4}" y="${yStr}" dy="4" text-anchor="end" class="ax-grid">${fmtY(v, family, yMode)}</text>`);
-  }
-
-  for (const p of pts) {
-    const x = sx(p.x).toFixed(1), y = sy(p.y).toFixed(1);
-    const style = p.color ? ` style="fill:${p.color}"` : "";
-    parts.push(`<circle class="scatter-dot" cx="${x}" cy="${y}" r="3.5" data-idx="${p.idx}"${style}><title>${p.tip}</title></circle>`);
-  }
-
-  return `<svg viewBox="0 0 ${CW} ${CH}" class="wr-chart" preserveAspectRatio="xMidYMid meet" role="img">${parts.join("")}</svg>`;
+function destroyChart() {
+  if (_uplot) { _uplot.destroy(); _uplot = null; }
+  _container.innerHTML = "";
 }
 
 function renderChart() {
-  const container = document.getElementById("perf-chart");
+  destroyChart();
   const yMode = state.mode === "all" ? "pct_wr" : state.yMode;
+  let family = null;
+  _used = [];
 
   if (state.mode === "all") {
-    const eventColors = {}, legendItems = [];
-    let ci = 0;
-    for (const e of ENTRIES) {
-      if (!(e.event_slug in WR_VALUES)) continue;
-      if (!(e.event_slug in eventColors)) {
-        eventColors[e.event_slug] = PALETTE[ci++ % PALETTE.length];
-        legendItems.push({ label: e.event_label, color: eventColors[e.event_slug] });
-      }
-    }
-    const pts = [];
     for (const e of ENTRIES) {
       if (!(e.event_slug in WR_VALUES)) continue;
       const x = getXVal(e), y = pctOfWR(e);
       if (x == null || y == null) continue;
-      let tip = `${e.event_label}: ${e.mark_raw}`;
-      if (e.date) tip += ` — ${e.date}`;
-      if (e.venue) tip += ` (${e.venue})`;
-      tip += ` · ${y.toFixed(1)}% WR`;
-      pts.push({ x, y, idx: e.idx, color: eventColors[e.event_slug], tip });
+      _used.push({ x, y, e });
     }
-    const extremeY = pts.length ? Math.max(...pts.map(p => p.y)) : null;
-    container.innerHTML = buildSVG(pts, extremeY, extremeY != null ? extremeY.toFixed(1) + "%" : null, null);
-    if (legendItems.length > 1) {
-      const lg = document.createElement("div");
-      lg.className = "chart-legend";
-      lg.innerHTML = legendItems.map(it =>
-        `<span class="chart-legend-item"><span class="chart-legend-swatch" style="background:${it.color}"></span>${it.label}</span>`
-      ).join("");
-      container.appendChild(lg);
+  } else {
+    const slug = state.eventSlug;
+    if (!slug) return;
+    family = EVENT_FAMILY[slug] || "track_time";
+    const filt = ENTRIES.filter(e => e.event_slug === slug);
+    for (const e of filt) {
+      const x = getXVal(e);
+      if (e.mark_value == null) continue;
+      const y = yMode === "pct_wr" ? pctOfWR(e) : e.mark_value;
+      if (x == null || y == null) continue;
+      _used.push({ x, y, e });
     }
+  }
+
+  if (!_used.length) {
+    _container.innerHTML = '<p class="chart-note">No data to display.</p>';
     return;
   }
 
-  const slug = state.eventSlug;
-  if (!slug) { container.innerHTML = ""; return; }
-  const family = EVENT_FAMILY[slug] || "track_time";
-  const desc = !!EVENT_DESCENDING[slug];
-  const filt = ENTRIES.filter(e => e.event_slug === slug);
-  const pts = [];
-  for (const e of filt) {
-    const x = getXVal(e);
-    if (e.mark_value == null) continue;
-    const y = yMode === "pct_wr" ? pctOfWR(e) : e.mark_value;
-    if (x == null || y == null) continue;
-    let tip = e.mark_raw;
-    if (e.date) tip += ` — ${e.date}`;
-    if (e.venue) tip += ` (${e.venue})`;
-    if (yMode === "pct_wr") tip += ` · ${y.toFixed(1)}% WR`;
-    pts.push({ x, y, idx: e.idx, tip, mv: e.mark_value });
-  }
-  if (!pts.length) { container.innerHTML = '<p class="chart-note">No data to display.</p>'; return; }
+  _used.sort((a, b) => a.x - b.x);
+  const xs = _used.map(u => u.x);
 
-  const mvs = filt.filter(e => e.mark_value != null).map(e => e.mark_value);
-  const extremeMV = mvs.length ? (desc ? Math.max(...mvs) : Math.min(...mvs)) : null;
-  const extremeEntry = extremeMV != null ? filt.find(e => e.mark_value === extremeMV) : null;
-  let extremeY, extremeLabel;
-  if (yMode === "pct_wr") {
-    extremeY = pts.length ? Math.max(...pts.map(p => p.y)) : null;
-    extremeLabel = extremeY != null ? extremeY.toFixed(1) + "%" : null;
+  const colors = AthHelpers.themeColors();
+  const series = [{}];
+  const data = [xs];
+
+  if (state.mode === "all") {
+    const eventColors = {}, eventLabels = {};
+    let ci = 0;
+    for (const u of _used) {
+      const s = u.e.event_slug;
+      if (!(s in eventColors)) {
+        eventColors[s] = PALETTE[ci++ % PALETTE.length];
+        eventLabels[s] = u.e.event_label;
+      }
+    }
+    for (const slug of Object.keys(eventColors)) {
+      const c = eventColors[slug];
+      data.push(_used.map(u => u.e.event_slug === slug ? u.y : null));
+      series.push({
+        label: eventLabels[slug],
+        stroke: c, fill: c,
+        paths: () => null,
+        points: { show: true, size: 7, fill: c, stroke: c },
+      });
+    }
   } else {
-    extremeY = extremeMV;
-    extremeLabel = extremeEntry?.mark_raw ?? (extremeY != null ? fmtMark(extremeY, family) : null);
+    const c = colors.accent;
+    data.push(_used.map(u => u.y));
+    series.push({
+      label: yMode === "pct_wr" ? "% of WR" : "Mark",
+      stroke: c, fill: c,
+      paths: () => null,
+      points: { show: true, size: 7, fill: c, stroke: c },
+    });
   }
-  container.innerHTML = buildSVG(pts, extremeY, extremeLabel, family);
+
+  const fmtY = (v) => yMode === "pct_wr" ? v.toFixed(1) + "%" : AthHelpers.fmtMark(v, family);
+  const fmtX = (v) => state.xAxis === "age" ? v.toFixed(0) : Math.round(v).toString();
+
+  const tooltip = AthHelpers.makeTooltip((u, idx) => {
+    const row = _used[idx];
+    if (!row) return null;
+    const e = row.e;
+    const lines = [];
+    if (state.mode === "all") lines.push(`<b>${escHtml(e.event_label)}</b>`);
+    lines.push(`<b>${escHtml(e.mark_raw)}</b>`);
+    if (e.date) lines.push(`<span class="ut-muted">${escHtml(e.date)}</span>`);
+    if (e.venue) lines.push(`<span class="ut-muted">${escHtml(e.venue)}</span>`);
+    if (yMode === "pct_wr") lines.push(`<span class="ut-muted">${row.y.toFixed(2)}% of WR</span>`);
+    return lines.join("<br>");
+  });
+
+  const opts = {
+    width: _container.clientWidth || 600,
+    height: CHART_HEIGHT,
+    series,
+    legend: { show: state.mode === "all", live: false },
+    cursor: { drag: { x: false, y: false }, points: { size: 10 } },
+    axes: [
+      {
+        stroke: colors.muted,
+        grid: { stroke: colors.border, width: 1 },
+        ticks: { stroke: colors.border },
+        label: state.xAxis === "age" ? "age (years)" : "",
+        labelSize: state.xAxis === "age" ? 28 : 14,
+        values: (u, vals) => vals.map(fmtX),
+      },
+      {
+        stroke: colors.muted,
+        grid: { stroke: colors.border, width: 1 },
+        ticks: { stroke: colors.border },
+        label: yMode === "pct_wr" ? "% of WR" : "mark",
+        labelSize: 30,
+        size: 64,
+        values: (u, vals) => vals.map(fmtY),
+      },
+    ],
+    plugins: [tooltip],
+    hooks: {
+      ready: [(u) => {
+        u.over.style.cursor = "pointer";
+        u.over.addEventListener("click", () => {
+          const i = u.cursor.idx;
+          if (i == null || _used[i] == null) { table.deselectRow(); return; }
+          const id = _used[i].e.idx;
+          table.selectRow(id);
+          const row = table.getRow(id);
+          if (row) row.scrollTo();
+        });
+      }],
+    },
+  };
+
+  _uplot = new uPlot(opts, data, _container);
 }
+
+window.addEventListener("resize", () => {
+  if (_uplot) _uplot.setSize({ width: _container.clientWidth, height: CHART_HEIGHT });
+});
 
 function updateControls() {
   const slug = state.eventSlug;
@@ -383,16 +364,5 @@ function refreshCount(_filters, rows) {
 }
 table.on("dataFiltered", refreshCount);
 
-document.getElementById("perf-chart").addEventListener("click", e => {
-  const dot = e.target.closest("circle[data-idx]");
-  if (dot) {
-    const idx = parseInt(dot.dataset.idx, 10);
-    table.selectRow(idx);
-    const row = table.getRow(idx);
-    if (row) row.scrollTo();
-  } else {
-    table.deselectRow();
-  }
-});
 </script>
 {% endblock %}

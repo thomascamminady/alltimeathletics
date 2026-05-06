@@ -408,20 +408,6 @@ footer p { margin: var(--space-1) 0; }
   opacity: 0.7;
 }
 .wr-chart .grid-axis { stroke: var(--border); stroke-dasharray: none; opacity: 1; }
-.wr-chart .wr-line {
-  stroke: var(--accent);
-  stroke-width: 1.5;
-  stroke-linejoin: round;
-  fill: none;
-}
-.wr-chart .wr-dot {
-  fill: var(--accent);
-  stroke: var(--bg);
-  stroke-width: 1.5;
-  cursor: pointer;
-  transition: r 0.1s ease;
-}
-.wr-chart .wr-dot:hover, .wr-chart .wr-dot:focus { r: 6; outline: none; }
 .wr-chart .ax {
   font-family: inherit;
   font-size: 11px;
@@ -435,8 +421,6 @@ footer p { margin: var(--space-1) 0; }
 }
 .wr-chart .bar { fill: var(--accent); opacity: 0.75; }
 .wr-chart .bar:hover { opacity: 1; }
-.wr-chart .scatter-dot { fill: var(--accent); fill-opacity: 0.35; stroke: none; }
-.wr-chart .scatter-dot:hover { fill-opacity: 1; }
 
 /* ---- interactive athlete chart controls ----------------------- */
 .chart-controls {
@@ -446,28 +430,6 @@ footer p { margin: var(--space-1) 0; }
   gap: var(--space-1);
   margin-bottom: var(--space-2);
 }
-.chart-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem var(--space-3);
-  margin-top: var(--space-2);
-  font-size: var(--fs-sm);
-  color: var(--fg-muted);
-}
-.chart-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-.chart-legend-swatch {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  opacity: 0.8;
-}
-
 /* ---- table toolbar (WR-only + section dropdown) --------------- */
 
 .table-toolbar {
@@ -731,3 +693,27 @@ code.raw-line {
   border-top-color:    var(--accent);
 }
 .tabulator a { color: var(--accent); }
+
+/* uPlot --------------------------------------------------------------- */
+.uplot, .u-wrap { font: inherit; color: var(--fg); }
+.uplot .u-legend { color: var(--fg); font-size: 0.85rem; }
+.uplot .u-legend .u-marker { border-radius: 2px; }
+.uplot .u-axis { color: var(--fg-muted); }
+.uplot-tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+  z-index: 5;
+}
+.uplot-tooltip b { font-weight: 600; }
+.uplot-tooltip .ut-muted { color: var(--fg-muted); }
