@@ -159,26 +159,28 @@ def test_frozen_historical_records(
 # -------------------------------------------------------- active-era bounds ---
 
 
-# Active records: bounds rather than exact match because Duplantis et al keep
-# pushing them. Each entry: (slug, lo, hi, descending). For time events the
-# best mark is the smallest, so lo/hi bracket the WR from below/above; for
-# field events it's the largest, same convention.
+# Active records: loose plausibility bounds (not tight WR brackets). The goal
+# is to catch parser arithmetic bugs — a 10x error from missing a decimal,
+# minutes-as-seconds confusion, or units mixups — not to track the current
+# WR. Bounds are wide enough that any plausible new WR (Duplantis vault,
+# Kiptum-class marathon, etc.) still passes; the data-refresh action stays
+# green when records fall.
 ACTIVE_RECORD_BOUNDS: list[tuple[str, float, float]] = [
-    ("m_100ok", 9.55, 9.62),
-    ("m_200ok", 19.15, 19.25),
-    ("m_400ok", 43.00, 43.10),
-    ("m_800ok", 100.85, 101.00),
-    ("m_1500ok", 205.5, 207.0),
-    ("m_mileok", 222.5, 224.0),
-    ("m_5000ok", 754.0, 757.0),
-    ("m_10kok", 1568.0, 1574.0),
-    ("mmaraok", 7100.0, 7245.0),
-    ("wmaraok", 7790.0, 7820.0),
-    ("m_400hok", 45.90, 46.00),
-    ("mpoleok", 6.20, 6.50),
-    ("mshotok", 23.50, 23.70),
-    ("mdiscok", 75.00, 76.00),
-    ("mdecaok", 9100.0, 9150.0),
+    ("m_100ok", 9.20, 10.30),
+    ("m_200ok", 18.50, 20.50),
+    ("m_400ok", 42.00, 44.50),
+    ("m_800ok", 99.00, 103.50),
+    ("m_1500ok", 200.0, 213.0),
+    ("m_mileok", 218.0, 230.0),
+    ("m_5000ok", 740.0, 770.0),
+    ("m_10kok", 1540.0, 1600.0),
+    ("mmaraok", 6900.0, 7300.0),
+    ("wmaraok", 7600.0, 7900.0),
+    ("m_400hok", 44.50, 47.00),
+    ("mpoleok", 6.10, 6.90),
+    ("mshotok", 23.20, 24.50),
+    ("mdiscok", 74.00, 78.00),
+    ("mdecaok", 9000.0, 9300.0),
 ]
 
 

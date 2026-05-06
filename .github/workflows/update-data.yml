@@ -65,7 +65,26 @@ jobs:
         # Use a run-local --cache-dir so the audit step (next) can re-read
         # the same HTML the parser saw. The cache is discarded when the
         # runner finishes — each weekly run still fetches everything fresh.
-        run: uv run python -m alltimeathletics.pipeline --cache-dir .cache
+        #
+        # Workflow-level retry on top of the in-process retry in scrape.py:
+        # if Larsson's origin is having a multi-minute outage, the in-process
+        # backoff (~2 min ceiling) gives up on a single page; the outer loop
+        # then re-runs the whole pipeline, picking up cached pages for free
+        # on subsequent attempts and only re-fetching the one(s) that failed.
+        run: |
+          set -e
+          for attempt in 1 2 3; do
+            if uv run python -m alltimeathletics.pipeline --cache-dir .cache; then
+              echo "Scrape succeeded on attempt $attempt"
+              exit 0
+            fi
+            if [ $attempt -lt 3 ]; then
+              echo "Scrape attempt $attempt failed; sleeping 5 min before retrying."
+              sleep 300
+            fi
+          done
+          echo "Scrape failed after 3 attempts."
+          exit 1
 
       - name: Validate freshly produced parquet
         run: |

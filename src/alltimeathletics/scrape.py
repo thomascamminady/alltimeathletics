@@ -11,6 +11,7 @@ weekly pipeline.
 
 from __future__ import annotations
 
+import random
 import time
 from pathlib import Path
 
@@ -24,15 +25,21 @@ USER_AGENT = (
 )
 REQUEST_GAP_SECONDS = 1.0
 TIMEOUT_SECONDS = 30.0
-MAX_RETRIES = 4
+# 6 attempts × exponential backoff (capped at MAX_RETRY_BACKOFF_SECONDS)
+# tolerates ~2 min of intermittent 503s before giving up. Larsson's site
+# tends to throw transient 5xx during peak hours; widening from 4 → 6
+# attempts moved the per-page failure rate from "occasional" to "rare".
+MAX_RETRIES = 6
 RETRY_BACKOFF_SECONDS = 2.0
+MAX_RETRY_BACKOFF_SECONDS = 60.0
 
 
 def _fetch_with_retries(client: httpx.Client, url: str) -> bytes:
     """GET ``url`` with bounded retries on transient failures.
 
     Retried: connection/read/timeout errors and HTTP 5xx. 4xx fails fast.
-    Backoff doubles each attempt starting at ``RETRY_BACKOFF_SECONDS``.
+    Backoff doubles each attempt (capped) with up to 25% jitter so multiple
+    retries don't all rehit a struggling origin at the same instant.
     """
     last_exc: Exception | None = None
     for attempt in range(MAX_RETRIES):
@@ -48,7 +55,8 @@ def _fetch_with_retries(client: httpx.Client, url: str) -> bytes:
             last_exc = exc
             if attempt == MAX_RETRIES - 1:
                 break
-            time.sleep(RETRY_BACKOFF_SECONDS * (2**attempt))
+            backoff = min(RETRY_BACKOFF_SECONDS * (2**attempt), MAX_RETRY_BACKOFF_SECONDS)
+            time.sleep(backoff * (1.0 + random.uniform(0.0, 0.25)))
     assert last_exc is not None
     raise last_exc
 
