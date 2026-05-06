@@ -88,6 +88,16 @@ function ageAt(dobStr, perfStr) {
   return (age >= 10 && age <= 70) ? age : null;
 }
 
+function fracYear(dateStr) {
+  if (!dateStr) return null;
+  const t = new Date(dateStr);
+  if (isNaN(t)) return null;
+  const y = t.getUTCFullYear();
+  const yStart = Date.UTC(y, 0, 1);
+  const yNext = Date.UTC(y + 1, 0, 1);
+  return y + (t.getTime() - yStart) / (yNext - yStart);
+}
+
 function pctOfWR(entry) {
   const wr = WR_VALUES[entry.event_slug];
   if (wr == null || entry.mark_value == null) return null;
@@ -98,7 +108,7 @@ function pctOfWR(entry) {
 
 function getXVal(entry) {
   if (state.xAxis === "age") return ageAt(DOB, entry.date);
-  return entry.date ? parseInt(entry.date.slice(0, 4), 10) : null;
+  return fracYear(entry.date);
 }
 
 function escHtml(s) {

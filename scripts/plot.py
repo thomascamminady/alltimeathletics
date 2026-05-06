@@ -6,8 +6,12 @@
 # ]
 # ///
 
+from pathlib import Path
+
 import duckdb
 import matplotlib.pyplot as plt
+
+PARQUET_FILE = Path(__file__).resolve().parent.parent / "data" / "alltime_athletics.parquet"
 
 
 def pace_mps(mark_value, distance_m):
@@ -19,8 +23,6 @@ def pace_mps(mark_value, distance_m):
 
 
 def main():
-    PARQUET_FILE = "alltime_athletics.parquet"
-
     # -------------------------------
     # Add sprint athletes & elites
     # -------------------------------

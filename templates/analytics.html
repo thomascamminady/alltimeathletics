@@ -343,8 +343,10 @@
   // ---- Best mark per year ------------------------------------------
   if (BEST_PER_YEAR && BEST_PER_YEAR.length) {
     const container = document.getElementById("year-line-chart");
-    const sorted = [...BEST_PER_YEAR].sort((a, b) => a.year - b.year);
-    const xs = sorted.map(r => epochYear(r.year));
+    // Plot each year's best at its actual date (falls back to Jan 1 for
+    // year-only sources, since the parquet stores a real Date column).
+    const sorted = [...BEST_PER_YEAR].sort((a, b) => epochDate(a.date) - epochDate(b.date));
+    const xs = sorted.map(r => epochDate(r.date));
     const ys = sorted.map(r => r.mark_value);
     const colors = AthHelpers.themeColors();
     const stroke = colors.accent || ACCENT_FALLBACK;
