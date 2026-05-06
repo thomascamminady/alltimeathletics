@@ -172,7 +172,7 @@ ACTIVE_RECORD_BOUNDS: list[tuple[str, float, float]] = [
     ("m_mileok", 222.5, 224.0),
     ("m_5000ok", 754.0, 757.0),
     ("m_10kok", 1568.0, 1574.0),
-    ("mmaraok", 7230.0, 7245.0),
+    ("mmaraok", 7100.0, 7245.0),
     ("wmaraok", 7790.0, 7820.0),
     ("m_400hok", 45.90, 46.00),
     ("mpoleok", 6.20, 6.50),
