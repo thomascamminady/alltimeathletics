@@ -44,17 +44,12 @@ REPORT = REPO_ROOT / "docs" / "parser_audit.md"
 # HTML itself has data-quality issues. Each entry documents the exact upstream
 # problem so a reviewer can confirm the parser is doing the right thing.
 KNOWN_SOURCE_ISSUES: dict[str, str] = {
-    "m60mok": (
-        "2 rows have malformed dates `. .1996` (only year preserved upstream)"
-    ),
-    "m_60mhok": (
-        "4 rows have malformed dates `. .1994`, `. .1990`, `.03.1978` upstream"
-    ),
+    "m60mok": ("2 rows have malformed dates `. .1996` (only year preserved upstream)"),
+    "m_60mhok": ("4 rows have malformed dates `. .1994`, `. .1990`, `.03.1978` upstream"),
     "m60mno": (
         "37 rows have truncated 4-digit years like `07.03.198` (last digit "
         "missing upstream); one extra section with anchor reuse + bad title"
     ),
-    "mhmaraok": "1 row has country typo `KEË` (should be `KEN`); we reject non-IOC codes",
     "w_60mhok": "1 row has truncated date `.03.1978` upstream",
     "w2milesok": "1 row (Kelly McMillen) has blank dob+pos columns",
     "wjaveoldok": (
@@ -62,6 +57,7 @@ KNOWN_SOURCE_ISSUES: dict[str, str] = {
     ),
     "w4x400ok": "2 rows (rank 450, 1973) have empty team name upstream",
 }
+
 
 # Mirror parse.py's preprocessing so section discovery sees the same text.
 def _preprocess(html_text: str) -> str:
@@ -144,9 +140,7 @@ def audit() -> None:
         parquet_sections = (
             sub.group_by("section").len().sort("section") if sub is not None else None
         )
-        parquet_section_count = (
-            parquet_sections.height if parquet_sections is not None else 0
-        )
+        parquet_section_count = parquet_sections.height if parquet_sections is not None else 0
 
         status = "ok"
         details: list[str] = []
@@ -156,8 +150,7 @@ def audit() -> None:
         if len(html_sections) != parquet_section_count:
             status = "mismatch"
             details.append(
-                f"section count: html={len(html_sections)}, "
-                f"parquet={parquet_section_count}"
+                f"section count: html={len(html_sections)}, parquet={parquet_section_count}"
             )
 
         # Top-row sanity per section
@@ -229,10 +222,7 @@ def audit() -> None:
         )
         if unexplained:
             f.write("## ❌ Unexplained mismatches (parser bugs to fix)\n\n")
-            f.write(
-                "| slug | html rows | parquet rows | sections (html/parq) | "
-                "detail |\n"
-            )
+            f.write("| slug | html rows | parquet rows | sections (html/parq) | detail |\n")
             f.write("|---|---:|---:|---|---|\n")
             for m in mismatches:
                 if m.slug in KNOWN_SOURCE_ISSUES:
@@ -251,9 +241,7 @@ def audit() -> None:
                 "fails loudly if a *new* mismatch appears that isn't in the "
                 "catalogue.\n\n"
             )
-            f.write(
-                "| slug | html rows | parquet rows | upstream issue |\n"
-            )
+            f.write("| slug | html rows | parquet rows | upstream issue |\n")
             f.write("|---|---:|---:|---|\n")
             for m in mismatches:
                 if m.slug not in KNOWN_SOURCE_ISSUES:
@@ -270,10 +258,7 @@ def audit() -> None:
             "section. ⚠️ = mismatch is catalogued in `KNOWN_SOURCE_ISSUES`. "
             "❌ = parser bug that needs investigation.\n\n"
         )
-        f.write(
-            "| status | slug | html rows | parquet rows | sections "
-            "(html/parq) |\n"
-        )
+        f.write("| status | slug | html rows | parquet rows | sections (html/parq) |\n")
         f.write("|---|---|---:|---:|---|\n")
         # Sort: unexplained first (loudest), then known, then ok.
         order = {"mismatch": 0, "no_html": 1, "ok": 2}

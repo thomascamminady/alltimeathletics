@@ -4,20 +4,19 @@ Adapter around ``scripts/audit_pages.py``. The script generates a markdown
 report; this test re-runs the same logic in-process and fails if any new
 mismatch appears that isn't in ``KNOWN_SOURCE_ISSUES``.
 
-Two failure modes this test catches:
+What this catches:
 
-1. **New parser regression** — a refactor breaks a page that used to parse
-   cleanly. Surfaces immediately as an unexplained mismatch.
-2. **Catalogued issue silently fixed** — Larsson cleans up an upstream typo
-   we documented; the catalogue entry should be removed too.
-
-Without this test the audit report is a static artifact; with it the audit
-becomes a living guardrail that runs in CI.
+- **New parser regression** — a refactor breaks a page that used to parse
+  cleanly. Surfaces as a hard failure (unexplained mismatch).
+- **Catalogued issue silently fixed** — Larsson cleans up an upstream typo
+  we documented; surfaces as a warning, not a failure, so a positive
+  upstream change never breaks the weekly cron.
 """
 
 from __future__ import annotations
 
 import sys
+import warnings
 from pathlib import Path
 
 import pytest
@@ -91,10 +90,17 @@ def test_no_unexplained_parser_mismatches(audit_run: tuple[set[str], set[str]]) 
 
 
 def test_catalogued_issues_still_present(audit_run: tuple[set[str], set[str]]) -> None:
-    """If Larsson fixes a catalogued upstream typo, drop the catalogue entry."""
+    """Warn (don't fail) when Larsson fixes a catalogued upstream typo.
+
+    An upstream fix is good news — it should not break the weekly cron. We
+    surface the stale entry as a warning so a human notices and prunes the
+    catalogue on the next pass.
+    """
     mismatched, all_with_html = audit_run
     fixed_upstream = (set(audit_pages.KNOWN_SOURCE_ISSUES.keys()) & all_with_html) - mismatched
-    assert not fixed_upstream, (
-        f"Larsson appears to have fixed these upstream — remove from "
-        f"KNOWN_SOURCE_ISSUES: {sorted(fixed_upstream)}"
-    )
+    if fixed_upstream:
+        warnings.warn(
+            f"Larsson appears to have fixed these upstream — prune from "
+            f"KNOWN_SOURCE_ISSUES: {sorted(fixed_upstream)}",
+            stacklevel=2,
+        )
