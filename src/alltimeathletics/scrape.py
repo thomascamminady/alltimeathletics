@@ -7,6 +7,11 @@ no cache so we always see the freshest data.
 Transient network errors and 5xx responses are retried with exponential
 backoff so a single hiccup on any of ~190 pages doesn't fail the whole
 weekly pipeline.
+
+Forces IPv4: Larsson's host publishes both A and AAAA records, but
+GitHub-hosted runners are IPv4-only. If ``getaddrinfo`` returns the AAAA
+first, every attempt fails with ENETUNREACH before the retry loop can
+help. Binding to ``0.0.0.0`` keeps the TCP socket on IPv4.
 """
 
 from __future__ import annotations
@@ -32,6 +37,15 @@ TIMEOUT_SECONDS = 30.0
 MAX_RETRIES = 6
 RETRY_BACKOFF_SECONDS = 2.0
 MAX_RETRY_BACKOFF_SECONDS = 60.0
+
+
+def _client() -> httpx.Client:
+    """Build an httpx client pinned to IPv4 (see module docstring)."""
+    return httpx.Client(
+        headers={"User-Agent": USER_AGENT},
+        timeout=TIMEOUT_SECONDS,
+        transport=httpx.HTTPTransport(local_address="0.0.0.0"),
+    )
 
 
 def _fetch_with_retries(client: httpx.Client, url: str) -> bytes:
@@ -79,7 +93,7 @@ def fetch(
             return cached.read_text(encoding="latin-1")
 
     own_client = client is None
-    c = client or httpx.Client(headers={"User-Agent": USER_AGENT}, timeout=TIMEOUT_SECONDS)
+    c = client or _client()
     try:
         # Larsson's pages are served as latin-1; httpx may guess wrong.
         html = _fetch_with_retries(c, event.url).decode("latin-1")
@@ -99,7 +113,7 @@ def fetch_all(events: list[Event], *, cache_dir: Path | None = None) -> dict[str
     Returns slug -> raw HTML.
     """
     out: dict[str, str] = {}
-    with httpx.Client(headers={"User-Agent": USER_AGENT}, timeout=TIMEOUT_SECONDS) as client:
+    with _client() as client:
         for i, event in enumerate(events):
             from_cache = cache_dir is not None and (cache_dir / f"{event.slug}.htm").exists()
             out[event.slug] = fetch(event, cache_dir=cache_dir, client=client)
