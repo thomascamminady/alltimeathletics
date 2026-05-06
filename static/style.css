@@ -138,10 +138,31 @@ footer p { margin: var(--space-1) 0; }
 .primary-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0;
+  align-items: stretch;
+  gap: var(--space-2) var(--space-3);
   margin: 0 0 var(--space-3);
   padding-right: 80px;            /* clear the fixed github corner */
   border-bottom: 1px solid var(--border);
+}
+.nav-brand {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--fg);
+  text-decoration: none;
+  align-self: center;
+  padding: 0.4rem 0;
+  letter-spacing: -0.01em;
+}
+.nav-brand:hover { color: var(--accent); }
+.nav-brand:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.nav-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: auto;              /* push tabs to the right of brand */
+  gap: 0;
 }
 .nav-tab {
   font-size: var(--fs-sm);
@@ -161,8 +182,10 @@ footer p { margin: var(--space-1) 0; }
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
-@media (max-width: 500px) {
+@media (max-width: 600px) {
   .primary-nav { padding-right: 64px; }
+  .nav-tabs { margin-left: 0; width: 100%; }
+  .nav-tab:first-child { padding-left: 0; }
 }
 
 /* ---- single card style ----------------------------------------- */
