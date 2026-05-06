@@ -1,13 +1,17 @@
 {% extends "base.html" %}
 {% block title %}{{ event.label }} ({{ event.sex }}, {{ event.legality }}) — All-Time Athletics{% endblock %}
 {% block main %}
+<h1>{{ event.label }} <span class="meta-tag">{{ event.sex }}</span> <span class="meta-tag">{{ event.legality }}</span></h1>
+
+<p class="lede">
+  Showing <span id="visible-count">{{ row_count }}</span> performances. Click a column header to sort.
+  Type into the column headers to filter.
+</p>
+
 <div class="table-toolbar">
-  <a href="{{ site_root }}index.html" class="btn">Home</a>
   <a href="{{ site_root }}analytics/{{ event.slug }}.html" class="btn">View analytics</a>
   <a href="{{ event.url }}" class="btn" rel="external noopener" target="_blank">View source</a>
 </div>
-
-<h1>{{ event.label }} <span class="meta-tag">{{ event.sex }}</span> <span class="meta-tag">{{ event.legality }}</span></h1>
 
 {# ----- toolbar: WR-only toggle (#1) + section dropdown (#2 redux) ------ #}
 <div class="table-toolbar" role="toolbar" aria-label="Table filters">
@@ -41,11 +45,6 @@
     </div>
   </details>
 </div>
-
-<p class="lede">
-  Showing <span id="visible-count">{{ row_count }}</span> performances. Click a column header to sort.
-  Type into the column headers to filter.
-</p>
 
 {% if family == 'relay' %}
 <p class="chart-note">Relay teams: click a row to view the team members and split times (where listed).</p>

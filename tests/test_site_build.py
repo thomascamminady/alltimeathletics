@@ -72,7 +72,8 @@ def test_no_jinja_errors_in_event_page(built_site: Path) -> None:
     assert "UndefinedError" not in content
     assert "TemplateSyntaxError" not in content
     assert "View source" in content
-    assert "Home" in content
+    assert 'class="primary-nav"' in content
+    assert 'class="nav-tab nav-tab-active"' in content
 
 
 def test_no_jinja_errors_in_athlete_page(built_site: Path) -> None:
@@ -82,4 +83,5 @@ def test_no_jinja_errors_in_athlete_page(built_site: Path) -> None:
     content = page.read_text()
     assert "Traceback" not in content
     assert "Usain Bolt" in content
-    assert "All athletes" in content
+    assert 'class="primary-nav"' in content
+    assert 'class="nav-tab nav-tab-active"' in content

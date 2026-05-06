@@ -494,6 +494,7 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
     (out_dir / "index.html").write_text(
         env.get_template("index.html").render(
             **common,
+            active_tab="events",
             events_by_sex=events_by_sex,
             counts=counts,
             n_rows_total=manifest["n_rows"],
@@ -520,6 +521,7 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
     (out_dir / "sql.html").write_text(
         env.get_template("sql.html").render(
             **common,
+            active_tab="sql",
             example_queries=example_queries,
             parquet_size_mb=parquet_size_mb_str,
         )
@@ -549,6 +551,7 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
         (event_dir / f"{ev.slug}.html").write_text(
             template.render(
                 **common,
+                active_tab="events",
                 event=ev,
                 family=ev.family,
                 row_count=n,
@@ -576,6 +579,7 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
         (analytics_dir / f"{ev.slug}.html").write_text(
             analytics_template.render(
                 **common,
+                active_tab="events",
                 event=ev,
                 family=ev.family,
                 row_count=n,
@@ -609,6 +613,7 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
     (athlete_dir / "index.html").write_text(
         env.get_template("athlete_index.html").render(
             **common,
+            active_tab="athletes",
             n_athletes=n_athletes,
             flags_json=flags_json,
         )
@@ -784,6 +789,7 @@ def _athlete_worker_task(
     }
     html = _W_TEMPLATE.render(
         **_W_COMMON,
+        active_tab="athletes",
         athlete=athlete,
         entries_json=json.dumps(entries, separators=(",", ":")),
         analytics=analytics,

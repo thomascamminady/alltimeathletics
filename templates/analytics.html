@@ -1,18 +1,17 @@
 {% extends "base.html" %}
 {% block title %}{{ event.label }} ({{ event.sex }}, {{ event.legality }}) — Analytics{% endblock %}
 {% block main %}
-<div class="table-toolbar">
-  <a href="{{ site_root }}index.html" class="btn">Home</a>
-  <a href="{{ site_root }}event/{{ event.slug }}.html" class="btn">{{ event.label }} table</a>
-  <a href="{{ event.url }}" class="btn" rel="external noopener" target="_blank">View source</a>
-</div>
-
 <h1>
   {{ event.label }}
   <span class="meta-tag">{{ event.sex }}</span>
   <span class="meta-tag">{{ event.legality }}</span>
   <span class="meta-tag">analytics</span>
 </h1>
+
+<div class="table-toolbar">
+  <a href="{{ site_root }}event/{{ event.slug }}.html" class="btn">{{ event.label }} table</a>
+  <a href="{{ event.url }}" class="btn" rel="external noopener" target="_blank">View source</a>
+</div>
 
 {# ----- summary stats panel ------------------------------------------- #}
 {% if 'top_name' in analytics.summary %}

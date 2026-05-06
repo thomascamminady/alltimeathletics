@@ -1,11 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ athlete.name }} ({{ athlete.country }}) — All-Time Athletics{% endblock %}
 {% block main %}
-<div class="table-toolbar">
-  <a href="{{ site_root }}index.html" class="btn">Home</a>
-  <a href="{{ site_root }}athlete/index.html" class="btn">All athletes</a>
-</div>
-
 <h1>
   {{ flag(athlete.country) }} {{ athlete.name }}
   <span class="meta-tag">{{ athlete.country }}</span>

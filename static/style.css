@@ -133,6 +133,38 @@ footer p { margin: var(--space-1) 0; }
   .github-corner:hover .github-corner-arm { animation: none; }
 }
 
+/* ---- primary nav (top of every page) -------------------------- */
+
+.primary-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 0 0 var(--space-3);
+  padding-right: 80px;            /* clear the fixed github corner */
+  border-bottom: 1px solid var(--border);
+}
+.nav-tab {
+  font-size: var(--fs-sm);
+  padding: 0.4rem 0.85rem;
+  color: var(--fg-muted);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;            /* sit on the row's bottom border */
+}
+.nav-tab:hover { color: var(--fg); }
+.nav-tab-active {
+  color: var(--fg);
+  border-bottom-color: var(--fg);
+  font-weight: 500;
+}
+.nav-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+@media (max-width: 500px) {
+  .primary-nav { padding-right: 64px; }
+}
+
 /* ---- single card style ----------------------------------------- */
 
 /* Every "panel" on the site shares the same card chrome.   */
