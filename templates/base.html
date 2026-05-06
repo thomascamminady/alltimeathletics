@@ -18,14 +18,8 @@
             rel="stylesheet"
             href="{{ static_root }}style.css?v={{ static_version }}"
         />
-        <script
-            defer
-            src="{{ static_root }}uplot.min.js?v={{ static_version }}"
-        ></script>
-        <script
-            defer
-            src="{{ static_root }}uplot-helpers.js?v={{ static_version }}"
-        ></script>
+        <script src="{{ static_root }}uplot.min.js?v={{ static_version }}"></script>
+        <script src="{{ static_root }}uplot-helpers.js?v={{ static_version }}"></script>
         <script>
             // Apply saved theme before first paint (no flash of wrong theme).
             (function () {
