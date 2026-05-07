@@ -20,6 +20,7 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "pandas>=3.0.2",
+    "playwright>=1.50.0",
     "pyarrow>=24.0.0",
     "pytest>=9.0.3",
     "ruff>=0.15.12",

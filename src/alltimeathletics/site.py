@@ -180,6 +180,30 @@ def _build_example_queries() -> list[dict[str, str]]:
         },
         {
             "group": "Records",
+            "title": "Men's marathon: every WR ever set",
+            "sql": (
+                "-- Every world record progression for the men's marathon: each row\n"
+                "-- is the moment the all-time best dropped to a new mark. Compares\n"
+                "-- each performance against the running min of all marks up to and\n"
+                "-- including its own date; ties keep only the earliest occurrence.\n"
+                "WITH ordered AS (\n"
+                "  SELECT date, mark_raw, mark_value, name, country, venue\n"
+                "  FROM perf\n"
+                "  WHERE event_slug = 'mmaraok'\n"
+                "    AND legality = 'legal'\n"
+                "    AND section LIKE 'All-time%'\n"
+                "    AND mark_value IS NOT NULL\n"
+                "    AND (mark_annotation IS NULL OR mark_annotation <> '*')\n"
+                ")\n"
+                "SELECT date, mark_raw AS time, name, country, venue\n"
+                "FROM ordered\n"
+                "QUALIFY mark_value = MIN(mark_value) OVER (ORDER BY date)\n"
+                "    AND ROW_NUMBER() OVER (PARTITION BY mark_value ORDER BY date) = 1\n"
+                "ORDER BY date;"
+            ),
+        },
+        {
+            "group": "Records",
             "title": "Athletes holding multiple current WRs",
             "sql": (
                 "-- Anyone whose name shows up at the top of more than one event.\n"

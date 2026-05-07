@@ -61,7 +61,7 @@
 
 <div id="table"></div>
 
-<script src="{{ static_root }}tabulator.min.js"></script>
+<script src="{{ static_root }}lite-table.js?v={{ static_version }}"></script>
 <script>
 const ENTRIES = {{ entries_json|safe }};
 const SITE_ROOT = {{ site_root|tojson }};
@@ -259,10 +259,7 @@ function renderChart() {
         u.over.addEventListener("click", () => {
           const i = u.cursor.idx;
           if (i == null || _used[i] == null) { table.deselectRow(); return; }
-          const id = _used[i].e.idx;
-          table.selectRow(id);
-          const row = table.getRow(id);
-          if (row) row.scrollTo();
+          table.selectRow(_used[i].e.idx);
         });
       }],
     },
@@ -341,54 +338,46 @@ function updateControls() {
   renderChart();
 })();
 
+function escHtml(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;",
+  }[c]));
+}
+
+const cmpMarkValue = (a, b) => {
+  const av = a.mark_value, bv = b.mark_value;
+  if (av == null && bv == null) return 0;
+  if (av == null) return 1;
+  if (bv == null) return -1;
+  return av - bv;
+};
+
 const columns = [
-  { title: "Event", field: "event_label", headerFilter: "input", minWidth: 140,
-    formatter: (cell) => {
-      const row = cell.getRow().getData();
+  { title: "Event", field: "event_label", headerFilter: true, minWidth: 140,
+    formatter: (val, row) => {
       const slug = row.event_slug;
-      const label = cell.getValue() || slug;
-      return `<a href="${SITE_ROOT}event/${slug}.html">${label}</a>`;
+      const label = escHtml(val || slug);
+      return '<a href="' + SITE_ROOT + 'event/' + escHtml(slug) + '.html">' + label + '</a>';
     },
   },
-  { title: "Mark", field: "mark_raw", width: 110, hozAlign: "right",
-    sorter: (a, b, ar, br, _col, dir) => {
-      const av = ar.getData().mark_value;
-      const bv = br.getData().mark_value;
-      if (av == null && bv == null) return 0;
-      if (av == null) return dir === "desc" ? -1 : 1;
-      if (bv == null) return dir === "desc" ? 1 : -1;
-      return av - bv;
-    },
-    headerFilter: "input",
-  },
-  { title: "Wind", field: "wind", width: 80, hozAlign: "right", sorter: "number" },
-  { title: "Rank", field: "rank", width: 80, hozAlign: "right", sorter: "number" },
+  { title: "Mark", field: "mark_raw", width: 110, align: "right",
+    sorter: cmpMarkValue, headerFilter: true },
+  { title: "Wind", field: "wind", width: 80, align: "right" },
+  { title: "Rank", field: "rank", width: 80, align: "right" },
   { title: "Pos", field: "position", width: 70 },
-  { title: "Venue", field: "venue", headerFilter: "input", minWidth: 160 },
-  { title: "Date", field: "date", width: 120, sorter: "date", headerFilter: "input" },
-  { title: "Sub-list", field: "section", visible: false, headerFilter: "input" },
+  { title: "Venue", field: "venue", headerFilter: true, minWidth: 160 },
+  { title: "Date", field: "date", width: 120, headerFilter: true },
 ];
 
-const table = new Tabulator("#table", {
-  data: ENTRIES,
-  index: "idx",
-  selectable: 1,
-  layout: "fitColumns",
-  maxHeight: "70vh",
-  pagination: "local",
-  paginationSize: 100,
-  paginationSizeSelector: [50, 100, 250, 1000, true],
-  movableColumns: true,
+const $count = document.getElementById("visible-count");
+const table = new LiteTable("#table", {
   columns: columns,
-  initialSort: [{ column: "date", dir: "desc" }],
+  pageSize: 100,
+  indexField: "idx",
+  initialSort: { field: "date", dir: "desc" },
+  onCount: (n) => { if ($count) $count.textContent = n.toLocaleString(); },
 });
-
-function refreshCount(_filters, rows) {
-  const n = (rows && rows.length) ?? table.getDataCount("active");
-  const el = document.getElementById("visible-count");
-  if (el) el.textContent = n.toLocaleString();
-}
-table.on("dataFiltered", refreshCount);
+table.setData(ENTRIES);
 
 </script>
 {% endblock %}

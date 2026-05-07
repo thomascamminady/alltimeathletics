@@ -1,4 +1,4 @@
-.PHONY: help sync lint typecheck test scrape site serve all clean nuke ci-local trigger-update trigger-deploy watch
+.PHONY: help sync lint typecheck test scrape site serve all clean nuke ci-local trigger-update trigger-deploy watch browser-deps test-browser
 
 PORT ?= 8766
 
@@ -9,6 +9,8 @@ help:
 	@echo "  lint           Run ruff against src + tests"
 	@echo "  typecheck      Run ty against src"
 	@echo "  test           Run pytest (parser + schema)"
+	@echo "  browser-deps   Install Chromium for the browser smoke tests"
+	@echo "  test-browser   Run only tests/test_browser_smoke.py (needs browser-deps)"
 	@echo "  ci-local       lint + typecheck + test (mirrors .github/workflows/ci.yml)"
 	@echo "  scrape         Run the pipeline (uses .cache/, ~2 min cold, secs warm)"
 	@echo "  site           Render the static site into ./site/"
@@ -33,6 +35,12 @@ typecheck:
 
 test:
 	uv run pytest
+
+browser-deps:
+	uv run playwright install chromium
+
+test-browser:
+	uv run pytest tests/test_browser_smoke.py -v
 
 ci-local: lint typecheck test
 

@@ -13,7 +13,7 @@
   <a href="{{ event.url }}" class="btn" rel="external noopener" target="_blank">View source</a>
 </div>
 
-{# ----- toolbar: WR-only toggle (#1) + section dropdown (#2 redux) ------ #}
+{# ----- toolbar: WR-only toggle + section dropdown ---------------------- #}
 <div class="table-toolbar" role="toolbar" aria-label="Table filters">
   <button id="wr-only" type="button" class="btn" aria-pressed="false">
     Show world records only
@@ -52,72 +52,73 @@
 
 <div id="table"></div>
 
-<script src="{{ static_root }}tabulator.min.js"></script>
+<script src="{{ static_root }}lite-table.js?v={{ static_version }}"></script>
 <script>
 const event = {{ event_meta_json|safe }};
 const FLAGS = {{ flags_json|safe }};
 const MAIN_SECTION = {{ meta.main_section|tojson }};
-const dataUrl = "{{ site_root }}data/events/{{ event.slug }}.json";
+const SITE_ROOT = {{ site_root|tojson }};
+const dataUrl = SITE_ROOT + "data/events/{{ event.slug }}.json";
 
 const isRelay = event.family === 'relay';
 const hasWind = event.family === 'track_time_wind' || event.family === 'field_distance_wind';
+const isDescending = event.family === 'field_distance' || event.family === 'field_distance_wind' || event.family === 'combined_points';
 
-// IOC code → "🇰🇪 KEN" with a graceful fallback for codes we don't map.
+function escHtml(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;",
+  }[c]));
+}
+
 function fmtCountry(code) {
   if (!code) return "";
   const flag = FLAGS[code];
-  return flag ? flag + " " + code : code;
+  return flag ? flag + " " + escHtml(code) : escHtml(code);
 }
 
+const cmpMarkValue = (a, b) => {
+  const av = a.mark_value, bv = b.mark_value;
+  if (av == null && bv == null) return 0;
+  if (av == null) return 1;
+  if (bv == null) return -1;
+  return av - bv;
+};
+
 const columns = [
-  { title: "#", field: "rank", width: 70, hozAlign: "right", sorter: "number", headerFilter: false },
-  { title: "Mark", field: "mark_raw", width: 110, hozAlign: "right",
-    sorter: (a, b, ar, br, _col, dir) => {
-      const av = ar.getData().mark_value;
-      const bv = br.getData().mark_value;
-      if (av == null && bv == null) return 0;
-      if (av == null) return dir === "desc" ? -1 : 1;
-      if (bv == null) return dir === "desc" ? 1 : -1;
-      return av - bv;
-    },
-    headerFilter: "input",
-  },
+  { title: "#", field: "rank", width: 70, align: "right" },
+  { title: "Mark", field: "mark_raw", width: 110, align: "right",
+    sorter: cmpMarkValue, headerFilter: true },
 ];
 
 if (hasWind) {
-  columns.push({ title: "Wind", field: "wind", width: 80, hozAlign: "right", sorter: "number" });
+  columns.push({ title: "Wind", field: "wind", width: 80, align: "right" });
 }
 
 if (!isRelay) {
   columns.push(
-    { title: "Name", field: "name", headerFilter: "input", minWidth: 180,
-      formatter: (cell) => {
-        const row = cell.getRow().getData();
+    { title: "Name", field: "name", headerFilter: true, minWidth: 180,
+      formatter: (val, row) => {
         const slug = row.athlete_slug;
-        const name = cell.getValue() || "";
+        const name = escHtml(val || "");
         if (!slug) return name;
-        return `<a href="{{ site_root }}athlete/${slug}.html">${name}</a>`;
+        return '<a href="' + SITE_ROOT + 'athlete/' + escHtml(slug) + '.html">' + name + '</a>';
       },
     },
-    { title: "Country", field: "country", width: 110, headerFilter: "input",
-      formatter: (cell) => fmtCountry(cell.getValue()) },
+    { title: "Country", field: "country", width: 110, headerFilter: true,
+      formatter: (val) => fmtCountry(val) },
     { title: "DOB", field: "dob", width: 110 },
     { title: "Pos", field: "position", width: 70 },
   );
 } else {
-  columns.push({ title: "Team", field: "name", headerFilter: "input", minWidth: 180 });
+  columns.push({ title: "Team", field: "name", headerFilter: true, minWidth: 180});
   columns.push({ title: "Pos", field: "position", width: 70 });
 }
 
 columns.push(
-  { title: "Venue", field: "venue", headerFilter: "input", minWidth: 160 },
-  { title: "Date", field: "date", width: 120, sorter: "date", headerFilter: "input" },
-  { title: "Section", field: "section", visible: false, headerFilter: "input" },
-  { title: "Mark annotation", field: "mark_annotation", visible: false, headerFilter: "input" },
-  { title: "DOB precision", field: "dob_precision", visible: false, headerFilter: "input" },
+  { title: "Venue", field: "venue", headerFilter: true, minWidth: 160 },
+  { title: "Date", field: "date", width: 120, headerFilter: true },
 );
 
-// State for our two custom filters: WR-only toggle + active sections.
 const state = {
   wrOnly: false,
   activeSections: new Set(MAIN_SECTION ? [MAIN_SECTION] : []),
@@ -129,39 +130,27 @@ const customFilter = (data) => {
   return true;
 };
 
-const table = new Tabulator("#table", {
-  ajaxURL: dataUrl,
-  // See athlete_index.html for the fitDataStretch → fitColumns rationale:
-  // fitDataStretch measures every cell's content width, which freezes the
-  // browser on large event lists (e.g. men's marathon ~7k rows).
-  layout: "fitColumns",
-  maxHeight: "70vh",
-  pagination: "local",
-  paginationSize: 100,
-  paginationSizeSelector: [50, 100, 250, 1000, true],
-  movableColumns: true,
+const $count = document.getElementById("visible-count");
+const table = new LiteTable("#table", {
   columns: columns,
-  initialSort: [{ column: "mark_value", dir: event.family === 'field_distance' || event.family === 'field_distance_wind' || event.family === 'combined_points' ? 'desc' : 'asc' }],
+  pageSize: 100,
+  initialSort: { field: "mark_raw", dir: isDescending ? "desc" : "asc" },
+  onCount: (n) => { if ($count) $count.textContent = n.toLocaleString(); },
 });
 
-table.on("dataLoaded", () => {
-  table.setFilter(customFilter);
+table.setCustomFilter(customFilter);
+
+fetch(dataUrl).then(r => r.json()).then(rows => {
+  table.setData(rows);
 });
-function refreshCount(_filters, rows) {
-  const n = (rows && rows.length) ?? table.getDataCount("active");
-  const el = document.getElementById("visible-count");
-  if (el) el.textContent = n.toLocaleString();
-}
-table.on("dataFiltered", refreshCount);
 
 document.getElementById("wr-only").addEventListener("click", (e) => {
   state.wrOnly = !state.wrOnly;
   e.currentTarget.setAttribute("aria-pressed", state.wrOnly ? "true" : "false");
   e.currentTarget.classList.toggle("btn-on", state.wrOnly);
-  table.setFilter(customFilter);
+  table.setCustomFilter(customFilter);
 });
 
-// ---- section checkbox dropdown -----------------------------------------
 const sectionCheckboxes = document.querySelectorAll('#section-dropdown input[type="checkbox"]');
 const summaryCount = document.getElementById('section-summary-count');
 
@@ -170,7 +159,7 @@ function refreshSectionFilter() {
     [...sectionCheckboxes].filter(c => c.checked).map(c => c.dataset.section)
   );
   summaryCount.textContent = state.activeSections.size;
-  table.setFilter(customFilter);
+  table.setCustomFilter(customFilter);
 }
 sectionCheckboxes.forEach(c => c.addEventListener('change', refreshSectionFilter));
 
@@ -190,7 +179,6 @@ document.getElementById('sections-main').addEventListener('click', (e) => {
   refreshSectionFilter();
 });
 
-// Close dropdown when clicking outside.
 document.addEventListener('click', (e) => {
   const dd = document.getElementById('section-dropdown');
   if (dd.open && !dd.contains(e.target)) dd.removeAttribute('open');

@@ -743,75 +743,88 @@ select.btn::-ms-expand { display: none; }
 .cm-s-default .cm-variable,
 .cm-s-default .cm-variable-2   { color: var(--fg); }
 
-/* ---- Tabulator overrides -------------------------------------- */
+/* ---- LiteTable -------------------------------------------------- */
 
 #table { margin: var(--space-3) 0; }
-.tabulator {
-  font-size: var(--fs-sm);
-  border-radius: 0;
+
+.lt-host { font-size: var(--fs-sm); color: var(--fg); }
+.lt-wrap {
   background: var(--bg);
-  color: var(--fg);
   border: 1px solid var(--border);
+  overflow-x: auto;
 }
-.tabulator .tabulator-header,
-.tabulator .tabulator-header .tabulator-col {
-  border-radius: 0;
+.lt-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+.lt-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   background: var(--bg);
   color: var(--fg);
-  border-bottom: 1px solid var(--border);
-  border-right: none;
   font-weight: 600;
   letter-spacing: 0.01em;
-}
-.tabulator .tabulator-header .tabulator-col {
-  padding-top: var(--space-1);
-  padding-bottom: var(--space-1);
-}
-.tabulator .tabulator-tableholder .tabulator-table { background: var(--bg); color: var(--fg); }
-.tabulator-row {
-  background: var(--bg);
-  color: var(--fg);
+  text-align: left;
+  padding: var(--space-1) var(--space-2);
   border-bottom: 1px solid var(--border);
+  white-space: nowrap;
 }
-.tabulator-row.tabulator-row-even { background: var(--row-alt); }
-.tabulator-row:hover,
-.tabulator-row.tabulator-selectable:hover,
-.tabulator .tabulator-header .tabulator-col.tabulator-sortable.tabulator-col-sorter-element:hover {
-  background-color: var(--bg-soft);
+.lt-table thead tr.lt-filters th { padding-top: 0; padding-bottom: var(--space-1); }
+.lt-table th.lt-sortable { cursor: pointer; user-select: none; }
+.lt-table th.lt-sortable:hover { background: var(--bg-soft); }
+.lt-th-arrow {
+  display: inline-block;
+  width: 0.6em;
+  margin-left: 0.25em;
+  color: var(--fg-muted);
+  opacity: 0.55;
 }
-.tabulator-row .tabulator-cell {
-  border-right: none;
-  color: var(--fg);
-  padding-top: 0.4rem;
-  padding-bottom: 0.4rem;
-}
-.tabulator .tabulator-footer {
+.lt-table th.lt-sort-asc  .lt-th-arrow::before { content: "▲"; color: var(--accent); }
+.lt-table th.lt-sort-desc .lt-th-arrow::before { content: "▼"; color: var(--accent); }
+.lt-table th.lt-sort-asc  .lt-th-arrow,
+.lt-table th.lt-sort-desc .lt-th-arrow { opacity: 1; }
+.lt-filter {
+  width: 100%;
+  box-sizing: border-box;
   background: var(--bg);
   color: var(--fg);
-  border-top: 1px solid var(--border);
-}
-.tabulator .tabulator-footer .tabulator-paginator,
-.tabulator .tabulator-footer .tabulator-page-counter { color: var(--fg); }
-.tabulator .tabulator-footer .tabulator-page,
-.tabulator .tabulator-footer .tabulator-page-size {
-  background: var(--bg);
   border: 1px solid var(--border);
-  color: var(--fg);
   border-radius: 0;
+  padding: 2px 6px;
+  font: inherit;
+  font-size: 0.85em;
 }
-.tabulator .tabulator-footer .tabulator-page.active { color: var(--accent); border-color: var(--accent); }
-.tabulator .tabulator-header .tabulator-col .tabulator-header-filter input,
-.tabulator .tabulator-header .tabulator-col .tabulator-header-filter textarea {
+.lt-filter:focus {
+  outline: none;
+  border-color: var(--fg);
+}
+.lt-table tbody tr {
   background: var(--bg);
+}
+.lt-table tbody tr:nth-child(even) { background: var(--row-alt); }
+.lt-table tbody tr:hover { background: var(--bg-soft); }
+.lt-table tbody tr.lt-selected,
+.lt-table tbody tr.lt-selected:hover { background: var(--bg-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.lt-table tbody td {
+  padding: 0.4rem var(--space-2);
+  border-bottom: 1px solid var(--border);
   color: var(--fg);
-  border: 1px solid var(--border);
 }
-.tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort=ascending]  .tabulator-col-content .tabulator-col-sorter .tabulator-arrow,
-.tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort=descending] .tabulator-col-content .tabulator-col-sorter .tabulator-arrow {
-  border-bottom-color: var(--accent);
-  border-top-color:    var(--accent);
+.lt-table tbody td.lt-num { text-align: right; font-variant-numeric: tabular-nums; }
+.lt-table a { color: var(--accent); }
+
+.lt-pager {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  flex-wrap: wrap;
 }
-.tabulator a { color: var(--accent); }
+.lt-pager:empty { padding: 0; }
+.lt-page-info { color: var(--fg-muted); font-size: var(--fs-sm); }
+
 
 /* uPlot --------------------------------------------------------------- */
 .uplot, .u-wrap { font: inherit; color: var(--fg); }

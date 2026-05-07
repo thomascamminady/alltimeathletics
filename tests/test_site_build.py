@@ -1,36 +1,12 @@
 """Smoke-test: ``uv run python -m alltimeathletics.site`` must succeed.
 
-Skipped when the parquet is absent (same convention as the other test files).
+The ``built_site`` fixture lives in ``conftest.py`` so the browser-smoke
+tests can reuse the same build.
 """
 
 from __future__ import annotations
 
-import subprocess
-import sys
 from pathlib import Path
-
-import pytest
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
-PARQUET = REPO_ROOT / "data" / "alltime_athletics.parquet"
-
-
-@pytest.fixture(scope="module")
-def built_site(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    if not PARQUET.exists():
-        pytest.skip("parquet absent — run `make scrape` first")
-    out = tmp_path_factory.mktemp("site")
-    result = subprocess.run(
-        [sys.executable, "-m", "alltimeathletics.site", "--out", str(out)],
-        capture_output=True,
-        text=True,
-    )
-    assert result.returncode == 0, (
-        f"site build failed (exit {result.returncode}):\n"
-        f"stdout: {result.stdout[-2000:]}\n"
-        f"stderr: {result.stderr[-2000:]}"
-    )
-    return out
 
 
 def test_index_page_exists(built_site: Path) -> None:
