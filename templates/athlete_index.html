@@ -5,8 +5,17 @@
 
 <p class="lede">
   Showing <span id="visible-count">{{ n_athletes }}</span> athletes.
-  Click a column header to sort. Type into the column headers to filter.
+  Click a column header to sort. Use the search box for a quick name lookup,
+  or type into the column headers for per-column filters.
 </p>
+
+<input
+  id="athlete-filter"
+  type="search"
+  placeholder="Search athletes…"
+  autofocus
+  aria-label="Search athletes by name"
+/>
 
 <div id="table"></div>
 
@@ -31,11 +40,11 @@ const columns = [
       return `<a href="${SITE_ROOT}athlete/${row.slug}.html">${name}</a>`;
     },
   },
-  { title: "Country", field: "country", width: 110, headerFilter: "input",
+  { title: "Country", field: "country", minWidth: 110, headerFilter: "input",
     formatter: (cell) => fmtCountry(cell.getValue()) },
-  { title: "DOB", field: "dob", width: 110, headerFilter: "input" },
-  { title: "Primary event", field: "primary_label", headerFilter: "input", minWidth: 140 },
-  { title: "Best mark", field: "best_mark_raw", width: 110, hozAlign: "right", headerFilter: "input",
+  { title: "DOB", field: "dob", minWidth: 120, headerFilter: "input" },
+  { title: "Primary event", field: "primary_label", headerFilter: "input", minWidth: 160 },
+  { title: "Best mark", field: "best_mark_raw", minWidth: 130, hozAlign: "right", headerFilter: "input",
     sorter: (a, b, ar, br, _col, dir) => {
       const av = ar.getData().best_mark_value;
       const bv = br.getData().best_mark_value;
@@ -45,8 +54,8 @@ const columns = [
       return av - bv;
     },
   },
-  { title: "Best rank", field: "best_rank", width: 100, hozAlign: "right", sorter: "number", headerFilter: false },
-  { title: "Career", field: "career_start", width: 120, headerFilter: false,
+  { title: "Best rank", field: "best_rank", minWidth: 110, hozAlign: "right", sorter: "number", headerFilter: false },
+  { title: "Career", field: "career_start", minWidth: 130, headerFilter: false,
     formatter: (cell) => {
       const row = cell.getRow().getData();
       if (!row.career_start) return "";
@@ -55,8 +64,8 @@ const columns = [
         : `${row.career_start}–${row.career_end}`;
     },
   },
-  { title: "Events", field: "n_events", width: 80, hozAlign: "right", sorter: "number", headerFilter: false },
-  { title: "Entries", field: "n_entries", width: 80, hozAlign: "right", sorter: "number", headerFilter: false },
+  { title: "Events", field: "n_events", minWidth: 90, hozAlign: "right", sorter: "number", headerFilter: false },
+  { title: "Entries", field: "n_entries", minWidth: 95, hozAlign: "right", sorter: "number", headerFilter: false },
 ];
 
 function refreshCount(_filters, rows) {
@@ -77,5 +86,15 @@ const table = new Tabulator("#table", {
   initialSort: [{ column: "best_rank", dir: "asc" }],
 });
 table.on("dataFiltered", refreshCount);
+
+// Top-level name search — the common "I just want to find this athlete"
+// case shouldn't require clicking into a column header. Tabulator's "like"
+// operator is case-insensitive substring matching.
+const $athleteFilter = document.getElementById("athlete-filter");
+$athleteFilter.addEventListener("input", () => {
+  const q = $athleteFilter.value.trim();
+  if (!q) { table.clearFilter(true); return; }
+  table.setFilter("name", "like", q);
+});
 </script>
 {% endblock %}

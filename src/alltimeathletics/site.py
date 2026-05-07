@@ -499,7 +499,6 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
             counts=counts,
             n_rows_total=manifest["n_rows"],
             n_events_total=manifest["n_events"],
-            parquet_size_mb=parquet_size_mb_str,
             recent_additions=recent_additions,
             flag=ioc_to_emoji,
         )
@@ -525,6 +524,52 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
             example_queries=example_queries,
             parquet_size_mb=parquet_size_mb_str,
         )
+    )
+
+    # Download page — single source of truth for "where do I get the data".
+    # Parquet + manifest sizes come from disk; CSV variants are produced by
+    # the release workflow on a runner and only ever live on the GitHub
+    # Release (not in this repo), so we surface their typical sizes.
+    manifest_kb = (out_data / "manifest.json").stat().st_size / 1024
+    release_base = "https://github.com/thomascamminady/alltimeathletics/releases/latest/download"
+    download_files = [
+        {
+            "name": "alltime_athletics.parquet",
+            "url": f"{release_base}/alltime_athletics.parquet",
+            "size": f"{parquet_size_mb_str} MB",
+            "desc": "Full dataset, columnar — best for polars / pandas / DuckDB.",
+        },
+        {
+            "name": "alltime_athletics.csv",
+            "url": f"{release_base}/alltime_athletics.csv",
+            "size": "~70 MB",
+            "desc": "Full dataset as plain CSV — works anywhere, large.",
+        },
+        {
+            "name": "alltime_athletics.csv.gz",
+            "url": f"{release_base}/alltime_athletics.csv.gz",
+            "size": "~10 MB",
+            "desc": "gzip-compressed CSV — same content, smaller download.",
+        },
+        {
+            "name": "manifest.json",
+            "url": f"{release_base}/manifest.json",
+            "size": f"{manifest_kb:.0f} KB",
+            "desc": "Per-event row counts and parser diagnostics.",
+        },
+    ]
+    (out_dir / "download.html").write_text(
+        env.get_template("download.html").render(
+            **common,
+            active_tab="download",
+            n_rows_total=manifest["n_rows"],
+            n_events_total=manifest["n_events"],
+            files=download_files,
+        )
+    )
+
+    (out_dir / "about.html").write_text(
+        env.get_template("about.html").render(**common, active_tab="about")
     )
 
     # Event-slug → label, used on the athlete page so we can show "100m"
@@ -622,7 +667,8 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
     n_pages = sum(len(events_by_sex[s]) for s in ("men", "women", "mixed"))
     print(
         f"Rendered {n_pages} event pages, {n_pages} analytics pages, "
-        f"{n_athletes} athlete pages, and 1 athlete index to {out_dir}"
+        f"{n_athletes} athlete pages, and 1 athlete index to {out_dir} "
+        f"({manifest['n_rows']:,} performances)"
     )
 
 

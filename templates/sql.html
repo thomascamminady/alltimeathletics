@@ -13,6 +13,28 @@
   on first <em>Run</em>, then everything is local.
 </p>
 
+<div class="sql-toolbar">
+  <button id="sql-run" type="button" class="btn">Run query</button>
+  <label class="sql-examples-label" for="sql-examples">Load example:</label>
+  <select id="sql-examples" class="btn">
+    {% set ns = namespace(prev_group=None) %}
+    {% for q in example_queries %}
+      {% if q.group != ns.prev_group %}
+        {% if ns.prev_group is not none %}</optgroup>{% endif %}
+        <optgroup label="{{ q.group }}">
+        {% set ns.prev_group = q.group %}
+      {% endif %}
+      <option value="{{ loop.index0 }}">{{ q.title }}</option>
+    {% endfor %}
+    </optgroup>
+  </select>
+  <span id="sql-status" class="sql-status" aria-live="polite">DuckDB not loaded yet — first run will fetch ~10 MB.</span>
+</div>
+
+<textarea id="sql-input" spellcheck="false" rows="14" aria-label="SQL query">{{ example_queries[0].sql }}</textarea>
+
+<div id="sql-result"></div>
+
 <details class="card chart-card">
   <summary>
     <span class="chart-title">Schema reference</span>
@@ -39,28 +61,6 @@
     </ul>
   </div>
 </details>
-
-<div class="sql-toolbar">
-  <button id="sql-run" type="button" class="btn">Run query</button>
-  <label class="sql-examples-label" for="sql-examples">Load example:</label>
-  <select id="sql-examples" class="btn">
-    {% set ns = namespace(prev_group=None) %}
-    {% for q in example_queries %}
-      {% if q.group != ns.prev_group %}
-        {% if ns.prev_group is not none %}</optgroup>{% endif %}
-        <optgroup label="{{ q.group }}">
-        {% set ns.prev_group = q.group %}
-      {% endif %}
-      <option value="{{ loop.index0 }}">{{ q.title }}</option>
-    {% endfor %}
-    </optgroup>
-  </select>
-  <span id="sql-status" class="sql-status" aria-live="polite">DuckDB not loaded yet — first run will fetch ~10 MB.</span>
-</div>
-
-<textarea id="sql-input" spellcheck="false" rows="14" aria-label="SQL query">{{ example_queries[0].sql }}</textarea>
-
-<div id="sql-result"></div>
 
 <script type="module">
 const PARQUET_URL = "{{ site_root }}data/alltime_athletics.parquet";

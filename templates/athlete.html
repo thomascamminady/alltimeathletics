@@ -212,6 +212,14 @@ function renderChart() {
     series,
     legend: { show: state.mode === "all", live: false },
     cursor: { drag: { x: false, y: false }, points: { size: 10 } },
+    scales: yMode === "pct_wr"
+      // Always anchor the % of WR axis at 100 so users can read marks
+      // relative to the world record even when the athlete never reached
+      // it. If a perf is *above* 100 (a non-legal mark beating the legal
+      // WR), keep its dot visible by extending dMax — but tick labels
+      // still cap at 100 (see splits below).
+      ? { y: { range: (u, dMin, dMax) => [dMin, Math.max(dMax, 100)] } }
+      : {},
     axes: [
       {
         stroke: colors.muted,
@@ -229,6 +237,19 @@ function renderChart() {
         labelSize: 30,
         size: 64,
         values: (u, vals) => vals.map(fmtY),
+        // In % of WR mode the highest meaningful tick is always 100 — no
+        // legal performance can be > 100% of the WR by definition. Cap
+        // splits at 100 even when an over-100 dot is plotted (non-legal),
+        // so the axis stays readable.
+        splits: yMode === "pct_wr"
+          ? (u, axisIdx, scaleMin, scaleMax, foundIncr) => {
+              const out = [];
+              const lo = Math.ceil(scaleMin / foundIncr) * foundIncr;
+              for (let v = lo; v < 100 - 1e-9; v += foundIncr) out.push(v);
+              out.push(100);
+              return out;
+            }
+          : undefined,
       },
     ],
     plugins: [tooltip],

@@ -3,6 +3,8 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="data:," />
+        <link rel="apple-touch-icon" href="data:," />
         <title>
             {% block title %}All-Time Athletics — data view{% endblock %}
         </title>
@@ -61,8 +63,10 @@
             <div class="nav-tabs">
                 {% set tabs = [
                     ('events',   site_root ~ 'index.html',                'Events'),
-                    ('athletes', site_root ~ 'athlete/index.html',        'Athletes'),
-                    ('sql',      site_root ~ 'sql.html',                  'SQL')
+                    ('athletes', site_root ~ 'athlete/index.html',        'Find Athletes'),
+                    ('sql',      site_root ~ 'sql.html',                  'SQL'),
+                    ('download', site_root ~ 'download.html',             'Download'),
+                    ('about',    site_root ~ 'about.html',                'About')
                 ] %}
                 {% for key, href, label in tabs %}
                 <a

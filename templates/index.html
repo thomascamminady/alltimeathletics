@@ -3,54 +3,9 @@
 <h1>All-Time Athletics Analytics</h1>
 <p class="lede">
     A data-analysis-friendly view of every all-time performance list maintained
-    by
-    <a href="https://www.alltime-athletics.com/">Peter Larsson</a>.
+    by <a href="https://www.alltime-athletics.com/">Peter Larsson</a>.
+    {{ n_rows_total }} rows across {{ n_events_total }} events.
 </p>
-
-<section class="download-bar" aria-labelledby="dl-heading">
-    <strong id="dl-heading">Get the data</strong> &mdash;
-    <a
-        href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/alltime_athletics.parquet"
-        >parquet</a
-    >
-    ({{ parquet_size_mb }} MB) &middot;
-    <a
-        href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/alltime_athletics.csv"
-        >csv</a
-    >
-    &middot;
-    <a
-        href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/alltime_athletics.csv.gz"
-        >csv.gz</a
-    >
-    &middot;
-    <a
-        href="https://github.com/thomascamminady/alltimeathletics/releases/latest/download/manifest.json"
-        >manifest</a
-    >. {{ n_rows_total }} rows across {{ n_events_total }} events.
-</section>
-
-{% if recent_additions %}
-<section class="recent-panel" aria-labelledby="recent-heading">
-    <h2 id="recent-heading">Latest meets in the database</h2>
-    <p class="recent-meta">
-        Most recent dates &amp; venues with new performances on the canonical
-        lists.
-    </p>
-    <ol class="recent-list">
-        {% for m in recent_additions %}
-        <li>
-            <span class="recent-date">{{ m.date }}</span>
-            <span class="recent-venue">{{ m.venue }}</span>
-            <span class="recent-count">
-                {{ m.n_perfs }} perf{% if m.n_perfs != 1 %}s{% endif %} {% if
-                m.n_events > 1 %}across {{ m.n_events }} events{% endif %}
-            </span>
-        </li>
-        {% endfor %}
-    </ol>
-</section>
-{% endif %}
 
 <input
     id="filter"
@@ -111,6 +66,28 @@
     </div>
     {% endif %} {% endfor %}
 </section>
+
+{% if recent_additions %}
+<section class="recent-panel" aria-labelledby="recent-heading">
+    <h2 id="recent-heading">Latest meets in the database</h2>
+    <p class="recent-meta">
+        Most recent dates &amp; venues with new performances on the canonical
+        lists.
+    </p>
+    <ol class="recent-list">
+        {% for m in recent_additions %}
+        <li>
+            <span class="recent-date">{{ m.date }}</span>
+            <span class="recent-venue">{{ m.venue }}</span>
+            <span class="recent-count">
+                {{ m.n_perfs }} perf{% if m.n_perfs != 1 %}s{% endif %} {% if
+                m.n_events > 1 %}across {{ m.n_events }} events{% endif %}
+            </span>
+        </li>
+        {% endfor %}
+    </ol>
+</section>
+{% endif %}
 
 <script>
     const filter = document.getElementById("filter");

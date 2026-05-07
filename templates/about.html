@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}About — All-Time Athletics{% endblock %}
+{% block main %}
+<h1>About</h1>
+
+<p class="lede">
+    A data-analysis-friendly view of every all-time performance list
+    maintained by Peter Larsson on
+    <a href="https://www.alltime-athletics.com/">alltime-athletics.com</a>.
+</p>
+
+<h2>The source data</h2>
+<p>
+    Peter Larsson has been compiling and curating all-time top lists for
+    track and field for decades. His site is the canonical reference for
+    historical athletics performances on the open web. Every row served
+    here originates from one of his event pages; this project is an
+    unofficial wrapper that scrapes the lists weekly, parses them into a
+    typed, columnar dataset, and serves them through tables, charts, and
+    a browser-side SQL playground.
+</p>
+
+<h2>This project</h2>
+<p>
+    Source code, data pipeline, schema documentation, and the issue
+    tracker live on
+    <a href="https://github.com/thomascamminady/alltimeathletics">GitHub</a>.
+    The dataset is rebuilt every week from Larsson's pages and published
+    as a dated GitHub Release — see
+    <a href="{{ site_root }}download.html">Download</a> for parquet, CSV,
+    and CSV.gz snapshots, or browse
+    <a href="https://github.com/thomascamminady/alltimeathletics/releases">all releases</a>.
+</p>
+<p>
+    The code in this repository is released under the
+    <a href="https://github.com/thomascamminady/alltimeathletics/blob/main/LICENSE">MIT License</a>.
+    The underlying performance data is &copy; Peter Larsson — please refer
+    to <a href="https://www.alltime-athletics.com/">alltime-athletics.com</a>
+    for canonical usage terms.
+</p>
+
+<h2>Author</h2>
+<p>
+    Built by Thomas Camminady &mdash;
+    <a href="https://www.camminady.dev">camminady.dev</a>.
+</p>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Download — All-Time Athletics{% endblock %}
+{% block main %}
+<h1>Download</h1>
+<p class="lede">
+    A weekly snapshot of every all-time performance list maintained by
+    <a href="https://www.alltime-athletics.com/">Peter Larsson</a>:
+    {{ n_rows_total }} rows across {{ n_events_total }} events.
+</p>
+<p class="lede">Last scraped {{ scraped_at }}.</p>
+
+<table class="download-table">
+    <thead>
+        <tr>
+            <th scope="col">File</th>
+            <th scope="col">Size</th>
+            <th scope="col">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for f in files %}
+        <tr>
+            <td>
+                <a href="{{ f.url }}">{{ f.name }}</a>
+            </td>
+            <td class="num">{{ f.size }}</td>
+            <td>{{ f.desc }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p>
+    All assets are attached to a dated GitHub Release, refreshed weekly
+    when the upstream data changes. The links above always resolve to the
+    latest snapshot. To pin to a specific date, browse
+    <a href="https://github.com/thomascamminady/alltimeathletics/releases">all releases</a>
+    or jump to the
+    <a href="https://github.com/thomascamminady/alltimeathletics/releases/latest">latest release page</a>.
+</p>
+
+<p>
+    Code, data pipeline, and schema documentation live in the
+    <a href="https://github.com/thomascamminady/alltimeathletics">GitHub repository</a>.
+</p>
+{% endblock %}

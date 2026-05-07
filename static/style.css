@@ -192,7 +192,6 @@ footer p { margin: var(--space-1) 0; }
 
 /* Every "panel" on the site shares the same card chrome.   */
 .card,
-.download-bar,
 .recent-panel,
 .summary-card {
   margin: var(--space-3) 0;
@@ -201,6 +200,24 @@ footer p { margin: var(--space-1) 0; }
   background: transparent;
 }
 .card > h2:first-child { margin-top: 0; }
+
+/* ---- download page --------------------------------------------- */
+
+.download-table {
+  border-collapse: collapse;
+  margin: var(--space-3) 0;
+  width: 100%;
+  max-width: 720px;
+}
+.download-table th,
+.download-table td {
+  border-bottom: 1px solid var(--border);
+  padding: var(--space-1) var(--space-2);
+  text-align: left;
+  vertical-align: top;
+}
+.download-table th { font-weight: 600; }
+.download-table td.num { white-space: nowrap; color: var(--fg-muted); }
 
 /* ---- meta tags ------------------------------------------------- */
 
