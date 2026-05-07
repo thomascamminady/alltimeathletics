@@ -145,15 +145,5 @@ jobs:
             --notes "Automated weekly refresh of Peter Larsson's alltime-athletics.com data.
 
           - **${ROWS} rows** across all events
-          - Source: https://www.alltime-athletics.com/
-
-          ## Download
-
-          Stable URLs (always point at the latest snapshot):
-
-          - Parquet: https://github.com/${{ github.repository }}/releases/latest/download/alltime_athletics.parquet
-          - CSV: https://github.com/${{ github.repository }}/releases/latest/download/alltime_athletics.csv
-          - CSV (gzipped): https://github.com/${{ github.repository }}/releases/latest/download/alltime_athletics.csv.gz
-          - Manifest (per-event row counts + parser diagnostics): https://github.com/${{ github.repository }}/releases/latest/download/manifest.json
 
           See [README](https://github.com/${{ github.repository }}#readme) for the schema."
