@@ -201,6 +201,25 @@ footer p { margin: var(--space-1) 0; }
 }
 .card > h2:first-child { margin-top: 0; }
 
+/* ---- socials --------------------------------------------------- */
+
+.socials {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  display: flex;
+  gap: var(--space-2);
+}
+.socials a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-muted);
+  text-decoration: none;
+  transition: color 120ms ease;
+}
+.socials a:hover { color: var(--accent); }
+
 /* ---- download page --------------------------------------------- */
 
 .download-table {
