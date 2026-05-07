@@ -228,17 +228,20 @@ IOC_TO_ISO2: dict[str, str | None] = {
     "TGA": "TO",
     "TUV": "TV",
     "VAN": "VU",
-    # Historical / former teams — no modern flag
-    "URS": None,
-    "GDR": None,
-    "FRG": None,
-    "TCH": None,
-    "YUG": None,
-    "EUN": None,
-    "SCG": None,
-    "ANZ": None,
-    "CIS": None,
-    "BOH": None,
+    # Historical / former teams — fall through to the closest modern
+    # successor state's flag. Not perfect (the DDR's flag wasn't the
+    # modern German one, etc.), but giving a GDR athlete a German flag
+    # next to their name is more useful than just the bare IOC code.
+    "GDR": "DE",  # East Germany → Germany
+    "FRG": "DE",  # West Germany → Germany
+    "URS": "RU",  # Soviet Union → Russia (largest legal successor)
+    "CIS": "RU",  # Commonwealth of Independent States → Russia
+    "EUN": "RU",  # Unified Team 1992 → Russia (largest contributor)
+    "TCH": "CZ",  # Czechoslovakia → Czech Republic
+    "BOH": "CZ",  # Bohemia → Czech Republic
+    "YUG": "RS",  # Yugoslavia → Serbia (largest contributor)
+    "SCG": "RS",  # Serbia & Montenegro → Serbia
+    "ANZ": "AU",  # Australasia 1908/1912 → Australia
     # Mixed / refugee
     "ROT": None,
     "EOR": None,

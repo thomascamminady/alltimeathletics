@@ -1459,15 +1459,25 @@ def _write_per_event_json(
     - ``is_main``: True if this row is in the canonical (rank-1) section
     - ``is_wr``: True if this row was a world record at some point
 
-    ``source_url`` (varies by section anchor) and ``source_line`` (the raw
-    Larsson line behind each row) are kept so the table can offer a
-    "verify" link and a hidden raw-line column for spot-checking the parser.
+    ``source_url`` and ``source_line`` are dropped from the per-event JSON
+    too — neither is consumed by the frontend table, and ``source_line``
+    in particular (the raw scraped Larsson line) is the bulkiest field
+    per row, so trimming both meaningfully shrinks the payload Tabulator
+    has to download. They remain available in the canonical parquet.
 
     Tabulator's ajaxURL fetches these directly. The two booleans are what
     the section-chip filter and the "WRs only" toggle pivot on.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
-    drop_cols = ["event", "event_slug", "sex", "legality", "family"]
+    drop_cols = [
+        "event",
+        "event_slug",
+        "sex",
+        "legality",
+        "family",
+        "source_url",
+        "source_line",
+    ]
     for slug in df.select("event_slug").unique().to_series().to_list():
         meta = event_meta[slug]
         wr_keys = {(w["name"], w["date"], w["mark_raw"]) for w in meta["wr_progression"]}

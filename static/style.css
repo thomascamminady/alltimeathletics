@@ -706,15 +706,6 @@ select.btn::-ms-expand { display: none; }
   word-break: break-word;
 }
 
-code.raw-line {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: var(--fs-xs);
-  white-space: pre;
-  color: var(--fg-muted);
-  background: transparent;
-  padding: 0;
-}
-
 /* ---- CodeMirror SQL editor (sql.html) ----------------------------- */
 /* Three-colour palette: keywords pick up the site accent, comments fade to
    muted, everything else is body text. Keeps highlighting useful but

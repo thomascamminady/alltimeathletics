@@ -115,12 +115,6 @@ columns.push(
   { title: "Section", field: "section", visible: false, headerFilter: "input" },
   { title: "Mark annotation", field: "mark_annotation", visible: false, headerFilter: "input" },
   { title: "DOB precision", field: "dob_precision", visible: false, headerFilter: "input" },
-  { title: "Raw line", field: "source_line", visible: false, headerFilter: "input",
-    formatter: (cell) => {
-      const v = cell.getValue() || "";
-      return `<code class="raw-line">${v.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</code>`;
-    },
-  },
 );
 
 // State for our two custom filters: WR-only toggle + active sections.
