@@ -278,7 +278,8 @@ footer p { margin: var(--space-1) 0; }
 
 /* ---- index: filter input + event grid -------------------------- */
 
-#filter {
+#filter,
+#athlete-filter {
   width: 100%;
   padding: var(--space-2);
   font: inherit;
@@ -288,7 +289,8 @@ footer p { margin: var(--space-1) 0; }
   color: var(--fg);
   border-radius: 0;
 }
-#filter:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+#filter:focus,
+#athlete-filter:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
 
 .event-grid {
   display: grid;
