@@ -54,6 +54,49 @@ PARQUET_NAME = "alltime_athletics.parquet"
 # Field/combined events sort high-to-low; everything else low-to-high.
 _DESC_FAMILIES = frozenset({"field_distance", "field_distance_wind", "combined_points"})
 
+_TRACK_FAMILIES = frozenset({"track_time", "track_time_wind"})
+_FIELD_FAMILIES = frozenset({"field_distance", "field_distance_wind"})
+
+
+def _track_distance_m(label: str) -> float:
+    """Approximate distance (in metres) parsed from a track/relay event label.
+
+    Used purely to order events on the homepage from short to long. Returns
+    a best-effort number; the exact value doesn't matter as long as it
+    compares correctly against other track distances.
+    """
+    s = label.lower()
+    if "marathon" in s and "half" not in s:
+        return 42195.0
+    if "half-marathon" in s:
+        return 21097.5
+    if "one hour" in s:
+        # One hour run lives in the long-distance band; placing it just
+        # past the half-marathon keeps it next to similarly-paced events.
+        return 21000.0
+    if m := re.search(r"(\d+(?:\.\d+)?)\s*km", s):
+        return float(m.group(1)) * 1000.0
+    if m := re.search(r"(\d+(?:\.\d+)?)\s*miles?\b", s):
+        return float(m.group(1)) * 1609.344
+    if m := re.search(r"(\d+(?:\.\d+)?)\s*yards?\b", s):
+        return float(m.group(1)) * 0.9144
+    if m := re.search(r"(\d+)\s*(?:metres|m\b)", s):
+        return float(m.group(1))
+    return 0.0
+
+
+def _event_sort_key(ev: Any) -> tuple[int, float, str]:
+    """Order homepage events: track (by distance) → field → combined → relay."""
+    if ev.family in _TRACK_FAMILIES:
+        return (0, _track_distance_m(ev.label), ev.label)
+    if ev.family in _FIELD_FAMILIES:
+        # Field jumps/throws — keep them grouped, ordered by label for stability.
+        return (1, 0.0, ev.label)
+    if ev.family == "combined_points":
+        return (2, 0.0, ev.label)
+    # Relays last, ordered by leg distance (4x100 → 4x1500 → 4xMile).
+    return (3, _track_distance_m(ev.label), ev.label)
+
 
 def _hash_static_assets(static_dir: Path) -> str:
     """Short content hash of the CSS so the cache key flips when CSS changes.
@@ -476,6 +519,10 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
     for ev in EVENTS:
         if counts.get(ev.slug, 0) > 0:
             events_by_sex[ev.sex].append(ev)
+    # Order the homepage list short-track → long-track → field → combined → relay
+    # rather than relying on the catalogue's authoring order.
+    for sex in events_by_sex:
+        events_by_sex[sex].sort(key=_event_sort_key)
 
     parquet_bytes = (out_data / PARQUET_NAME).stat().st_size
 
