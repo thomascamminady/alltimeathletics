@@ -365,7 +365,9 @@
         {},
         {
           label: "Best mark",
-          stroke, width: 2, fill: stroke,
+          stroke,
+          width: 2,
+          paths: uPlot.paths.stepped({ align: 1 }),
           points: { show: true, size: 5, fill: stroke, stroke },
         },
       ],
