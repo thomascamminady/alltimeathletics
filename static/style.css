@@ -11,6 +11,7 @@
   --fg-muted:  #707070;
   --bg:        #fdfdfc;
   --bg-soft:   #f4f3ef;   /* faint stripe / inline code background */
+  --row-alt:   #f7f7f7;   /* very light neutral gray for table zebra */
   --border:    #d8d6d1;
   --accent:    #1a73e8;
   --warn:      #b87900;   /* sparingly: warning text */
@@ -21,6 +22,7 @@
   --fg-muted:  #909090;
   --bg:        #111111;
   --bg-soft:   #1b1b1b;
+  --row-alt:   #161616;
   --border:    #2f2f2f;
   --accent:    #7aa9ff;
   --warn:      #e0a04a;
@@ -32,6 +34,7 @@
     --fg-muted: #909090;
     --bg:       #111111;
     --bg-soft:  #1b1b1b;
+    --row-alt:  #161616;
     --border:   #2f2f2f;
     --accent:   #7aa9ff;
     --warn:     #e0a04a;
@@ -275,6 +278,20 @@ footer p { margin: var(--space-1) 0; }
   border-color: var(--fg);
 }
 .btn-sm  { font-size: var(--fs-xs); padding: 0.15rem 0.5rem; }
+
+/* Native <select>s wearing the .btn class — strip browser chrome and draw
+   a custom caret so they line up with adjacent <button class="btn"> elements. */
+select.btn {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 1.8rem;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 7' fill='none' stroke='%23707070' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'><polyline points='1,1.5 6,5.5 11,1.5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.55rem center;
+  background-size: 0.6rem;
+  line-height: 1.45;
+}
+select.btn::-ms-expand { display: none; }
 
 /* ---- index: filter input + event grid -------------------------- */
 
@@ -655,18 +672,20 @@ footer p { margin: var(--space-1) 0; }
 .sql-table thead th {
   position: sticky;
   top: 0;
-  background: var(--bg-soft);
-  border-bottom: 1px solid var(--fg-muted);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
   font-weight: 600;
+  letter-spacing: 0.01em;
 }
-.sql-table tbody tr:nth-child(even) { background: var(--bg-soft); }
+.sql-table tbody tr:nth-child(even) { background: var(--row-alt); }
+.sql-table tbody tr:hover { background: var(--bg-soft); }
 .sql-null { color: var(--fg-muted); font-style: italic; }
 .sql-rowcount {
   margin: 0;
   padding: var(--space-1) 0.6rem;
   font-size: var(--fs-xs);
   color: var(--fg-muted);
-  background: var(--bg-soft);
+  background: var(--bg);
   border-top: 1px solid var(--border);
 }
 .sql-empty {
@@ -711,7 +730,7 @@ code.raw-line {
   color: var(--fg);
 }
 .CodeMirror-gutters {
-  background: var(--bg-soft);
+  background: var(--bg);
   border-right: 1px solid var(--border);
 }
 .CodeMirror-linenumber { color: var(--fg-muted); }
@@ -746,10 +765,16 @@ code.raw-line {
 .tabulator .tabulator-header,
 .tabulator .tabulator-header .tabulator-col {
   border-radius: 0;
-  background: var(--bg-soft);
+  background: var(--bg);
   color: var(--fg);
   border-bottom: 1px solid var(--border);
-  border-right: 1px solid var(--border);
+  border-right: none;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.tabulator .tabulator-header .tabulator-col {
+  padding-top: var(--space-1);
+  padding-bottom: var(--space-1);
 }
 .tabulator .tabulator-tableholder .tabulator-table { background: var(--bg); color: var(--fg); }
 .tabulator-row {
@@ -757,10 +782,20 @@ code.raw-line {
   color: var(--fg);
   border-bottom: 1px solid var(--border);
 }
-.tabulator-row.tabulator-row-even { background: var(--bg-soft); }
-.tabulator-row .tabulator-cell { border-right: 1px solid var(--border); color: var(--fg); }
+.tabulator-row.tabulator-row-even { background: var(--row-alt); }
+.tabulator-row:hover,
+.tabulator-row.tabulator-selectable:hover,
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable.tabulator-col-sorter-element:hover {
+  background-color: var(--bg-soft);
+}
+.tabulator-row .tabulator-cell {
+  border-right: none;
+  color: var(--fg);
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+}
 .tabulator .tabulator-footer {
-  background: var(--bg-soft);
+  background: var(--bg);
   color: var(--fg);
   border-top: 1px solid var(--border);
 }
