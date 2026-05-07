@@ -76,7 +76,11 @@ function refreshCount(_filters, rows) {
 
 const table = new Tabulator("#table", {
   ajaxURL: dataUrl,
-  layout: "fitDataStretch",
+  // fitColumns distributes the container's width across columns and
+  // respects each column's minWidth. fitDataStretch would force Tabulator
+  // to measure cell content across all 29k rows just to size columns —
+  // ~30s freeze in the browser before the first row renders.
+  layout: "fitColumns",
   maxHeight: "70vh",
   pagination: "local",
   paginationSize: 100,

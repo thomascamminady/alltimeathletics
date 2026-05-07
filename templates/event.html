@@ -137,7 +137,10 @@ const customFilter = (data) => {
 
 const table = new Tabulator("#table", {
   ajaxURL: dataUrl,
-  layout: "fitDataStretch",
+  // See athlete_index.html for the fitDataStretch → fitColumns rationale:
+  // fitDataStretch measures every cell's content width, which freezes the
+  // browser on large event lists (e.g. men's marathon ~7k rows).
+  layout: "fitColumns",
   maxHeight: "70vh",
   pagination: "local",
   paginationSize: 100,
