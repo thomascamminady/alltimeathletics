@@ -509,6 +509,22 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
     # athlete pages (the "name" is a team like "USA"); their slug is "".
     df = df.with_columns(_athlete_slug_expr().alias("athlete_slug"))
 
+    # Skip "career" pages for athletes with fewer than this many entries.
+    # A one-entry career page is just a single row already visible in the
+    # event table the user came from — strictly worse than the link they
+    # clicked. Empty the slug for filtered athletes so:
+    #   - per-event JSON: the name renders as plain text (no broken link)
+    #   - athlete-page renderer: no task is generated
+    #   - athlete index: the row never gets emitted
+    # Single source of truth, downstream code stays unchanged.
+    MIN_ATHLETE_ENTRIES = 2
+    df = df.with_columns(
+        pl.when(pl.col("athlete_slug").len().over("athlete_slug") >= MIN_ATHLETE_ENTRIES)
+        .then(pl.col("athlete_slug"))
+        .otherwise(pl.lit(""))
+        .alias("athlete_slug")
+    )
+
     # Per-event meta (sections, WR progression) — used by both the per-event
     # JSON (for client-side rendering) and the template (for server-rendered
     # headlines that show before Tabulator boots).
@@ -654,6 +670,13 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
         for slug, meta in event_meta.items()
         if meta.get("wr_progression")
     }
+    # Canonical (rank-1) section per slug. Used by the athlete page so
+    # ``% of WR`` is only computed for rows in the canonical sub-list —
+    # comparing, say, an indoor mile against the outdoor WR is apples-to-
+    # oranges and was the bug this map closes.
+    main_section_by_slug: dict[str, str] = {
+        slug: meta["main_section"] for slug, meta in event_meta.items() if meta.get("main_section")
+    }
 
     # Per-event pages
     event_dir = out_dir / "event"
@@ -718,6 +741,7 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
         event_family=event_family,
         event_descending=event_descending,
         wr_values=wr_values,
+        main_section_by_slug=main_section_by_slug,
         flags_json=flags_json,
     )
 
@@ -945,6 +969,7 @@ def _render_athlete_pages(
     event_family: Mapping[str, str],
     event_descending: Mapping[str, bool],
     wr_values: Mapping[str, float],
+    main_section_by_slug: Mapping[str, str],
     flags_json: str,
 ) -> tuple[int, list[dict[str, Any]]]:
     """Render one HTML per athlete with all their entries inlined.
@@ -1004,6 +1029,11 @@ def _render_athlete_pages(
                 "venue": r["venue"],
                 "date": str(r["date"]) if r["date"] is not None else None,
                 "position": r["position"],
+                # True iff this entry sits on the canonical (rank-1) sub-list
+                # for its event. The chart only computes % of WR for these
+                # rows — sub-lists like "indoor performances" can't be
+                # compared against the outdoor WR.
+                "is_main": r["section"] == main_section_by_slug.get(r["event_slug"]),
             }
         )
 
@@ -1055,6 +1085,7 @@ def _compute_event_analytics(df: pl.DataFrame, slug: str, meta: dict[str, Any]) 
     if main_section is None:
         return {
             "best_per_year": [],
+            "all_perfs": [],
             "entries_per_year": [],
             "age_scatter": [],
             "summary": {},
@@ -1252,8 +1283,29 @@ def _compute_event_analytics(df: pl.DataFrame, slug: str, meta: dict[str, Any]) 
                     for r in athlete_counts.to_dicts()
                 ]
 
+    # ---- all canonical performances (for the "all performances" layer) -----
+    # Keep the top N best marks so the combined chart has a dense point cloud
+    # without bloating the analytics page. Capped at 2000 to bound page weight
+    # for the deepest events (mile, marathon both go well past 5000 rows).
+    ALL_PERFS_CAP = 2000
+    all_perfs_df = sorted_main.head(ALL_PERFS_CAP) if not sorted_main.is_empty() else canonical
+    all_perfs: list[dict[str, Any]] = [
+        {
+            "mark_value": r["mark_value"],
+            "mark_raw": r["mark_raw"],
+            "name": r["name"],
+            "country": r["country"],
+            "venue": r["venue"],
+            "date": str(r["date"]),
+        }
+        for r in all_perfs_df.select(
+            "mark_value", "mark_raw", "name", "country", "venue", "date"
+        ).to_dicts()
+    ]
+
     return {
         "best_per_year": best_per_year,
+        "all_perfs": all_perfs,
         "entries_per_year": entries_per_year,
         "age_scatter": age_scatter,
         "top_countries": top_countries,
