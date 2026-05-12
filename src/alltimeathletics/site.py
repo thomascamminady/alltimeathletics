@@ -117,6 +117,14 @@ def _build_example_queries() -> list[dict[str, str]]:
     the ``perf`` view (the parquet aliased) and use the legal / All-time
     section idiom defined above.
     """
+    # Larsson's section labels are inconsistent: most canonical lists are
+    # named "All-time men's best 100m" but a handful (road events, men's
+    # 1500m, women's 800m, …) are simply "main list" or "Main list". We
+    # widen the canonical filter to cover both styles so the example
+    # queries don't silently drop ~25 events.
+    canonical_filter = (
+        "  AND (section LIKE 'All-time%'\n       OR section IN ('main list', 'Main list'))\n"
+    )
     return [
         {
             "group": "Records",
@@ -128,7 +136,7 @@ def _build_example_queries() -> list[dict[str, str]]:
                 "WHERE rank = 1\n"
                 "  AND legality = 'legal'\n"
                 "  AND family <> 'relay'\n"
-                "  AND section LIKE 'All-time%'\n"
+                f"{canonical_filter}"
                 "ORDER BY date DESC;"
             ),
         },
@@ -143,7 +151,7 @@ def _build_example_queries() -> list[dict[str, str]]:
                 "WHERE rank = 1\n"
                 "  AND legality = 'legal'\n"
                 "  AND family <> 'relay'\n"
-                "  AND section LIKE 'All-time%'\n"
+                f"{canonical_filter}"
                 "ORDER BY date ASC\n"
                 "LIMIT 25;"
             ),
@@ -157,7 +165,7 @@ def _build_example_queries() -> list[dict[str, str]]:
                 "FROM perf\n"
                 "WHERE rank = 1\n"
                 "  AND legality = 'legal'\n"
-                "  AND section LIKE 'All-time%'\n"
+                f"{canonical_filter}"
                 "  AND date >= DATE '2024-01-01'\n"
                 "ORDER BY date DESC;"
             ),
@@ -173,7 +181,7 @@ def _build_example_queries() -> list[dict[str, str]]:
                 "WHERE rank = 1\n"
                 "  AND legality = 'legal'\n"
                 "  AND family <> 'relay'\n"
-                "  AND section LIKE 'All-time%'\n"
+                f"{canonical_filter}"
                 "GROUP BY decade\n"
                 "ORDER BY decade;"
             ),
