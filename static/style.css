@@ -767,11 +767,17 @@ select.btn::-ms-expand { display: none; }
   font-weight: 600;
   letter-spacing: 0.01em;
   text-align: left;
-  padding: var(--space-1) var(--space-2);
+  /* Generous bottom padding so the column name has breathing room above
+     the per-column filter input that follows in the next tr. */
+  padding: var(--space-2) var(--space-2) var(--space-2);
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
-.lt-table thead tr.lt-filters th { padding-top: 0; padding-bottom: var(--space-1); }
+.lt-table thead tr.lt-filters th {
+  /* Lift the filter input away from the column-name baseline above. */
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
+}
 .lt-table th.lt-sortable { cursor: pointer; user-select: none; }
 .lt-table th.lt-sortable:hover { background: var(--bg-soft); }
 .lt-th-arrow {
