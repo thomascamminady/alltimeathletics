@@ -48,22 +48,26 @@ PARQUET = REPO_ROOT / "data" / "alltime_athletics.parquet"
 # (e.g. Karl Mann's dob '76' vs a 1948 marathon — neither 1876 nor 1976 makes
 # sense). The duplicate name+date with dob == date in some entries suggests
 # upstream data entry where the dob field was filled with the perf date.
+# (event_slug, name, performance_date) — rows whose dob+date imply an
+# impossible age. These are genuine Larsson dob typos (full dd.mm.yy dates
+# that are simply wrong), keyed on the stable performance date.
 KNOWN_BAD_AGE_ROWS: set[tuple[str, str, date]] = {
-    ("m30kok", "Karl Mann", date(1948, 12, 28)),
-    ("w_1500ok", "Lyubov Ivanova", date(1978, 8, 13)),
     ("m100km", "János Bogár", date(1998, 5, 3)),
     ("m100km", "János Bogár", date(1999, 4, 11)),
-    ("mhmaraok", "Daniel Mutai", date(1996, 9, 29)),
     ("m1hourok", "Owen MacHelm", date(1997, 1, 19)),
+    ("m30kok", "Karl Mann", date(1948, 12, 28)),
     ("m_10kok", "Daniel Mutai", date(1998, 8, 29)),
-    ("mmaraok", "Hailemariyam Kiros", date(2001, 1, 11)),
-    ("wmaraok", "Hawi Alemu", date(2002, 1, 26)),
-    ("mmaraok", "Abdelom Kesete", date(2001, 1, 11)),
+    ("mhmaraok", "Daniel Mutai", date(1996, 9, 29)),
     ("mhmaraok", "Patrick Kinyanjui", date(2008, 9, 6)),
+    ("mmaraok", "Ablelom Kesete", date(2001, 1, 11)),
     ("mmaraok", "Addisu Gobena", date(2001, 1, 11)),
+    ("mmaraok", "Hailemariyam Kiros", date(2001, 1, 11)),
     ("w2000hok", "Evaline Chebichi", date(2004, 6, 11)),
     ("w3000hok", "Evaline Chebichi", date(2005, 6, 18)),
+    ("w_1500ok", "Lyubov Ivanova", date(1978, 8, 13)),
     ("w_400ok", "Henriette Jæger", date(2005, 3, 8)),
+    ("w_5000ok", "Mercy Mageso", date(2011, 5, 15)),
+    ("wmaraok", "Hawi Alemu", date(2002, 1, 26)),
 }
 
 # Annotations Larsson uses on marks. New entries here = test failure prompting

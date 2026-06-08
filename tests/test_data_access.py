@@ -29,18 +29,19 @@ MANIFEST = DATA_DIR / "manifest.json"
 # and a test will fail loudly so we know to update the catalogue.
 # ----------------------------------------------------------------------------
 
-# (event_slug, name, venue, date) — entries with a date in the future, almost
-# certainly Larsson typos of the previous year.
+# (event_slug, name, venue, date) — entries with an implausible date. Most are
+# Larsson typos for the *future* (e.g. a meet typed one year ahead), but some
+# stay catalogued after wall-clock time passes their date: they're still wrong
+# (the meet was actually a year earlier), just no longer "future". The
+# catalogue is therefore checked by *existence*, not by "> today" — see
+# ``test_catalogued_typos_still_present``.
 KNOWN_FUTURE_DATE_TYPOS: set[tuple[str, str, str, date]] = {
-    ("m_800ok", "Colin Sahlman", "New York City", date(2026, 6, 1)),
-    ("m_800ok", "Mohamed Attaoui", "New York City", date(2026, 6, 1)),
-    ("m_800ok", "Ben Pattison", "New York City", date(2026, 6, 1)),
-    ("m_800ok", "Donavan Brazier", "New York City", date(2026, 6, 1)),
-    ("m100mno", "Benjamin Azamati", "Walnut", date(2026, 5, 18)),
-    ("m100mno", "Edward Osei-Nketia", "Walnut", date(2026, 5, 18)),
-    ("m100mno", "Garrett Kaalund", "Walnut", date(2026, 5, 18)),
-    ("m100mno", "Jaleel Croal", "Walnut", date(2026, 5, 18)),
-    ("m100mno", "Jelani Watkins", "Walnut", date(2026, 5, 18)),
+    # Shaoxing Diamond League — typed a year ahead (actually 2025).
+    ("w_400ok", "Aailyah Butler", "Shaoxing", date(2026, 6, 15)),
+    ("w_400ok", "Nickisha Pryce", "Shaoxing", date(2026, 6, 15)),
+    ("w_400ok", "Sada Williams", "Shaoxing", date(2026, 6, 15)),
+    ("w_400ok", "Stacey Ann Williams", "Shaoxing", date(2026, 6, 15)),
+    ("w_400ok", "Roxana Gómez", "Shaoxing", date(2026, 6, 15)),
 }
 
 
@@ -137,9 +138,14 @@ def test_by_slug_works_for_every_event_in_the_parquet(df: pl.DataFrame) -> None:
 
 
 def test_filter_by_event_returns_data(df: pl.DataFrame) -> None:
-    """The headline use case: 'give me the 100m all-time list'."""
+    """The headline use case: 'give me the 100m all-time list'.
+
+    Filters by ``event_slug`` rather than the human label so the test is
+    insulated from label-casing changes (the parquet's ``event`` column
+    only updates on re-scrape, but ``event_slug`` is stable).
+    """
     sub = df.filter(
-        (pl.col("event") == "100 metres")
+        (pl.col("event_slug") == "m_100ok")
         & (pl.col("sex") == "men")
         & (pl.col("legality") == "legal")
     )
@@ -267,17 +273,17 @@ def test_field_marks_are_positive_metres(df: pl.DataFrame) -> None:
 def test_catalogued_typos_still_present(df: pl.DataFrame) -> None:
     """Each entry in ``KNOWN_FUTURE_DATE_TYPOS`` must still be in the parquet.
 
-    If Larsson fixes a typo upstream, this test fails — that's the signal to
-    delete the entry from the catalogue. Drift in either direction is loud.
+    Checked by *existence*, not by ``date > today``: a date typed a year
+    ahead eventually becomes a past date as wall-clock time advances, but the
+    row is still wrong and still catalogued. Filtering on "future" would make
+    this test spuriously fail the moment real time passed a catalogued date —
+    so instead we look for the exact (slug, name, venue, date) tuple. If
+    Larsson fixes a typo upstream the tuple disappears and this fails, which
+    is the signal to prune the catalogue.
     """
-    today = date.today()
     actual = {
         (r["event_slug"], r["name"], r["venue"], r["date"])
-        for r in (
-            df.filter(pl.col("date") > today)
-            .select("event_slug", "name", "venue", "date")
-            .to_dicts()
-        )
+        for r in df.select("event_slug", "name", "venue", "date").to_dicts()
     }
     fixed_upstream = KNOWN_FUTURE_DATE_TYPOS - actual
     assert not fixed_upstream, (

@@ -62,17 +62,15 @@ def audit_run() -> tuple[set[str], set[str]]:
                 )
                 if first_html is None or first_parq.is_empty():
                     continue
-                tokens = first_html.strip().split()
-                if len(tokens) < 3:
-                    continue
-                # Tokens here are space-split; the audit script uses a 2+-space
-                # split. Use the same logic by importing the script's regex.
                 import re
 
                 tokens_2 = re.split(r"\s{2,}", first_html.strip())
                 if len(tokens_2) < 3:
                     continue
-                if tokens_2[1] != first_parq.row(0)[0]:
+                # Use the script's mark extractor so the test agrees with the
+                # parser on rows where Larsson omitted the leading rank.
+                html_mark = audit_pages._mark_from_html_line(first_html)
+                if html_mark is not None and html_mark != first_parq.row(0)[0]:
                     mismatched.add(ev.slug)
                     break
     return mismatched, all_with_html

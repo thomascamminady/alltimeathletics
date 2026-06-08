@@ -64,6 +64,24 @@ def _preprocess(html_text: str) -> str:
     return html.unescape(html_text).replace("\u00b1", "+")
 
 
+def _mark_from_html_line(line: str) -> str | None:
+    """Extract the mark token from a raw data line, tolerating a missing rank.
+
+    Normal rows lead with an integer rank, so the mark is the second
+    2+-space token. Larsson occasionally omits the rank on the first row
+    of an ancillary 'en route' section (e.g. mpoleok's Renaud Lavillenie
+    5.93); there the mark is the *first* token \u2014 a non-integer containing
+    a '.', ':' or ','. Mirror ``parse._extract_rank`` so the audit agrees
+    with the parser. Returns ``None`` if there's no mark to extract.
+    """
+    tokens = re.split(r"\s{2,}", line.strip())
+    if not tokens:
+        return None
+    if not tokens[0].isdigit() and any(sep in tokens[0] for sep in ".:,"):
+        return tokens[0]
+    return tokens[1] if len(tokens) > 1 else None
+
+
 def _count_html_rows_per_section(
     text: str, family: str
 ) -> tuple[list[tuple[str, str | None, int]], dict[tuple[str, str | None], str]]:
@@ -169,9 +187,9 @@ def audit() -> None:
                 tokens = re.split(r"\s{2,}", first_html.strip())
                 if len(tokens) < 3:
                     continue
-                html_mark = tokens[1]
+                html_mark = _mark_from_html_line(first_html)
                 parq = first_parq.row(0, named=True)
-                if html_mark != parq["mark_raw"]:
+                if html_mark is not None and html_mark != parq["mark_raw"]:
                     status = "mismatch"
                     details.append(
                         f"section {section!r}: html mark={html_mark!r}, "

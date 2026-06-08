@@ -360,12 +360,33 @@ def _parse_block(
 # down to the trailing date.
 
 
-def _extract_rank(tokens: list[str]) -> int:
+def _extract_rank(tokens: list[str]) -> tuple[int | None, list[str]]:
+    """Return ``(rank, tokens)`` where ``tokens`` always starts at the mark.
+
+    Normal rows lead with an integer rank (``"37"``). Larsson occasionally
+    omits the rank on the first row of an ancillary 'en route' section
+    (e.g. mpoleok's Renaud Lavillenie 5.93). In that case the leading token
+    is the *mark* itself — a non-integer like ``5.93`` or ``13:42.1``. We
+    recover the performance with a null rank rather than dropping a real
+    mark, returning the tokens untouched so the mark is still at index 0
+    once the caller prepends nothing.
+
+    A pure-integer leading token is always treated as a rank (this keeps
+    combined-events point totals like ``9018`` unambiguous), so the only
+    recovery path is a leading token that looks like a mark but isn't a
+    bare integer.
+    """
     if not tokens:
         raise _StepError("rank", "empty token list")
-    if not tokens[0].isdigit():
-        raise _StepError("rank", f"leading token {tokens[0]!r} is not a rank")
-    return int(tokens[0])
+    if tokens[0].isdigit():
+        return int(tokens[0]), tokens
+    # No integer rank. Accept the row only if the leading token is a
+    # non-integer mark (contains '.', ':' or ','); otherwise it's genuine
+    # garbage and should still fail.
+    head = tokens[0]
+    if _MARK_ONLY_RE.match(head) and any(sep in head for sep in ".:,"):
+        return None, ["", *tokens]
+    raise _StepError("rank", f"leading token {tokens[0]!r} is not a rank")
 
 
 def _extract_mark(tokens: list[str]) -> str:
@@ -479,7 +500,13 @@ def _classify_after_country(after_country: list[str]) -> tuple[str, str]:
         return dob_str, position
     if len(after_country) == 1:
         only = after_country[0]
-        if _DOB_RE.match(only) or _DOB_YEAR_ONLY_RE.match(only):
+        # Only a full dd.mm.yy is a DOB when it stands alone. A bare 2-digit
+        # number here is the finishing position, NOT a year-only birth year:
+        # real year-only DOBs are always followed by a position token and so
+        # land in the len==2 branch below. Treating a lone "12" as a birth
+        # year produced phantom DOBs — e.g. a 12th-place finisher parsed as
+        # "born 2012", which then failed the age-plausibility checks.
+        if _DOB_RE.match(only):
             return only, ""
         return "", only
     if len(after_country) > 2:
@@ -502,7 +529,7 @@ def _parse_individual_line(
     source_url: str,
     source_line: str,
 ) -> dict[str, Any]:
-    rank = _extract_rank(tokens)
+    rank, tokens = _extract_rank(tokens)
     tokens = _heal_mark_name_fusion(tokens)
     mark_raw = _extract_mark(tokens)
     cursor = 2
@@ -809,7 +836,14 @@ def _normalize_mark_with_annotation(raw: str, family: str) -> tuple[float | None
         except ValueError:
             return None, annotation
 
-    # track-style time
+    # track-style time. Larsson usually separates fields with colons
+    # ("3:07.41") but the mixed 4x400m relay uses dots ("3.07.41"). A normal
+    # time has a single dot (the decimal point); two or more dots means dots
+    # are field separators with the LAST one the decimal — rewrite to colons.
+    if ":" not in core and core.count(".") >= 2:
+        head, _, frac = core.rpartition(".")
+        core = head.replace(".", ":") + "." + frac
+
     parts = core.split(":")
     try:
         if len(parts) == 1:
