@@ -85,41 +85,17 @@ were completed on 2026-06-08 — see the "Resolved" section below.
 
 ## Tier 3 — functionality
 
-### 3.1 SQL playground renders every result row into the DOM 🐛 (NEW)
-`renderTable` (sql.html) maps over the full result set with no cap. The default
-example is fine, but `SELECT * FROM perf` returns ~375k rows → it builds one
-giant HTML string and freezes/crashes the tab. **Fix:** cap the rendered rows
-(e.g. first 1,000) with a "showing 1,000 of N — add LIMIT to see fewer" note;
-keep the full count in `.sql-rowcount`.
+3.1–3.5 were completed on 2026-06-08 (see the "Resolved" section below). The
+only remaining Tier 3 item is the optional refactor:
 
-### 3.2 No URL deep-linking on the analytics page
-The WR-chart mode (Absolute / Δ / %) and which layers are toggled aren't
-reflected in the URL, so you can't link someone to a specific view. Add a
-`?mode=delta` query param (read on load, updated on toggle). Persisting the
-last choice in `localStorage` would also carry it across events.
-
-### 3.3 No per-event CSV download
-The index links the global CSV/parquet, but an event page has no "download this
-event" button. A client-side `Blob` from the already-loaded per-event JSON is a
-small add.
-
-### 3.4 Event grid ordering
-Index events are sorted by distance within (sex, legality) now, which is good.
-A grouped layout with subheadings (Sprints / Hurdles / Middle / Distance / Road
-/ Field / Combined / Walks / Relays) would still help scanning; add a `category`
-to `events.py` if pursued.
-
-### 3.5 Age-vs-mark scatter caps at 800 points
-Deep events (m_100ok has 5,000+ canonical marks) are sampled by best mark. A
-"show all" toggle would let power users see the full cloud at the cost of page
-weight.
-
-### 3.6 `site.py` is 1,617 lines
+### 3.6 `site.py` is 1,617 lines (still open — deferred)
 It mixes render orchestration, per-event analytics computation, chart-data prep,
-and athlete-page rendering. Not urgent, but splitting analytics computation into
-its own module would make the data-accuracy-critical code easier to test in
-isolation. (As of 2026-06-08 it does have direct coverage —
-`tests/test_analytics.py` — added with the 1.3 fix.)
+and athlete-page rendering. Not urgent, and explicitly deferred during the
+Tier 3 pass: splitting it is a large, behavior-neutral refactor that would
+conflict with any in-flight change to `site.py`, so it's best done alone when
+nothing else is touching the file. It now has direct coverage
+(`tests/test_analytics.py`, added with the 1.3 fix), which lowers the risk of a
+future split.
 
 ---
 
@@ -145,6 +121,12 @@ isolation. (As of 2026-06-08 it does have direct coverage —
 - ✅ **2.5** Skip-to-main-content link added site-wide.
 - ✅ **2.6** Open Graph + meta-description tags in `base.html`.
 - ✅ **2.7** Filter inputs use 2px borders on coarse-pointer devices.
+- ✅ **3.1** SQL playground caps rendered rows at 1,000 (full count still shown).
+- ✅ **3.2** Analytics chart layers are deep-linkable (`?layers=`) + persisted.
+- ✅ **3.3** Per-event "Download CSV" button (client-side from per-event JSON).
+- ✅ **3.4** Homepage event grid grouped by category subheadings.
+- ✅ **3.5** Mark-vs-age scatter has a "show all performances" toggle.
+- ⏸️ **3.6** `site.py` split — deferred (large behavior-neutral refactor).
 
 ## Resolved since 2026-04-30
 
