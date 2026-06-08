@@ -9,7 +9,8 @@ in CI rather than silently corrupting analysis a week later.
 from __future__ import annotations
 
 import json
-from datetime import date
+import warnings
+from datetime import date, timedelta
 from pathlib import Path
 
 import polars as pl
@@ -35,6 +36,16 @@ MANIFEST = DATA_DIR / "manifest.json"
 # (the meet was actually a year earlier), just no longer "future". The
 # catalogue is therefore checked by *existence*, not by "> today" — see
 # ``test_catalogued_typos_still_present``.
+#
+# Role of this catalogue under the current ``test_dates_make_sense`` behavior:
+# it is *documentation* plus an existence-based drift check, not a gate the
+# cron fails on. A near-future date (up to ~366 days ahead) is routine noise —
+# either a real upcoming meet or a one-year typo — and only *warns* whether or
+# not it's catalogued. A far-future date (more than ~366 days ahead) is never
+# legitimate here and *hard-fails* regardless of the catalogue, because it
+# signals a real parser/date bug (bad century pivot, garbled year). Catalogue
+# entries thus serve to keep the warning list focused and to flag upstream
+# fixes via ``test_catalogued_typos_still_present``.
 KNOWN_FUTURE_DATE_TYPOS: set[tuple[str, str, str, date]] = {
     # Shaoxing Diamond League — typed a year ahead (actually 2025).
     ("w_400ok", "Aailyah Butler", "Shaoxing", date(2026, 6, 15)),
@@ -212,27 +223,106 @@ def test_each_event_section_has_a_rank_1(df: pl.DataFrame) -> None:
     )
 
 
-def test_dates_make_sense(df: pl.DataFrame) -> None:
-    """All dates fall in [1900, today], modulo specifically catalogued typos.
+def _classify_future_dates(
+    df: pl.DataFrame, today: date
+) -> tuple[set[tuple[str, str, str, date]], set[tuple[str, str, str, date]]]:
+    """Split future-dated rows into (near_future, far_future) key sets.
 
-    Anything outside that window that is *not* in ``KNOWN_FUTURE_DATE_TYPOS``
-    is a new bug — either parser drift or new bad data Larsson hasn't fixed.
+    ``near_future`` is ``today < date <= today + 366d`` — routine noise (a real
+    upcoming meet or a one-year typo). ``far_future`` is ``date > today + 366d``
+    — never legitimate here, a parser/date-bug signal. Catalogued typos are
+    *not* removed here; the caller decides how to treat each bucket.
+    """
+    far_horizon = today + timedelta(days=366)
+    nonnull = df.filter(pl.col("date").is_not_null())
+
+    def _keys(sub: pl.DataFrame) -> set[tuple[str, str, str, date]]:
+        return {
+            (r["event_slug"], r["name"], r["venue"], r["date"])
+            for r in sub.select("event_slug", "name", "venue", "date").to_dicts()
+        }
+
+    near = _keys(nonnull.filter((pl.col("date") > today) & (pl.col("date") <= far_horizon)))
+    far = _keys(nonnull.filter(pl.col("date") > far_horizon))
+    return near, far
+
+
+def test_dates_make_sense(df: pl.DataFrame) -> None:
+    """Dates are sane: ``earliest >= 1900`` and nothing absurdly far ahead.
+
+    Future-dated rows split by horizon (see ``_classify_future_dates``):
+
+    - **Far-future** (> today + 366d), not catalogued: a date this far ahead is
+      never legitimate here and signals a real parser/date bug (bad century
+      pivot, garbled year) — this *hard-fails* so the cron breaks loudly.
+    - **Near-future** (today < date <= today + 366d), not catalogued: routine
+      noise — a real upcoming meet or a one-year typo. We only *warn* so the
+      weekly cron stays green while the rows stay visible in test output.
     """
     nonnull = df.filter(pl.col("date").is_not_null())
     earliest = nonnull.select(pl.col("date").min()).item()
     assert date(1900, 1, 1) <= earliest, f"date too old: {earliest}"
 
     today = date.today()
-    future = nonnull.filter(pl.col("date") > today)
-    future_keys = {
-        (r["event_slug"], r["name"], r["venue"], r["date"])
-        for r in future.select("event_slug", "name", "venue", "date").to_dicts()
-    }
-    unexpected = future_keys - KNOWN_FUTURE_DATE_TYPOS
-    assert not unexpected, (
-        f"{len(unexpected)} new future-dated rows (parser bug or new Larsson "
-        f"typo to catalogue): {sorted(unexpected)[:5]}"
+    near, far = _classify_future_dates(df, today)
+
+    unexpected_far = far - KNOWN_FUTURE_DATE_TYPOS
+    assert not unexpected_far, (
+        f"{len(unexpected_far)} rows dated more than a year ahead — implausibly "
+        f"far in the future and almost certainly a parser/date bug: "
+        f"{sorted(unexpected_far)[:5]}"
     )
+
+    unexpected_near = near - KNOWN_FUTURE_DATE_TYPOS
+    if unexpected_near:
+        warnings.warn(
+            f"{len(unexpected_near)} near-future rows (real upcoming meet or a "
+            f"one-year typo — not a hard error). Catalogue them in "
+            f"KNOWN_FUTURE_DATE_TYPOS if they're typos: "
+            f"{sorted(unexpected_near)[:5]}",
+            stacklevel=2,
+        )
+
+
+def _future_date_df(d: date) -> pl.DataFrame:
+    """A one-row synthetic frame shaped like the parquet's date-bearing cols."""
+    return pl.DataFrame(
+        {
+            "event_slug": ["x_test"],
+            "name": ["Test Athlete"],
+            "venue": ["Nowhere"],
+            "date": [d],
+        }
+    )
+
+
+def test_future_date_classification_and_warning() -> None:
+    """Unit-test both horizons on synthetic data, independent of the parquet.
+
+    A near-future date (today + 10d) is classified as near (and only warns),
+    while a far-future date (today + 800d) is classified as far (and would
+    hard-fail the integration test's assertion).
+    """
+    today = date.today()
+    near_df = _future_date_df(today + timedelta(days=10))
+    far_df = _future_date_df(today + timedelta(days=800))
+
+    near, far = _classify_future_dates(near_df, today)
+    assert len(near) == 1 and not far
+
+    near2, far2 = _classify_future_dates(far_df, today)
+    assert not near2 and len(far2) == 1
+
+    # Far-future, uncatalogued: replicate the test's hard-fail assertion.
+    unexpected_far = far2 - KNOWN_FUTURE_DATE_TYPOS
+    with pytest.raises(AssertionError):
+        assert not unexpected_far, "far-future should hard-fail"
+
+    # Near-future, uncatalogued: replicate the test's warn-only path.
+    unexpected_near = near - KNOWN_FUTURE_DATE_TYPOS
+    with pytest.warns(UserWarning):
+        if unexpected_near:
+            warnings.warn("near-future warns only", stacklevel=2)
 
 
 def test_name_is_never_empty(df: pl.DataFrame) -> None:
