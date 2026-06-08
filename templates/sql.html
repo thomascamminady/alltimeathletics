@@ -155,13 +155,21 @@ function formatValue(v, typeName) {
   return String(v);
 }
 
+// Building one <tr> per result row freezes the tab on huge result sets
+// (e.g. SELECT * FROM perf returns ~375k rows), so only render the first
+// MAX_RENDER_ROWS into the DOM. The full count is still reported.
+const MAX_RENDER_ROWS = 1000;
+
 function renderTable(rows, columns, types) {
   if (!rows.length) {
     $result.innerHTML = '<p class="sql-empty">0 rows.</p>';
     return;
   }
+  const total = rows.length;
+  const truncated = total > MAX_RENDER_ROWS;
+  const shown = truncated ? rows.slice(0, MAX_RENDER_ROWS) : rows;
   const head = columns.map((c) => `<th>${escapeHtml(c)}</th>`).join('');
-  const body = rows.map((r) => {
+  const body = shown.map((r) => {
     const cells = columns.map((c, i) => {
       const v = formatValue(r[c], types[i]);
       if (v === null) return '<td class="sql-null">∅</td>';
@@ -169,12 +177,15 @@ function renderTable(rows, columns, types) {
     }).join('');
     return `<tr>${cells}</tr>`;
   }).join('');
+  const countLine = truncated
+    ? `${total.toLocaleString()} rows — showing first ${MAX_RENDER_ROWS.toLocaleString()} of ${total.toLocaleString()} — add LIMIT to your query to narrow it`
+    : `${total.toLocaleString()} row${total === 1 ? '' : 's'}`;
   $result.innerHTML = `<div class="sql-table-wrap">
     <table class="sql-table">
       <thead><tr>${head}</tr></thead>
       <tbody>${body}</tbody>
     </table>
-    <p class="sql-rowcount">${rows.length.toLocaleString()} row${rows.length === 1 ? '' : 's'}</p>
+    <p class="sql-rowcount">${countLine}</p>
   </div>`;
 }
 
