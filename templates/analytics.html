@@ -202,6 +202,10 @@
     </span>
   </summary>
   <div class="chart-body">
+    <div class="chart-mode-toggle" role="group" aria-label="Mark vs age scope">
+      <button type="button" class="btn btn-sm" id="age-scatter-toggle" data-showall="false" aria-pressed="false">Show all performances</button>
+      <span id="age-scatter-status" class="chart-note" role="status" aria-live="polite"></span>
+    </div>
     <div id="age-scatter-chart"></div>
   </div>
 </details>
@@ -405,31 +409,75 @@
         plugins: [tooltip],
       }, data);
 
-      const buttons = document.querySelectorAll("#combo-chart-body .chart-mode-toggle button");
-      buttons.forEach((b) => {
+      // Layer visibility is deep-linkable: `?layers=wr,best` in the URL, with
+      // localStorage as a fallback so the choice carries across events.
+      // Precedence: explicit ?layers= query param > localStorage > the
+      // template's default (wr+best on, all off, per the buttons' initial state).
+      const layerButtons = [...document.querySelectorAll("#combo-chart-body .chart-mode-toggle button")];
+
+      const applyLayer = (b, visible) => {
+        const sIdx = layerToSeries[b.dataset.layer];
+        if (sIdx == null) return;
+        u.setSeries(sIdx, { show: visible });
+        b.classList.toggle("btn-on", visible);
+        b.setAttribute("aria-pressed", visible ? "true" : "false");
+      };
+
+      const persistLayers = () => {
+        const active = layerButtons.filter(b => b.classList.contains("btn-on")).map(b => b.dataset.layer);
+        try { localStorage.setItem("analytics:layers", active.join(",")); } catch (e) { /* ignore */ }
+        const url = new URL(location.href);
+        url.searchParams.set("layers", active.join(","));
+        history.replaceState(null, "", url);
+      };
+
+      const parseLayers = (raw) => new Set(raw.split(",").map(s => s.trim()).filter(Boolean));
+      let desired = null;
+      const params = new URLSearchParams(location.search);
+      if (params.has("layers")) {
+        desired = parseLayers(params.get("layers"));
+      } else {
+        try {
+          const ls = localStorage.getItem("analytics:layers");
+          if (ls != null) desired = parseLayers(ls);
+        } catch (e) { /* ignore */ }
+      }
+      if (desired) {
+        layerButtons.forEach(b => applyLayer(b, desired.has(b.dataset.layer)));
+      }
+
+      layerButtons.forEach((b) => {
         b.addEventListener("click", () => {
           const sIdx = layerToSeries[b.dataset.layer];
           if (sIdx == null) return;
-          const next = !u.series[sIdx].show;
-          u.setSeries(sIdx, { show: next });
-          b.classList.toggle("btn-on", next);
-          b.setAttribute("aria-pressed", next ? "true" : "false");
+          applyLayer(b, !u.series[sIdx].show);
+          persistLayers();
         });
       });
     }
   }
 
   // ---- Mark vs age scatter -----------------------------------------
+  // Default view renders the server-capped AGE_SCATTER (top 800 by mark).
+  // A "Show all performances" toggle fetches the full per-event JSON once
+  // (cached), derives the same age=12..65 / canonical filter the server
+  // uses, and replots in place. Toggling back reuses AGE_SCATTER without
+  // refetching, so the default page load stays light.
   if (AGE_SCATTER && AGE_SCATTER.length) {
     const container = document.getElementById("age-scatter-chart");
-    const sorted = [...AGE_SCATTER].sort((a, b) => a.age - b.age);
-    const xs = sorted.map(r => r.age);
-    const ys = sorted.map(r => r.mark_value);
     const colors = AthHelpers.themeColors();
     const stroke = colors.accent || ACCENT_FALLBACK;
 
+    let u = null;          // current uPlot instance (rebuilt on data swap)
+    let rows = [];         // rows backing the current plot (for tooltips)
+    let fullCache = null;  // cached, derived full-dataset rows
+    let showAll = false;
+
+    // Build the (sorted-by-age) row set the chart draws from.
+    const prepare = (records) => [...records].sort((a, b) => a.age - b.age);
+
     const tooltip = AthHelpers.makeTooltip((u, idx) => {
-      const r = sorted[idx];
+      const r = rows[idx];
       if (!r) return null;
       const lines = [`<b>${escHtml(r.mark_raw)}</b>`];
       if (r.name) lines.push(`<span>${escHtml(r.name)}</span>`);
@@ -438,25 +486,94 @@
       return lines.join("<br>");
     });
 
-    makeChart(container, {
-      series: [
-        {},
-        {
-          label: "mark",
-          stroke, fill: stroke,
-          paths: () => null,
-          points: { show: true, size: 5, fill: stroke, stroke },
-        },
-      ],
-      legend: { show: false },
-      cursor: { drag: { x: false, y: false }, points: { size: 8 } },
-      scales: { x: { time: false } },
-      axes: [
-        { stroke: colors.muted, grid: { stroke: colors.border }, ticks: { stroke: colors.border }, label: "age (years)", labelSize: 28, values: (u, vals) => vals.map(v => v.toFixed(0)) },
-        { stroke: colors.muted, grid: { stroke: colors.border }, ticks: { stroke: colors.border }, label: "mark", labelSize: 30, size: 64, values: fmtAxisMark },
-      ],
-      plugins: [tooltip],
-    }, [xs, ys]);
+    const render = (records) => {
+      rows = prepare(records);
+      const xs = rows.map(r => r.age);
+      const ys = rows.map(r => r.mark_value);
+      if (u) { u.destroy(); u = null; }
+      u = makeChart(container, {
+        series: [
+          {},
+          {
+            label: "mark",
+            stroke, fill: stroke,
+            paths: () => null,
+            points: { show: true, size: 5, fill: stroke, stroke },
+          },
+        ],
+        legend: { show: false },
+        cursor: { drag: { x: false, y: false }, points: { size: 8 } },
+        scales: { x: { time: false } },
+        axes: [
+          { stroke: colors.muted, grid: { stroke: colors.border }, ticks: { stroke: colors.border }, label: "age (years)", labelSize: 28, values: (u, vals) => vals.map(v => v.toFixed(0)) },
+          { stroke: colors.muted, grid: { stroke: colors.border }, ticks: { stroke: colors.border }, label: "mark", labelSize: 30, size: 64, values: fmtAxisMark },
+        ],
+        plugins: [tooltip],
+      }, [xs, ys]);
+    };
+
+    render(AGE_SCATTER);
+
+    // Derive the full dataset client-side from the canonical per-event JSON,
+    // mirroring the server's filter: is_main, dob + mark_value present, and
+    // age in [12, 65] years (date - dob).
+    const YEAR_MS = 365.25 * 86400 * 1000;
+    const deriveFull = (data) => {
+      const out = [];
+      for (const r of data) {
+        if (r.is_main !== true || !r.dob || r.mark_value == null || !r.date) continue;
+        const age = (new Date(r.date) - new Date(r.dob)) / YEAR_MS;
+        if (!(age >= 12.0 && age <= 65.0)) continue;
+        out.push({
+          age: Math.round(age * 100) / 100,
+          mark_value: r.mark_value,
+          mark_raw: r.mark_raw,
+          name: r.name,
+          date: r.date,
+        });
+      }
+      return out;
+    };
+
+    const toggle = document.getElementById("age-scatter-toggle");
+    const statusEl = document.getElementById("age-scatter-status");
+    if (toggle) {
+      toggle.addEventListener("click", async () => {
+        if (!showAll) {
+          // Switch to "show all": fetch (once) then replot.
+          if (!fullCache) {
+            toggle.disabled = true;
+            if (statusEl) statusEl.textContent = "Loading…";
+            try {
+              const resp = await fetch("{{ site_root }}data/events/{{ event.slug }}.json");
+              if (!resp.ok) throw new Error("HTTP " + resp.status);
+              fullCache = deriveFull(await resp.json());
+            } catch (err) {
+              if (statusEl) statusEl.textContent = "Failed to load full data.";
+              toggle.disabled = false;
+              return;
+            }
+            toggle.disabled = false;
+          }
+          showAll = true;
+          render(fullCache);
+          toggle.textContent = "Show top 800";
+          toggle.dataset.showall = "true";
+          toggle.setAttribute("aria-pressed", "true");
+          toggle.classList.add("btn-on");
+          if (statusEl) statusEl.textContent = fullCache.length + " performances";
+        } else {
+          // Switch back to the capped default (no refetch).
+          showAll = false;
+          render(AGE_SCATTER);
+          toggle.textContent = "Show all performances";
+          toggle.dataset.showall = "false";
+          toggle.setAttribute("aria-pressed", "false");
+          toggle.classList.remove("btn-on");
+          if (statusEl) statusEl.textContent = "";
+        }
+      });
+    }
   }
 })();
 </script>
