@@ -33,6 +33,11 @@ off as they ship.
 
 ## Tier 3 — bigger / more opinionated
 
+- [ ] **#17** SQL playground charting (Metabase-style) — below `#sql-result`,
+  add a chart-mode toggle (Table / Line / Bars / Scatter) with X/Y column
+  pickers driven by DuckDB arrow types, rendered via the already-vendored uPlot;
+  persist last choice in `localStorage`. (Folded from the former
+  `uplot_migration.md` "Bonus" section.)
 - [ ] **#12** Compare 2 athletes side-by-side — `?compare=Bolt,Gay` URL
   param.
 - [ ] **#13** Age-curve plot (mark vs age at performance, scatter +
@@ -43,3 +48,17 @@ off as they ship.
   but borders/gray panels aren't theme-aware.
 - [ ] **#16** Per-event CSV download button (header), not just the
   global CSV.
+
+## Housekeeping / polish
+
+- [ ] **CSS dedup** — a few near-duplicate style rules remain: `.country-bars`
+  vs `.athlete-bars` (only `grid-template-columns` differs),
+  `.legality-tabs .tab[aria-pressed="true"]` re-implements `.btn-on`, and the
+  several "card-like" surface rules (`.card`, `.dropdown-panel`,
+  `.sql-table-wrap`) duplicate border/bg patterns. Consolidate when convenient.
+  (Folded from the former `template_audit.md`; most of its findings — `.note`
+  class, `.chart-panel`, dead theme-toggle script, sql schema disclosure marker
+  — are already fixed.)
+- [ ] **`.btn-on` driven by JS, not `aria-pressed`** — toggle state lives in two
+  places; deriving the style from `aria-pressed` would be a single source of
+  truth.
