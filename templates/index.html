@@ -38,6 +38,8 @@
                 All marks
             </button>
         </div>
+        {% set category_order = ['Sprints', 'Hurdles', 'Middle distance',
+        'Distance', 'Road', 'Field', 'Combined', 'Walks', 'Relays', 'Track'] %}
         {% for legality in ['legal', 'non-legal'] %}
         <ul
             class="event-list"
@@ -50,7 +52,16 @@
             endif
             %}
         >
-            {% for ev in events_for_sex if ev.legality == legality %}
+            {% set legal_events = events_for_sex | selectattr('legality',
+            'equalto', legality) | list %}
+            {% for category in category_order %}
+            {% set cat_events = legal_events | selectattr('category', 'equalto',
+            category) | list %}
+            {% if cat_events %}
+            <li class="event-category">
+                <h3>{{ category }}</h3>
+            </li>
+            {% for ev in cat_events %}
             <li>
                 <a
                     href="{{ site_root }}event/{{ ev.slug }}.html"
@@ -60,6 +71,8 @@
                 </a>
                 <span class="row-count">{{ counts[ev.slug] }}</span>
             </li>
+            {% endfor %}
+            {% endif %}
             {% endfor %}
         </ul>
         {% endfor %}
@@ -94,7 +107,9 @@
     filter.addEventListener("input", () => {
         const q = filter.value.toLowerCase().trim();
         document.querySelectorAll(".event-list li").forEach((li) => {
-            const label = li.querySelector("a").dataset.label.toLowerCase();
+            const link = li.querySelector("a");
+            if (!link) return; // category subheadings have no link
+            const label = link.dataset.label.toLowerCase();
             li.hidden = q && !label.includes(q);
         });
     });

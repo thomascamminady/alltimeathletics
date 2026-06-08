@@ -25,10 +25,27 @@ Families:
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Literal
 
 BASE_URL = "https://www.alltime-athletics.com"
+
+# Canonical display order for the homepage category subheadings. The template
+# iterates this list so categories always appear in the same order regardless
+# of how the events happen to be sorted within a sex/legality block.
+CATEGORY_ORDER: tuple[str, ...] = (
+    "Sprints",
+    "Hurdles",
+    "Middle distance",
+    "Distance",
+    "Road",
+    "Field",
+    "Combined",
+    "Walks",
+    "Relays",
+    "Track",  # safe fallback bucket; ideally empty
+)
 
 Sex = Literal["men", "women", "mixed"]
 Legality = Literal["legal", "non-legal"]
@@ -42,6 +59,30 @@ Family = Literal[
 ]
 
 
+_MILE_M = 1609.344
+_YARD_M = 0.9144
+
+
+def _distance_metres(label: str) -> float | None:
+    """Best-effort metric distance for a plain track-running label.
+
+    Only called after relay/combined/field/walk/hurdles/road labels have been
+    routed elsewhere, so the inputs are simple forms like "100 metres",
+    "10000 metres", "1 mile", "2 miles" or "100 yards". Returns ``None`` when
+    no distance can be parsed (caller then uses the "Track" fallback).
+    """
+    m = re.search(r"(\d+(?:\.\d+)?)", label)
+    if m is None:
+        return None
+    value = float(m.group(1))
+    if "mile" in label:
+        return value * _MILE_M
+    if "yard" in label:
+        return value * _YARD_M
+    # "metres" (and the bare numeric case) are already in metres.
+    return value
+
+
 @dataclass(frozen=True, slots=True)
 class Event:
     slug: str  # URL filename without `.htm`; also the canonical event id
@@ -53,6 +94,52 @@ class Event:
     @property
     def url(self) -> str:
         return f"{BASE_URL}/{self.slug}.htm"
+
+    @property
+    def category(self) -> str:
+        """Display bucket for the homepage event grid.
+
+        Computed from ``family`` + ``label`` (no stored field, so the ~180
+        ``_RAW`` rows stay untouched). Order of the checks matters: family
+        wins first, then the label-keyword cases (walks/hurdles/road) take
+        precedence over the by-distance track buckets so that e.g. a
+        "3000m Steeplechase" lands in Hurdles rather than Distance, and a
+        "Marathon Walk" lands in Walks rather than Road.
+        """
+        label = self.label.lower()
+
+        # 1. Family-driven buckets.
+        if self.family == "relay":
+            return "Relays"
+        if self.family == "combined_points":
+            return "Combined"
+        if self.family in ("field_distance", "field_distance_wind"):
+            return "Field"
+
+        # 2. Label-keyword buckets (must win over by-distance track buckets).
+        if "walk" in label:
+            return "Walks"
+        if "hurdles" in label or "steeple" in label:
+            return "Hurdles"
+        if (
+            "marathon" in label  # also catches "half-marathon"
+            or "road" in label
+            or "one hour" in label
+            or "1 hour" in label
+        ):
+            return "Road"
+
+        # 3. Remaining track running events, bucketed by parsed distance.
+        d = _distance_metres(label)
+        if d is not None:
+            if d <= 400:
+                return "Sprints"
+            if d <= _MILE_M:  # 800 / 1000 / 1500 / 1 mile (1609.344m)
+                return "Middle distance"
+            return "Distance"  # 2000m and up
+
+        # 4. Safe fallback (ideally nothing reaches here).
+        return "Track"
 
 
 # (slug, label, sex, legality, family)
