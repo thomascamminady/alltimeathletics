@@ -10,10 +10,24 @@ for now.
 > It is not yet authorised to publish the redistributed data; the repo is
 > private and there is no public site.
 
+## The site
+
+`site.py` renders a static site from the parquet:
+
+- **Per-event pages** with a sortable, filterable table (custom
+  `lite-table.js`, no heavy dependency).
+- **Per-event analytics pages** — world-record progression, best mark per
+  year, age-at-performance scatter, decade leaders, and top countries
+  (charts drawn with vendored uPlot).
+- **Per-athlete career pages** plus an athlete index.
+- An in-browser **SQL playground** (DuckDB-WASM) for ad-hoc queries
+  against the parquet.
+- A **download** page and an **about** page.
+
 ## Status
 
 - ✅ Scraper, parser, parquet pipeline, static site renderer, local tests
-- ✅ ~371k rows across ~190 events; 0.034 % unparsed
+- ✅ ~375k rows across 190 events; 0.034 % unparsed
 - ✅ Weekly auto-refresh via `update-data.yml` cron + dated GitHub Releases
 - ✅ Public hosting (GitHub Pages)
 
@@ -60,18 +74,30 @@ Schema (one row per performance):
 | `sex`         | str    | "men" / "women" / "mixed"                     |
 | `legality`    | str    | "legal" / "non-legal"                         |
 | `family`      | str    | parser family (track_time, field_distance, …) |
-| `section`     | str    | sub-list heading from the source page         |
-| `rank`        | u32    | as printed by Larsson                         |
-| `mark_raw`    | str    | exact text of the mark                        |
-| `mark_value`  | f64    | seconds / metres / points                     |
-| `wind`        | f64?   | nullable (sprints/jumps only)                 |
-| `name`        | str    | athlete or team                               |
-| `country`     | str    | IOC 3-letter, uppercased                      |
-| `dob`         | date?  | nullable                                      |
-| `position`    | str    | finishing position in race                    |
-| `venue`       | str    |                                               |
-| `date`        | date   | event date                                    |
-| `source_url`  | str    | link back to the Larsson page                 |
+| `section`         | str    | sub-list heading from the source page         |
+| `rank`            | u32?   | as printed by Larsson; null when he omitted it |
+| `mark_raw`        | str    | exact text of the mark                        |
+| `mark_value`      | f64    | seconds / metres / points                     |
+| `mark_annotation` | str?   | trailing mark flag (`A`, `*`, `+`, …) if any  |
+| `wind`            | f64?   | nullable (sprints/jumps only)                 |
+| `name`            | str    | athlete or team                               |
+| `country`         | str    | IOC 3-letter, uppercased                      |
+| `dob`             | date?  | nullable                                      |
+| `dob_precision`   | str?   | `"day"`, `"year"`, or null (see note below)   |
+| `position`        | str    | finishing position in race                    |
+| `venue`           | str    |                                               |
+| `date`            | date   | event date                                    |
+| `source_url`      | str    | link back to the Larsson page                 |
+| `source_line`     | str    | raw source line the row was parsed from       |
+
+Two columns need care:
+
+- **`dob_precision`** records how exact a birth date is. `"day"` means a
+  full day-month-year DOB; `"year"` means the source only gave a year, so
+  `dob` is imputed as `YYYY-01-01` — do not treat a January-1 `"year"` row
+  as a real January-1 birthday. Null means no DOB at all.
+- **`rank`** is nullable: a handful of ancillary rows carry no rank number
+  because Larsson omitted it on the source page.
 
 ## Run it locally
 
@@ -97,8 +123,12 @@ src/alltimeathletics/
   parse.py       # <PRE>-block parser, family-aware
   pipeline.py    # scrape + parse → parquet + manifest
   site.py        # render the static site + per-event JSON from the parquet
-templates/       # base.html, index.html, event.html
-static/          # style.css + vendored Tabulator
+  flags.py       # IOC code → flag-emoji map used by the templates
+templates/       # base, index, event, analytics, athlete, athlete_index,
+                 #   sql, download, about
+static/          # style.css, lite-table.js (custom sortable/filterable
+                 #   table), vendored uPlot (uplot.min.js/.css) +
+                 #   uplot-helpers.js for the charts
 data/            # parquet, manifest.json (per-event JSON is generated, not committed)
 tests/           # parser + schema + data-accessibility tests
 .github/workflows/
