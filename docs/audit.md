@@ -77,59 +77,9 @@ just make sure the README's schema table calls it out (see 2.2).
 
 ## Tier 2 — simplicity & accessibility
 
-### 2.1 CI runs only 2 of 9 test files 🐛 (NEW, high value)
-`.github/workflows/ci.yml` runs `test_parse.py` + `test_pipeline_schema.py`
-only. The weekly `update-data.yml` adds `test_qoi`, `test_data_access`,
-`test_audit`. That leaves **`test_invariants.py`, `test_pct_of_wr.py`,
-`test_site_build.py` never gating a PR**, and the data-quality suites only run
-on the weekly scrape. All 151 tests pass against the committed parquet today, so
-there's no reason not to gate them.
-
-**Fix:** in `ci.yml`, replace the two narrow steps with `uv run pytest` (the
-audit test self-skips without `.cache`, the rest run against the committed
-parquet). Also lint `scripts/` — `ci.yml` lints `src tests` only, which is how
-the `plot.py` `zip(strict=)` errors reached `main` (pre-commit caught them
-locally, CI wouldn't have).
-
-### 2.2 README is stale 📄 (NEW)
-`README.md` still says `static/ # style.css + vendored Tabulator` (Tabulator was
-replaced by `lite-table.js` + uPlot; no Tabulator file remains). It also omits
-the SQL playground, the analytics pages, athlete pages, and the download page.
-**Fix:** refresh the "structure" and "features" sections; document the parquet
-schema including `dob_precision` and the `rank=null` convention for
-rank-omitted rows.
-
-### 2.3 Documentation sprawl 📄
-`docs/` holds `audit.md`, `parser_audit.md` (auto-generated — keep),
-`roadmap.md`, `plan_interactive_athlete_charts.md`, `template_audit.md`,
-`uplot_migration.md`. The last three are one-off planning notes that are now
-mostly implemented. **Fix:** fold anything still-relevant into `roadmap.md` or
-this file, delete the rest, so the next reader has one "what's done / what's
-left" source instead of six.
-
-### 2.4 Sortable table headers are mouse-only ♿ (NEW, real a11y gap)
-`lite-table.js` wires sorting via `th.addEventListener("click", …)` (line ~91)
-with no `tabindex`, `keydown` (Enter/Space), `role="button"`, or `aria-sort`.
-The core UI of the whole site can't be sorted by keyboard and screen readers
-don't announce sort direction. **Fix:** make sort headers focusable
-(`tabindex="0"`), activate on Enter/Space, and set `aria-sort` on the active
-column.
-
-### 2.5 No skip-link to main content ♿
-`<header>`/`<main>` give implicit landmarks, but a "skip to main content" link
-as the first focusable element would let keyboard/SR users bypass the nav on
-every page. One `<a class="visually-hidden-focusable" href="#main">` + an
-`id="main"` on `<main>` in `base.html`.
-
-### 2.6 No Open Graph / meta description
-Sharing any page in Slack/X yields no preview. Add `<meta name="description">`
-and `og:title`/`og:description` to `base.html` (block-overridable per page).
-5 minutes, 95% of the value of static share-card PNGs.
-
-### 2.7 Touch-device input affordance
-Header filter inputs and the table filters are 1px borders — they visually
-vanish on coarse-pointer devices. Bump to 2px under
-`@media (pointer: coarse)`.
+All Tier 2 items (2.1 CI coverage, 2.2 README, 2.3 doc sprawl, 2.4 keyboard
+table headers, 2.5 skip-link, 2.6 Open Graph tags, 2.7 touch-input borders)
+were completed on 2026-06-08 — see the "Resolved" section below.
 
 ---
 
@@ -185,6 +135,16 @@ isolation. (As of 2026-06-08 it does have direct coverage —
 - ✅ **1.4** `test_dates_make_sense` warns on near-future dates (≤1y) and only
   hard-fails far-future ones, so the weekly cron no longer breaks on routine
   upcoming-meet / one-year-typo noise.
+- ✅ **2.1** CI runs the full `pytest` suite and lints `scripts/` (was 2 of 9
+  test files; `scripts/` unlinted).
+- ✅ **2.2** README refreshed (Tabulator→LiteTable/uPlot, current pages &
+  modules, schema incl. `dob_precision` / nullable `rank`).
+- ✅ **2.3** Implemented planning docs removed; one remaining-work source
+  (audit.md + roadmap.md).
+- ✅ **2.4** Sortable table headers are keyboard-operable with `aria-sort`.
+- ✅ **2.5** Skip-to-main-content link added site-wide.
+- ✅ **2.6** Open Graph + meta-description tags in `base.html`.
+- ✅ **2.7** Filter inputs use 2px borders on coarse-pointer devices.
 
 ## Resolved since 2026-04-30
 
