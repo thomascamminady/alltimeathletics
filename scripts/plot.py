@@ -60,70 +60,62 @@ def main():
         "Wayde van Niekerk",
     ]
 
+    # Filter by event_slug rather than label so the script is robust against
+    # label-casing changes (the parquet's ``event`` column only updates on
+    # re-scrape, but ``event_slug`` is stable).
     DISTANCES = {
-        "100 metres": 100,
-        "200 metres": 200,
-        "400 metres": 400,
-        "800 metres": 800,
-        "1500 metres": 1500,
-        "5000 metres": 5000,
-        "10000 metres": 10000,
-        "half-marathon": 21097,
-        "marathon": 42195,
+        "m_100ok": ("100 Metres", 100),
+        "m_200ok": ("200 Metres", 200),
+        "m_400ok": ("400 Metres", 400),
+        "m_800ok": ("800 Metres", 800),
+        "m_1500ok": ("1500 Metres", 1500),
+        "m_5000ok": ("5000 Metres", 5000),
+        "m_10kok": ("10000 Metres", 10000),
+        "mhmaraok": ("Half-Marathon", 21097),
+        "mmaraok": ("Marathon", 42195),
     }
 
-    EVENTS = list(DISTANCES.keys())
+    EVENT_SLUGS = list(DISTANCES.keys())
 
     # -------------------------------
     # DuckDB Queries
     # -------------------------------
+    case_distance_m = "\n            ".join(
+        f"WHEN '{slug}' THEN {dist}" for slug, (_, dist) in DISTANCES.items()
+    )
+    slug_in = ",".join(f"'{s}'" for s in EVENT_SLUGS)
+
     athletes_query = f"""
     SELECT
         name,
-        event,
+        event_slug,
         mark_value,
-        CASE event
-            WHEN '100 metres' THEN 100
-            WHEN '200 metres' THEN 200
-            WHEN '400 metres' THEN 400
-            WHEN '800 metres' THEN 800
-            WHEN '1500 metres' THEN 1500
-            WHEN '5000 metres' THEN 5000
-            WHEN '10000 metres' THEN 10000
-            WHEN 'half-marathon' THEN 21097
-            WHEN 'marathon' THEN 42195
+        CASE event_slug
+            {case_distance_m}
         END AS distance_m
     FROM (
         SELECT *
         FROM read_parquet('{PARQUET_FILE}')
         WHERE trim(name) IN ({",".join([f"'{n}'" for n in MALE_ELITES])})
-          AND event IN ({",".join([f"'{e}'" for e in EVENTS])})
+          AND event_slug IN ({slug_in})
           AND DATE_DIFF('year', dob, date) BETWEEN 15 AND 50
-        QUALIFY mark_value = MIN(mark_value) OVER (PARTITION BY name, event)
+        QUALIFY mark_value = MIN(mark_value) OVER (PARTITION BY name, event_slug)
     ) t
     ORDER BY name, distance_m
     """
 
     wr_query = f"""
     SELECT
-        event,
+        event_slug,
         mark_value,
-        CASE event
-            WHEN '100 metres' THEN 100
-            WHEN '200 metres' THEN 200
-            WHEN '400 metres' THEN 400
-            WHEN '800 metres' THEN 800
-            WHEN '1500 metres' THEN 1500
-            WHEN '5000 metres' THEN 5000
-            WHEN '10000 metres' THEN 10000
-            WHEN 'half-marathon' THEN 21097
-            WHEN 'marathon' THEN 42195
+        CASE event_slug
+            {case_distance_m}
         END AS distance_m
     FROM (
         SELECT *
         FROM read_parquet('{PARQUET_FILE}')
-        WHERE event IN ({",".join([f"'{e}'" for e in EVENTS])})
-        QUALIFY mark_value = MIN(mark_value) OVER (PARTITION BY event)
+        WHERE event_slug IN ({slug_in})
+        QUALIFY mark_value = MIN(mark_value) OVER (PARTITION BY event_slug)
     ) t
     ORDER BY distance_m
     """
@@ -139,7 +131,7 @@ def main():
     # Process data
     # -------------------------------
     athletes_data = {name: [] for name in MALE_ELITES}
-    for name, event, mark_value, distance_m in athletes_rows:
+    for name, _slug, mark_value, distance_m in athletes_rows:
         athletes_data[name].append((distance_m, pace_mps(mark_value, distance_m)))
 
     wr_data = [
@@ -157,20 +149,21 @@ def main():
             print(f"Warning: No data for {name}")
             continue
         data_sorted = sorted(data, key=lambda x: x[0])
-        distances, speeds = zip(*data_sorted)
+        distances, speeds = zip(*data_sorted, strict=True)
         ax.plot(distances, speeds, marker="o", label=name, linestyle="-")
 
     # World record curve
     if wr_data:
         wr_data_sorted = sorted(wr_data, key=lambda x: x[0])
-        wr_distances, wr_speeds = zip(*wr_data_sorted)
+        wr_distances, wr_speeds = zip(*wr_data_sorted, strict=True)
         ax.plot(wr_distances, wr_speeds, color="black", marker="x", label="World Record")
 
     # Log x-axis but only show main event ticks
-    event_distances = [DISTANCES[e] for e in EVENTS]
+    event_distances = [DISTANCES[s][1] for s in EVENT_SLUGS]
+    event_labels = [DISTANCES[s][0] for s in EVENT_SLUGS]
     ax.set_xscale("log")
     ax.set_xticks(event_distances)
-    ax.set_xticklabels(EVENTS, rotation=45, ha="right")
+    ax.set_xticklabels(event_labels, rotation=45, ha="right")
 
     # Clean grid: only major ticks
     ax.grid(True, which="major", linestyle="--", alpha=0.7)

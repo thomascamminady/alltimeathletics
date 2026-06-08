@@ -20,3 +20,9 @@ site/
 # not ~80 MB of JSON.
 data/events/
 .claude
+
+# Local plotting scratch (one-off WR experiments; the maintained script is scripts/plot.py)
+data/*.png
+data/*.sh
+data/wr_plot.py
+data/mmaraok_wr.csv
