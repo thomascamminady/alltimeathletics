@@ -69,44 +69,33 @@
 </section>
 {% endif %}
 
-{# ----- WR progression (absolute / delta / percent) ------------------- #}
-{% if meta.wr_progression %}
+{# ----- combined performance history (WR + best/year + all perfs) ----- #}
+{% set has_wr = meta.wr_progression and meta.wr_progression|length %}
+{% set has_best = analytics.best_per_year and analytics.best_per_year|length %}
+{% set has_all = analytics.all_perfs and analytics.all_perfs|length %}
+{% if has_wr or has_best or has_all %}
 <details class="card chart-card" open>
   <summary>
-    <span class="chart-title">World-record progression</span>
+    <span class="chart-title">Performance history</span>
     <span class="chart-meta">
-      {{ meta.n_wrs }} world records since {{ meta.wr_progression[0].date[:4] }}
+      {% if has_wr %}{{ meta.n_wrs }} WRs{% endif %}
+      {%- if has_wr and has_best %} · {% endif -%}
+      {% if has_best %}{{ analytics.best_per_year|length }} years{% endif %}
+      {%- if (has_wr or has_best) and has_all %} · {% endif -%}
+      {% if has_all %}{{ analytics.all_perfs|length }} performances{% endif %}
     </span>
   </summary>
-  <div class="chart-body" id="wr-chart-body">
-    <div class="chart-mode-toggle" role="tablist" aria-label="WR chart mode">
-      <button type="button" class="btn btn-sm btn-on" data-mode="absolute" aria-pressed="true">Absolute</button>
-      <button type="button" class="btn btn-sm" data-mode="delta" aria-pressed="false">Δ vs current WR</button>
-      <button type="button" class="btn btn-sm" data-mode="percent" aria-pressed="false">% vs current WR</button>
+  <div class="chart-body" id="combo-chart-body">
+    <div class="chart-mode-toggle" role="group" aria-label="Combined chart layers">
+      {% if has_wr %}<button type="button" class="btn btn-sm btn-on" data-layer="wr" aria-pressed="true">World record</button>{% endif %}
+      {% if has_best %}<button type="button" class="btn btn-sm btn-on" data-layer="best" aria-pressed="true">Best per year</button>{% endif %}
+      {% if has_all %}<button type="button" class="btn btn-sm" data-layer="all" aria-pressed="false">All performances</button>{% endif %}
     </div>
-    <div id="wr-chart"></div>
+    <div id="combo-chart"></div>
     <p class="chart-note">
       Canonical list: <em>{{ meta.main_section }}</em>.
       {% if meta.descending %}Higher mark = better.{% else %}Lower mark = better.{% endif %}
-      Hover a dot for the holder &amp; venue.
-    </p>
-  </div>
-</details>
-{% endif %}
-
-{# ----- best mark per year ------------------------------------------- #}
-{% if analytics.best_per_year %}
-<details class="card chart-card" open>
-  <summary>
-    <span class="chart-title">Best mark per year</span>
-    <span class="chart-meta">
-      {{ analytics.best_per_year|length }} years
-    </span>
-  </summary>
-  <div class="chart-body">
-    <div id="year-line-chart"></div>
-    <p class="chart-note">
-      The single best canonical mark for each year. Hover a dot for the holder.
+      Toggle layers above; hover a point for details.
     </p>
   </div>
 </details>
@@ -224,6 +213,7 @@
   const DESCENDING = {{ meta.descending|tojson }};
   const WR_PROG = {{ meta.wr_progression|tojson }};
   const BEST_PER_YEAR = {{ analytics.best_per_year|tojson }};
+  const ALL_PERFS = {{ analytics.all_perfs|tojson }};
   const AGE_SCATTER = {{ analytics.age_scatter|tojson }};
   const CHART_HEIGHT = 280;
   const ACCENT_FALLBACK = "#0a58ca";
@@ -252,133 +242,181 @@
     return vals.map(v => v == null ? "" : v.toFixed(2) + "%");
   }
 
-  // ---- WR progression -----------------------------------------------
-  if (WR_PROG && WR_PROG.length) {
-    const container = document.getElementById("wr-chart");
-    const wrSorted = [...WR_PROG].sort((a, b) => epochDate(a.date) - epochDate(b.date));
-    const xs = wrSorted.map(r => epochDate(r.date));
-    const absVals = wrSorted.map(r => r.mark_value);
-    const current = absVals[absVals.length - 1];
-    // Signed delta: r.mark_value - current. For ascending (track times)
-    // older=larger=positive; for descending (field events) older=smaller=negative.
-    // The trend goes to zero over time in both cases.
-    const signedDelta = wrSorted.map(r => r.mark_value - current);
-    const pctVals = wrSorted.map(r => (r.mark_value / current) * 100);
+  // ---- Combined performance history --------------------------------
+  // One chart with three independently toggleable layers sharing a y-axis:
+  //   • World record progression (stepped line + dots, default ON)
+  //   • Best mark per year       (stepped line + dots, default ON)
+  //   • All performances         (dots only,           default OFF)
+  // The x-axis is the union of every layer's dates so the stepped lines
+  // align with the scatter points; spanGaps keeps the lines unbroken across
+  // the dates that only belong to other series.
+  {
+    const hasWR = WR_PROG && WR_PROG.length;
+    const hasBest = BEST_PER_YEAR && BEST_PER_YEAR.length;
+    const hasAll = ALL_PERFS && ALL_PERFS.length;
+    const container = document.getElementById("combo-chart");
 
-    const colors = AthHelpers.themeColors();
-    const stroke = colors.accent || ACCENT_FALLBACK;
+    if (container && (hasWR || hasBest || hasAll)) {
+      const wrSorted = hasWR ? [...WR_PROG].sort((a, b) => epochDate(a.date) - epochDate(b.date)) : [];
+      const bestSorted = hasBest ? [...BEST_PER_YEAR].sort((a, b) => epochDate(a.date) - epochDate(b.date)) : [];
+      const allSorted = hasAll ? [...ALL_PERFS].sort((a, b) => epochDate(a.date) - epochDate(b.date)) : [];
 
-    const tooltip = AthHelpers.makeTooltip((u, idx) => {
-      const r = wrSorted[idx];
-      if (!r) return null;
-      const mode = currentMode;
-      const lines = [`<b>${escHtml(r.mark_raw)}</b>`];
-      lines.push(`<span class="ut-muted">${escHtml(r.date)}</span>`);
-      lines.push(`<span>${escHtml(r.name)} (${escHtml(r.country)})</span>`);
-      if (r.venue) lines.push(`<span class="ut-muted">${escHtml(r.venue)}</span>`);
-      if (mode === "delta" && r.mark_value !== current) {
-        const d = r.mark_value - current;
-        lines.push(`<span class="ut-muted">Δ ${(d > 0 ? "+" : "") + AthHelpers.fmtMark(Math.abs(d), FAMILY)}</span>`);
-      } else if (mode === "percent") {
-        lines.push(`<span class="ut-muted">${((r.mark_value / current) * 100).toFixed(2)}% of current</span>`);
+      const xSet = new Set();
+      wrSorted.forEach(r => xSet.add(epochDate(r.date)));
+      bestSorted.forEach(r => xSet.add(epochDate(r.date)));
+      allSorted.forEach(r => xSet.add(epochDate(r.date)));
+      const xs = [...xSet].sort((a, b) => a - b);
+
+      // Extend the x-axis to *today* so the stepped lines (which otherwise
+      // stop at the most recent record) carry their current value forward
+      // to the present, making clear the record still stands. We append a
+      // synthetic "today" slot, fill the stepped series with their last
+      // value there, and hide that point's dot + tooltip so it doesn't read
+      // as a real performance.
+      const now = new Date();
+      const todayEpoch = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 1000;
+      let todayIdx = -1;
+      if (xs.length && todayEpoch > xs[xs.length - 1]) {
+        xs.push(todayEpoch);
+        todayIdx = xs.length - 1;
       }
-      return lines.join("<br>");
-    });
+      const xIndex = new Map(xs.map((x, i) => [x, i]));
 
-    const series = [
-      {},
-      {
-        label: "WR",
-        stroke,
-        width: 2,
-        paths: uPlot.paths.stepped({ align: 1 }),
-        points: { show: true, size: 6, fill: stroke, stroke },
-      },
-    ];
-
-    let currentMode = "absolute";
-    const buildData = (mode) => {
-      currentMode = mode;
-      if (mode === "absolute") return [xs, absVals];
-      if (mode === "delta") return [xs, signedDelta];
-      return [xs, pctVals];
-    };
-
-    const yLabelFor = (mode) => mode === "absolute" ? "WR mark"
-      : mode === "delta" ? "Δ vs current WR" : "% of current WR";
-    const yFmtFor = (mode) => mode === "absolute" ? fmtAxisMark
-      : mode === "delta" ? fmtAxisDelta : fmtAxisPct;
-
-    const baseAxes = (mode) => [
-      { stroke: colors.muted, grid: { stroke: colors.border }, ticks: { stroke: colors.border }, values: fmtAxisX, space: 60 },
-      { stroke: colors.muted, grid: { stroke: colors.border }, ticks: { stroke: colors.border }, label: yLabelFor(mode), labelSize: 30, size: 64, values: yFmtFor(mode) },
-    ];
-
-    const u = makeChart(container, {
-      series,
-      legend: { show: false },
-      cursor: { drag: { x: false, y: false }, points: { size: 9 } },
-      axes: baseAxes("absolute"),
-      plugins: [tooltip],
-    }, buildData("absolute"));
-
-    const buttons = document.querySelectorAll("#wr-chart-body .chart-mode-toggle button");
-    buttons.forEach((b) => {
-      b.addEventListener("click", () => {
-        const mode = b.dataset.mode;
-        buttons.forEach((bb) => {
-          const on = bb === b;
-          bb.classList.toggle("btn-on", on);
-          bb.setAttribute("aria-pressed", on ? "true" : "false");
+      // Multiple records can land on the same date (e.g. two performances
+      // on the same day in ALL_PERFS). Keep the better mark per slot.
+      const isBetter = (a, b) => DESCENDING ? a > b : a < b;
+      const buildAligned = (records) => {
+        const ys = new Array(xs.length).fill(null);
+        const recAt = new Array(xs.length).fill(null);
+        records.forEach((r) => {
+          const i = xIndex.get(epochDate(r.date));
+          if (i == null) return;
+          if (ys[i] == null || isBetter(r.mark_value, ys[i])) {
+            ys[i] = r.mark_value;
+            recAt[i] = r;
+          }
         });
-        u.setData(buildData(mode));
-        u.axes[1].label = yLabelFor(mode);
-        u.axes[1].values = yFmtFor(mode);
-        u.redraw(false, true);
-      });
-    });
-  }
+        return { ys, recAt };
+      };
 
-  // ---- Best mark per year ------------------------------------------
-  if (BEST_PER_YEAR && BEST_PER_YEAR.length) {
-    const container = document.getElementById("year-line-chart");
-    // Plot each year's best at its actual date (falls back to Jan 1 for
-    // year-only sources, since the parquet stores a real Date column).
-    const sorted = [...BEST_PER_YEAR].sort((a, b) => epochDate(a.date) - epochDate(b.date));
-    const xs = sorted.map(r => epochDate(r.date));
-    const ys = sorted.map(r => r.mark_value);
-    const colors = AthHelpers.themeColors();
-    const stroke = colors.accent || ACCENT_FALLBACK;
+      // Hold a stepped series' last real value flat out to the today slot.
+      // recAt[todayIdx] stays null, so the tooltip shows nothing there.
+      const carryForwardToToday = (aligned) => {
+        if (todayIdx < 0) return;
+        for (let i = todayIdx - 1; i >= 0; i--) {
+          if (aligned.ys[i] != null) { aligned.ys[todayIdx] = aligned.ys[i]; break; }
+        }
+      };
 
-    const tooltip = AthHelpers.makeTooltip((u, idx) => {
-      const r = sorted[idx];
-      if (!r) return null;
-      const lines = [`<b>${escHtml(r.mark_raw)}</b>`];
-      if (r.name) lines.push(`<span>${escHtml(r.name)}${r.country ? ` (${escHtml(r.country)})` : ""}</span>`);
-      if (r.venue) lines.push(`<span class="ut-muted">${escHtml(r.venue)}</span>`);
-      if (r.date) lines.push(`<span class="ut-muted">${escHtml(r.date)}</span>`);
-      return lines.join("<br>");
-    });
+      // Draw points at every real value except the synthetic today slot.
+      const pointsFilter = (u, seriesIdx) => {
+        const ys = u.data[seriesIdx];
+        const idxs = [];
+        for (let i = 0; i < ys.length; i++) {
+          if (ys[i] != null && i !== todayIdx) idxs.push(i);
+        }
+        return idxs;
+      };
 
-    makeChart(container, {
-      series: [
-        {},
-        {
-          label: "Best mark",
-          stroke,
-          width: 2,
+      const wrA = buildAligned(wrSorted);
+      const bestA = buildAligned(bestSorted);
+      const allA = buildAligned(allSorted);
+      carryForwardToToday(wrA);
+      carryForwardToToday(bestA);
+
+      const colors = AthHelpers.themeColors();
+      const wrColor = colors.accent || ACCENT_FALLBACK;
+      const bestColor = colors.muted || "#5b6470";
+      const allColor = colors.border || "#cbd2da";
+
+      const series = [{}];
+      const data = [xs];
+      const layerToSeries = {};
+      const slots = []; // parallel to series 1..N: {kind, aligned}
+
+      if (hasWR) {
+        layerToSeries.wr = series.length;
+        slots.push({ kind: "WR", aligned: wrA });
+        series.push({
+          label: "World record",
+          show: true,
+          stroke: wrColor,
+          width: 2.5,
           paths: uPlot.paths.stepped({ align: 1 }),
-          points: { show: true, size: 5, fill: stroke, stroke },
-        },
-      ],
-      legend: { show: false },
-      cursor: { drag: { x: false, y: false }, points: { size: 8 } },
-      axes: [
-        { stroke: colors.muted, grid: { stroke: colors.border }, ticks: { stroke: colors.border }, values: fmtAxisX, space: 60 },
-        { stroke: colors.muted, grid: { stroke: colors.border }, ticks: { stroke: colors.border }, label: "best mark", labelSize: 30, size: 64, values: fmtAxisMark },
-      ],
-      plugins: [tooltip],
-    }, [xs, ys]);
+          points: { show: true, size: 7, fill: wrColor, stroke: wrColor, filter: pointsFilter },
+          spanGaps: true,
+        });
+        data.push(wrA.ys);
+      }
+      if (hasBest) {
+        layerToSeries.best = series.length;
+        slots.push({ kind: "Best", aligned: bestA });
+        series.push({
+          label: "Best per year",
+          show: true,
+          stroke: bestColor,
+          width: 1.5,
+          dash: [4, 3],
+          paths: uPlot.paths.stepped({ align: 1 }),
+          points: { show: true, size: 5, fill: bestColor, stroke: bestColor, filter: pointsFilter },
+          spanGaps: true,
+        });
+        data.push(bestA.ys);
+      }
+      if (hasAll) {
+        layerToSeries.all = series.length;
+        slots.push({ kind: "All", aligned: allA });
+        series.push({
+          label: "All performances",
+          show: false,
+          stroke: allColor,
+          paths: () => null,
+          points: { show: true, size: 3, fill: allColor, stroke: allColor },
+        });
+        data.push(allA.ys);
+      }
+
+      const tooltip = AthHelpers.makeTooltip((u, idx) => {
+        // Priority: WR > Best > All. Skip layers whose series is hidden.
+        let pick = null;
+        for (let i = 0; i < slots.length; i++) {
+          const sIdx = i + 1;
+          if (!u.series[sIdx].show) continue;
+          const rec = slots[i].aligned.recAt[idx];
+          if (rec) { pick = { kind: slots[i].kind, rec }; break; }
+        }
+        if (!pick) return null;
+        const r = pick.rec;
+        const lines = [`<b>${escHtml(r.mark_raw)}</b> <span class="ut-muted">${escHtml(pick.kind)}</span>`];
+        if (r.name) lines.push(`<span>${escHtml(r.name)}${r.country ? ` (${escHtml(r.country)})` : ""}</span>`);
+        if (r.venue) lines.push(`<span class="ut-muted">${escHtml(r.venue)}</span>`);
+        if (r.date) lines.push(`<span class="ut-muted">${escHtml(r.date)}</span>`);
+        return lines.join("<br>");
+      });
+
+      const u = makeChart(container, {
+        series,
+        legend: { show: false },
+        cursor: { drag: { x: false, y: false }, points: { size: 9 } },
+        axes: [
+          { stroke: colors.muted, grid: { stroke: colors.border }, ticks: { stroke: colors.border }, values: fmtAxisX, space: 60 },
+          { stroke: colors.muted, grid: { stroke: colors.border }, ticks: { stroke: colors.border }, label: "mark", labelSize: 30, size: 64, values: fmtAxisMark },
+        ],
+        plugins: [tooltip],
+      }, data);
+
+      const buttons = document.querySelectorAll("#combo-chart-body .chart-mode-toggle button");
+      buttons.forEach((b) => {
+        b.addEventListener("click", () => {
+          const sIdx = layerToSeries[b.dataset.layer];
+          if (sIdx == null) return;
+          const next = !u.series[sIdx].show;
+          u.setSeries(sIdx, { show: next });
+          b.classList.toggle("btn-on", next);
+          b.setAttribute("aria-pressed", next ? "true" : "false");
+        });
+      });
+    }
   }
 
   // ---- Mark vs age scatter -----------------------------------------
