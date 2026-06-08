@@ -1150,7 +1150,13 @@ def _compute_event_analytics(df: pl.DataFrame, slug: str, meta: dict[str, Any]) 
     holders = canonical.with_columns(pl.col("date").dt.year().alias("year")).join(
         by_year, left_on=["year", "mark_value"], right_on=["year", "best"], how="inner"
     )
-    holders = holders.unique(subset=["year"], keep="first").sort("year")
+    # Among ties on the year's best mark, pick the earliest-set (then A–Z by
+    # name) holder so the chosen holder is deterministic across runs.
+    holders = (
+        holders.sort(["date", "name"], nulls_last=True)
+        .unique(subset=["year"], keep="first")
+        .sort("year")
+    )
     best_per_year: list[dict[str, Any]] = [
         {
             "year": int(r["year"]),
@@ -1183,7 +1189,11 @@ def _compute_event_analytics(df: pl.DataFrame, slug: str, meta: dict[str, Any]) 
     SCATTER_CAP = 800
     age_scatter_df = (
         canonical.filter(pl.col("dob").is_not_null())
-        .sort("mark_value", descending=descending)
+        .sort(
+            ["mark_value", "date", "name"],
+            descending=[descending, False, False],
+            nulls_last=True,
+        )
         .head(SCATTER_CAP)
         .with_columns(((pl.col("date") - pl.col("dob")).dt.total_days() / 365.25).alias("age"))
     )
@@ -1201,7 +1211,15 @@ def _compute_event_analytics(df: pl.DataFrame, slug: str, meta: dict[str, Any]) 
 
     # ---- summary stats panel -------------------------------------
     summary: dict[str, Any] = {}
-    sorted_main = canonical.sort("mark_value", descending=descending)
+    # Deterministic tiebreaker: among equal marks the earliest-set performance
+    # wins, then alphabetical by name. Only ``mark_value`` follows ``descending``;
+    # ``date`` and ``name`` are always ascending. Without this, ties (common —
+    # e.g. several 9.86 in the 100m) would pick a non-deterministic holder.
+    sorted_main = canonical.sort(
+        ["mark_value", "date", "name"],
+        descending=[descending, False, False],
+        nulls_last=True,
+    )
     if not sorted_main.is_empty():
         top = sorted_main.row(0, named=True)
         summary["top_name"] = top["name"]
@@ -1251,7 +1269,8 @@ def _compute_event_analytics(df: pl.DataFrame, slug: str, meta: dict[str, Any]) 
             .group_by("country")
             .len()
             .rename({"len": "count"})
-            .sort("count", descending=True)
+            # Break count ties alphabetically so the displayed top-8 is stable.
+            .sort(["count", "country"], descending=[True, False])
         )
         top_countries = [
             {
@@ -1269,7 +1288,11 @@ def _compute_event_analytics(df: pl.DataFrame, slug: str, meta: dict[str, Any]) 
     if not canonical.is_empty():
         decade_df = (
             canonical.with_columns(((pl.col("date").dt.year() // 10) * 10).alias("decade"))
-            .sort("mark_value", descending=descending)
+            .sort(
+                ["mark_value", "date", "name"],
+                descending=[descending, False, False],
+                nulls_last=True,
+            )
             .unique(subset=["decade"], keep="first")
             .sort("decade")
         )
@@ -1301,7 +1324,9 @@ def _compute_event_analytics(df: pl.DataFrame, slug: str, meta: dict[str, Any]) 
                 .len()
                 .rename({"len": "count"})
                 .filter(pl.col("count") > 1)
-                .sort("count", descending=True)
+                # Break count ties alphabetically (name, then slug) so the
+                # displayed top-8 and ``max_count`` reference are stable.
+                .sort(["count", "name", "athlete_slug"], descending=[True, False, False])
                 .head(8)
             )
             if not athlete_counts.is_empty():
