@@ -168,10 +168,23 @@ weight.
 It mixes render orchestration, per-event analytics computation, chart-data prep,
 and athlete-page rendering. Not urgent, but splitting analytics computation into
 its own module would make the data-accuracy-critical code easier to test in
-isolation (see 1.3 — there's still no direct unit test for
-`_compute_event_analytics`).
+isolation. (As of 2026-06-08 it does have direct coverage —
+`tests/test_analytics.py` — added with the 1.3 fix.)
 
 ---
+
+## Resolved 2026-06-08 (this pass)
+
+- ✅ **1.1** mhmaraok main list no longer mislabeled from a footnote `<H3>`
+  legend (4,211 rows now `main list`).
+- ✅ **1.2** Unsigned wind readings (`1.4`) parse as wind instead of bleeding
+  into the athlete name (6 rows fixed; parquet-level guard added).
+- ✅ **1.3** Deterministic tiebreaker (mark, then date, then name) for the
+  top-mark holder and every representative-picking sort in
+  `_compute_event_analytics`; first direct unit tests for that function.
+- ✅ **1.4** `test_dates_make_sense` warns on near-future dates (≤1y) and only
+  hard-fails far-future ones, so the weekly cron no longer breaks on routine
+  upcoming-meet / one-year-typo noise.
 
 ## Resolved since 2026-04-30
 
