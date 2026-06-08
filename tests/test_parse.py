@@ -14,7 +14,12 @@ from typing import Any
 import pytest
 
 from alltimeathletics.events import by_slug
-from alltimeathletics.parse import ParseDiagnostic, parse_page
+from alltimeathletics.parse import (
+    ParseDiagnostic,
+    _extract_sections,
+    _is_legend_title,
+    parse_page,
+)
 
 # Step names produced by the individual + relay extractors. New steps must be
 # added here so a typo in one of them is caught instead of silently flying.
@@ -139,6 +144,79 @@ def test_dates_are_parsed_to_date_objects() -> None:
     result = parse_page(html_text, event)
     for r in result.rows[:100]:
         assert isinstance(r["date"], date), f"bad date: {r['date']!r}"
+
+
+# --- legend-title vs. section-title resolution (issue 1.1) ------------------------------
+
+# Minimal reproduction of mhmaraok's header: the Jump-to nav lists #1 = "main
+# list", but anchor #1 is immediately followed by an <H3> that is actually a
+# footnote *legend* ("a=slightly downhill"), not a section title.
+_LEGEND_HTML = """\
+<TD>Jump to:<BR>
+<A HREF="#1">main list</a><br>
+</TD>
+<H1>All-time men's best half-marathon</H1>
+<H5>@=uncertified course</H5>
+<A name="1"><H3>a=slightly downhill</h3></A>
+<H3>+ = en route in race at longer distance</H3>
+<PRE>
+        1      56:42      Jacob Kiplimo        UGA     14.11.00    1      Barcelona     16.02.2025
+        2      57:30      Yomif Kejelcha       ETH     01.08.97    1      Valencia      27.10.2024
+</PRE>
+"""
+
+# A genuinely stale nav: the inline <H3> names a real section ("indoors") that
+# differs from the nav title for the same anchor. The inline title must win.
+_STALE_NAV_HTML = """\
+<TD>Jump to:<BR>
+<A HREF="#3">manual timing</a><br>
+</TD>
+<A name="3"><H3>indoors</h3></A>
+<PRE>
+        1      56:42      Jacob Kiplimo        UGA     14.11.00    1      Barcelona     16.02.2025
+</PRE>
+"""
+
+
+def test_is_legend_title() -> None:
+    # Annotation-definition legends.
+    assert _is_legend_title("a=slightly downhill")
+    assert _is_legend_title("A = altitude")
+    assert _is_legend_title("@=uncertified course")
+    assert _is_legend_title("+ = en route in race at longer distance")
+    assert _is_legend_title("* = something")
+    assert _is_legend_title("± = wind-aided")
+    # Genuine section titles must NOT be flagged.
+    assert not _is_legend_title("main list")
+    assert not _is_legend_title("indoors")
+    assert not _is_legend_title("manual timing")
+    assert not _is_legend_title("mixed competition")
+
+
+def test_legend_inline_title_falls_back_to_nav() -> None:
+    """A legend <H3> at anchor #1 must not override the nav's 'main list'."""
+    sections = _extract_sections(_LEGEND_HTML)
+    assert len(sections) == 1
+    section_name, anchor, _body = sections[0]
+    assert section_name == "main list"
+    assert anchor == "1"
+
+
+def test_legend_fallback_in_full_parse() -> None:
+    event = by_slug("mhmaraok")
+    result = parse_page(_LEGEND_HTML, event)
+    assert result.rows, "expected the two data rows to parse"
+    assert all(r["section"] == "main list" for r in result.rows)
+    assert not any(r["section"] == "a=slightly downhill" for r in result.rows)
+
+
+def test_stale_nav_still_prefers_inline_title() -> None:
+    """The inline-title preference must survive: 'indoors' beats stale nav."""
+    sections = _extract_sections(_STALE_NAV_HTML)
+    assert len(sections) == 1
+    section_name, anchor, _body = sections[0]
+    assert section_name == "indoors"
+    assert anchor == "3"
 
 
 @pytest.mark.parametrize("slug", [s for s, _, _ in FIXTURE_EXPECTATIONS])

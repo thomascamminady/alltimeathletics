@@ -181,6 +181,13 @@ def _extract_sections(text: str) -> list[tuple[str, str | None, str]]:
         # from anchor #3 to #4, but the nav still lists #3 = manual timing.
         # The inline H3 is the source of truth.
         title = _inline_title_for_anchor(text, m.end())
+        # Narrow exception to the inline preference: some pages open with an
+        # annotation *legend* rendered as <H3> (e.g. mhmaraok's
+        # `<H3>a=slightly downhill</h3>`, a footnote explaining the `a=`
+        # mark, not a section title). When the inline title is clearly a
+        # legend and the Jump-to nav names this anchor, trust the nav.
+        if title is not None and _is_legend_title(title) and anchor in jump_titles:
+            title = jump_titles[anchor]
         if title is None:
             title = jump_titles.get(anchor) or f"section {anchor}"
         seen_anchors.add(anchor)
@@ -253,6 +260,22 @@ def _inline_title_for_anchor(text: str, anchor_end: int) -> str | None:
     if m is not None:
         return m.group(1).strip() or None
     return None
+
+
+_LEGEND_TITLE_RE = re.compile(r"^(?:.{0,3}\s*=|[+*±]\s*[= ])")
+
+
+def _is_legend_title(title: str) -> bool:
+    """Detect annotation-legend text masquerading as a section title.
+
+    Larsson sometimes opens a page with a footnote legend rendered as an
+    ``<H3>``, e.g. ``a=slightly downhill`` (defining the ``a=`` mark) or
+    ``+ = en route in race at longer distance``. These are not section
+    titles. We match a short ``<token>=...`` definition shape or an
+    annotation char (``+``/``*``/``±``) followed by space/equals. Kept
+    deliberately conservative so genuine section names are never overridden.
+    """
+    return _LEGEND_TITLE_RE.match(title) is not None
 
 
 def _is_section_anchor(text: str, anchor_end: int) -> bool:

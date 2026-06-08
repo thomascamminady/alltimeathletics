@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-06-08T09:40:39.733238+00:00",
+  "scraped_at": "2026-06-08T10:32:48.264605+00:00",
   "n_rows": 375418,
   "n_events": 190,
   "unparsed_by_step": {
@@ -12,7 +12,7 @@
   "events": [
     {
       "slug": "m_100ok",
-      "label": "100 metres",
+      "label": "100 Metres",
       "sex": "men",
       "legality": "legal",
       "family": "track_time_wind",
@@ -23,7 +23,7 @@
     },
     {
       "slug": "m_200ok",
-      "label": "200 metres",
+      "label": "200 Metres",
       "sex": "men",
       "legality": "legal",
       "family": "track_time_wind",
@@ -34,7 +34,7 @@
     },
     {
       "slug": "m_110hok",
-      "label": "110m hurdles",
+      "label": "110m Hurdles",
       "sex": "men",
       "legality": "legal",
       "family": "track_time_wind",
@@ -45,7 +45,7 @@
     },
     {
       "slug": "m60mok",
-      "label": "60 metres",
+      "label": "60 Metres",
       "sex": "men",
       "legality": "legal",
       "family": "track_time_wind",
@@ -58,7 +58,7 @@
     },
     {
       "slug": "m_60mhok",
-      "label": "60m hurdles",
+      "label": "60m Hurdles",
       "sex": "men",
       "legality": "legal",
       "family": "track_time_wind",
@@ -71,7 +71,7 @@
     },
     {
       "slug": "m_100yok",
-      "label": "100 yards",
+      "label": "100 Yards",
       "sex": "men",
       "legality": "legal",
       "family": "track_time_wind",
@@ -82,7 +82,7 @@
     },
     {
       "slug": "m_200hok",
-      "label": "200m hurdles",
+      "label": "200m Hurdles",
       "sex": "men",
       "legality": "legal",
       "family": "track_time_wind",
@@ -93,7 +93,7 @@
     },
     {
       "slug": "m100mno",
-      "label": "100 metres",
+      "label": "100 Metres",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time_wind",
@@ -104,7 +104,7 @@
     },
     {
       "slug": "m_200no",
-      "label": "200 metres",
+      "label": "200 Metres",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time_wind",
@@ -115,7 +115,7 @@
     },
     {
       "slug": "m_110hno",
-      "label": "110m hurdles",
+      "label": "110m Hurdles",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time_wind",
@@ -126,7 +126,7 @@
     },
     {
       "slug": "m60mno",
-      "label": "60 metres",
+      "label": "60 Metres",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time_wind",
@@ -139,7 +139,7 @@
     },
     {
       "slug": "m_60mhno",
-      "label": "60m hurdles",
+      "label": "60m Hurdles",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time_wind",
@@ -150,7 +150,7 @@
     },
     {
       "slug": "m_100yno",
-      "label": "100 yards",
+      "label": "100 Yards",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time_wind",
@@ -161,7 +161,7 @@
     },
     {
       "slug": "m_200hno",
-      "label": "200m hurdles",
+      "label": "200m Hurdles",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time_wind",
@@ -172,7 +172,7 @@
     },
     {
       "slug": "m_400ok",
-      "label": "400 metres",
+      "label": "400 Metres",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -183,7 +183,7 @@
     },
     {
       "slug": "m_800ok",
-      "label": "800 metres",
+      "label": "800 Metres",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -194,7 +194,7 @@
     },
     {
       "slug": "m_1500ok",
-      "label": "1500 metres",
+      "label": "1500 Metres",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -216,7 +216,7 @@
     },
     {
       "slug": "m_3000ok",
-      "label": "3000 metres",
+      "label": "3000 Metres",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -227,7 +227,7 @@
     },
     {
       "slug": "m_5000ok",
-      "label": "5000 metres",
+      "label": "5000 Metres",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -238,7 +238,7 @@
     },
     {
       "slug": "m_10kok",
-      "label": "10000 metres",
+      "label": "10000 Metres",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -249,7 +249,7 @@
     },
     {
       "slug": "mhmaraok",
-      "label": "half-marathon",
+      "label": "Half-Marathon",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -260,7 +260,7 @@
     },
     {
       "slug": "mmaraok",
-      "label": "marathon",
+      "label": "Marathon",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -271,7 +271,7 @@
     },
     {
       "slug": "m3000hok",
-      "label": "3000m steeplechase",
+      "label": "3000m Steeplechase",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -282,7 +282,7 @@
     },
     {
       "slug": "m_400hok",
-      "label": "400m hurdles",
+      "label": "400m Hurdles",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -293,7 +293,7 @@
     },
     {
       "slug": "m_300ok",
-      "label": "300 metres",
+      "label": "300 Metres",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -304,7 +304,7 @@
     },
     {
       "slug": "m_600ok",
-      "label": "600 metres",
+      "label": "600 Metres",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -315,7 +315,7 @@
     },
     {
       "slug": "m_1000ok",
-      "label": "1000 metres",
+      "label": "1000 Metres",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -326,7 +326,7 @@
     },
     {
       "slug": "m_2000ok",
-      "label": "2000 metres",
+      "label": "2000 Metres",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -348,7 +348,7 @@
     },
     {
       "slug": "m1hourok",
-      "label": "One hour run",
+      "label": "One Hour Run",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -359,7 +359,7 @@
     },
     {
       "slug": "m25kok",
-      "label": "25000m track",
+      "label": "25000m Track",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -370,7 +370,7 @@
     },
     {
       "slug": "m30kok",
-      "label": "30000m track",
+      "label": "30000m Track",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -381,7 +381,7 @@
     },
     {
       "slug": "m10kroad",
-      "label": "10km road",
+      "label": "10km Road",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -392,7 +392,7 @@
     },
     {
       "slug": "m15kroad",
-      "label": "15km road",
+      "label": "15km Road",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -403,7 +403,7 @@
     },
     {
       "slug": "m10milesroad",
-      "label": "10 miles road",
+      "label": "10 Miles Road",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -414,7 +414,7 @@
     },
     {
       "slug": "m20kroad",
-      "label": "20km road",
+      "label": "20km Road",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -425,7 +425,7 @@
     },
     {
       "slug": "m30kroad",
-      "label": "30km road",
+      "label": "30km Road",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -436,7 +436,7 @@
     },
     {
       "slug": "m100km",
-      "label": "100km road",
+      "label": "100km Road",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -447,7 +447,7 @@
     },
     {
       "slug": "m2000hok",
-      "label": "2000m steeplechase",
+      "label": "2000m Steeplechase",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -458,7 +458,7 @@
     },
     {
       "slug": "m20kwok",
-      "label": "20km race walk",
+      "label": "20km Race Walk",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -469,7 +469,7 @@
     },
     {
       "slug": "mHalf-Marathonwok",
-      "label": "Half-marathon walk",
+      "label": "Half-Marathon Walk",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -480,7 +480,7 @@
     },
     {
       "slug": "m35kwok",
-      "label": "35km race walk",
+      "label": "35km Race Walk",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -491,7 +491,7 @@
     },
     {
       "slug": "m50kwok",
-      "label": "50km race walk",
+      "label": "50km Race Walk",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -502,7 +502,7 @@
     },
     {
       "slug": "mMarathonwok",
-      "label": "Marathon walk",
+      "label": "Marathon Walk",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -513,7 +513,7 @@
     },
     {
       "slug": "m10kwok",
-      "label": "10000m track walk",
+      "label": "10000m Track Walk",
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
@@ -524,7 +524,7 @@
     },
     {
       "slug": "m_400no",
-      "label": "400 metres",
+      "label": "400 Metres",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -535,7 +535,7 @@
     },
     {
       "slug": "m_800no",
-      "label": "800 metres",
+      "label": "800 Metres",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -546,7 +546,7 @@
     },
     {
       "slug": "m_1500no",
-      "label": "1500 metres",
+      "label": "1500 Metres",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -568,7 +568,7 @@
     },
     {
       "slug": "m_3000no",
-      "label": "3000 metres",
+      "label": "3000 Metres",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -579,7 +579,7 @@
     },
     {
       "slug": "m_5000no",
-      "label": "5000 metres",
+      "label": "5000 Metres",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -590,7 +590,7 @@
     },
     {
       "slug": "m_10kno",
-      "label": "10000 metres",
+      "label": "10000 Metres",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -601,7 +601,7 @@
     },
     {
       "slug": "mhmarano",
-      "label": "half-marathon",
+      "label": "Half-Marathon",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -612,7 +612,7 @@
     },
     {
       "slug": "mmarano",
-      "label": "marathon",
+      "label": "Marathon",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -623,7 +623,7 @@
     },
     {
       "slug": "m3000hno",
-      "label": "3000m steeplechase",
+      "label": "3000m Steeplechase",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -634,7 +634,7 @@
     },
     {
       "slug": "m_400hno",
-      "label": "400m hurdles",
+      "label": "400m Hurdles",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -645,7 +645,7 @@
     },
     {
       "slug": "m_300no",
-      "label": "300 metres",
+      "label": "300 Metres",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -656,7 +656,7 @@
     },
     {
       "slug": "m_600no",
-      "label": "600 metres",
+      "label": "600 Metres",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -667,7 +667,7 @@
     },
     {
       "slug": "m_1000no",
-      "label": "1000 metres",
+      "label": "1000 Metres",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -678,7 +678,7 @@
     },
     {
       "slug": "m1hourno",
-      "label": "One hour run",
+      "label": "One Hour Run",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -689,7 +689,7 @@
     },
     {
       "slug": "m10kroadno",
-      "label": "10km road",
+      "label": "10km Road",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -700,7 +700,7 @@
     },
     {
       "slug": "m15kroadno",
-      "label": "15km road",
+      "label": "15km Road",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -711,7 +711,7 @@
     },
     {
       "slug": "m10milesroadno",
-      "label": "10 miles road",
+      "label": "10 Miles Road",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -722,7 +722,7 @@
     },
     {
       "slug": "m20kroadno",
-      "label": "20km road",
+      "label": "20km Road",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -733,7 +733,7 @@
     },
     {
       "slug": "m30kroadno",
-      "label": "30km road",
+      "label": "30km Road",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -744,7 +744,7 @@
     },
     {
       "slug": "m2000hno",
-      "label": "2000m steeplechase",
+      "label": "2000m Steeplechase",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -755,7 +755,7 @@
     },
     {
       "slug": "m20kwno",
-      "label": "20km race walk",
+      "label": "20km Race Walk",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -766,7 +766,7 @@
     },
     {
       "slug": "m50kwno",
-      "label": "50km race walk",
+      "label": "50km Race Walk",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -777,7 +777,7 @@
     },
     {
       "slug": "m10kwno",
-      "label": "10000m track walk",
+      "label": "10000m Track Walk",
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
@@ -788,7 +788,7 @@
     },
     {
       "slug": "mlongok",
-      "label": "Long jump",
+      "label": "Long Jump",
       "sex": "men",
       "legality": "legal",
       "family": "field_distance_wind",
@@ -799,7 +799,7 @@
     },
     {
       "slug": "mtripok",
-      "label": "Triple jump",
+      "label": "Triple Jump",
       "sex": "men",
       "legality": "legal",
       "family": "field_distance_wind",
@@ -810,7 +810,7 @@
     },
     {
       "slug": "mlongno",
-      "label": "Long jump",
+      "label": "Long Jump",
       "sex": "men",
       "legality": "non-legal",
       "family": "field_distance_wind",
@@ -821,7 +821,7 @@
     },
     {
       "slug": "mtripno",
-      "label": "Triple jump",
+      "label": "Triple Jump",
       "sex": "men",
       "legality": "non-legal",
       "family": "field_distance_wind",
@@ -832,7 +832,7 @@
     },
     {
       "slug": "mhighok",
-      "label": "High jump",
+      "label": "High Jump",
       "sex": "men",
       "legality": "legal",
       "family": "field_distance",
@@ -843,7 +843,7 @@
     },
     {
       "slug": "mpoleok",
-      "label": "Pole vault",
+      "label": "Pole Vault",
       "sex": "men",
       "legality": "legal",
       "family": "field_distance",
@@ -854,7 +854,7 @@
     },
     {
       "slug": "mshotok",
-      "label": "Shot put",
+      "label": "Shot Put",
       "sex": "men",
       "legality": "legal",
       "family": "field_distance",
@@ -865,7 +865,7 @@
     },
     {
       "slug": "mdiscok",
-      "label": "Discus throw",
+      "label": "Discus Throw",
       "sex": "men",
       "legality": "legal",
       "family": "field_distance",
@@ -876,7 +876,7 @@
     },
     {
       "slug": "mhammok",
-      "label": "Hammer throw",
+      "label": "Hammer Throw",
       "sex": "men",
       "legality": "legal",
       "family": "field_distance",
@@ -887,7 +887,7 @@
     },
     {
       "slug": "mjaveok",
-      "label": "Javelin throw",
+      "label": "Javelin Throw",
       "sex": "men",
       "legality": "legal",
       "family": "field_distance",
@@ -898,7 +898,7 @@
     },
     {
       "slug": "mjaveoldok",
-      "label": "Javelin throw (old specs)",
+      "label": "Javelin Throw (Old Specs)",
       "sex": "men",
       "legality": "legal",
       "family": "field_distance",
@@ -909,7 +909,7 @@
     },
     {
       "slug": "mhighno",
-      "label": "High jump",
+      "label": "High Jump",
       "sex": "men",
       "legality": "non-legal",
       "family": "field_distance",
@@ -920,7 +920,7 @@
     },
     {
       "slug": "mpoleno",
-      "label": "Pole vault",
+      "label": "Pole Vault",
       "sex": "men",
       "legality": "non-legal",
       "family": "field_distance",
@@ -931,7 +931,7 @@
     },
     {
       "slug": "mshotno",
-      "label": "Shot put",
+      "label": "Shot Put",
       "sex": "men",
       "legality": "non-legal",
       "family": "field_distance",
@@ -942,7 +942,7 @@
     },
     {
       "slug": "mdiscno",
-      "label": "Discus throw",
+      "label": "Discus Throw",
       "sex": "men",
       "legality": "non-legal",
       "family": "field_distance",
@@ -953,7 +953,7 @@
     },
     {
       "slug": "mhammno",
-      "label": "Hammer throw",
+      "label": "Hammer Throw",
       "sex": "men",
       "legality": "non-legal",
       "family": "field_distance",
@@ -964,7 +964,7 @@
     },
     {
       "slug": "mjaveno",
-      "label": "Javelin throw",
+      "label": "Javelin Throw",
       "sex": "men",
       "legality": "non-legal",
       "family": "field_distance",
@@ -975,7 +975,7 @@
     },
     {
       "slug": "mjaveoldno",
-      "label": "Javelin throw (old specs)",
+      "label": "Javelin Throw (Old Specs)",
       "sex": "men",
       "legality": "non-legal",
       "family": "field_distance",
@@ -1008,7 +1008,7 @@
     },
     {
       "slug": "m4x100ok",
-      "label": "4x100m relay",
+      "label": "4x100m Relay",
       "sex": "men",
       "legality": "legal",
       "family": "relay",
@@ -1019,7 +1019,7 @@
     },
     {
       "slug": "m4x400ok",
-      "label": "4x400m relay",
+      "label": "4x400m Relay",
       "sex": "men",
       "legality": "legal",
       "family": "relay",
@@ -1030,7 +1030,7 @@
     },
     {
       "slug": "m4x200ok",
-      "label": "4x200m relay",
+      "label": "4x200m Relay",
       "sex": "men",
       "legality": "legal",
       "family": "relay",
@@ -1041,7 +1041,7 @@
     },
     {
       "slug": "m4x800ok",
-      "label": "4x800m relay",
+      "label": "4x800m Relay",
       "sex": "men",
       "legality": "legal",
       "family": "relay",
@@ -1052,7 +1052,7 @@
     },
     {
       "slug": "m4x1500ok",
-      "label": "4x1500m relay",
+      "label": "4x1500m Relay",
       "sex": "men",
       "legality": "legal",
       "family": "relay",
@@ -1063,7 +1063,7 @@
     },
     {
       "slug": "m_4xmileok",
-      "label": "4x1 Mile relay",
+      "label": "4x1 Mile Relay",
       "sex": "men",
       "legality": "legal",
       "family": "relay",
@@ -1074,7 +1074,7 @@
     },
     {
       "slug": "m4x100no",
-      "label": "4x100m relay",
+      "label": "4x100m Relay",
       "sex": "men",
       "legality": "non-legal",
       "family": "relay",
@@ -1085,7 +1085,7 @@
     },
     {
       "slug": "m4x400no",
-      "label": "4x400m relay",
+      "label": "4x400m Relay",
       "sex": "men",
       "legality": "non-legal",
       "family": "relay",
@@ -1096,7 +1096,7 @@
     },
     {
       "slug": "m4x200no",
-      "label": "4x200m relay",
+      "label": "4x200m Relay",
       "sex": "men",
       "legality": "non-legal",
       "family": "relay",
@@ -1107,7 +1107,7 @@
     },
     {
       "slug": "m4x800no",
-      "label": "4x800m relay",
+      "label": "4x800m Relay",
       "sex": "men",
       "legality": "non-legal",
       "family": "relay",
@@ -1118,7 +1118,7 @@
     },
     {
       "slug": "w_100ok",
-      "label": "100 metres",
+      "label": "100 Metres",
       "sex": "women",
       "legality": "legal",
       "family": "track_time_wind",
@@ -1129,7 +1129,7 @@
     },
     {
       "slug": "w_200ok",
-      "label": "200 metres",
+      "label": "200 Metres",
       "sex": "women",
       "legality": "legal",
       "family": "track_time_wind",
@@ -1140,7 +1140,7 @@
     },
     {
       "slug": "w_100hok",
-      "label": "100m hurdles",
+      "label": "100m Hurdles",
       "sex": "women",
       "legality": "legal",
       "family": "track_time_wind",
@@ -1151,7 +1151,7 @@
     },
     {
       "slug": "w60mok",
-      "label": "60 metres",
+      "label": "60 Metres",
       "sex": "women",
       "legality": "legal",
       "family": "track_time_wind",
@@ -1162,7 +1162,7 @@
     },
     {
       "slug": "w_60mhok",
-      "label": "60m hurdles",
+      "label": "60m Hurdles",
       "sex": "women",
       "legality": "legal",
       "family": "track_time_wind",
@@ -1175,7 +1175,7 @@
     },
     {
       "slug": "w_100no",
-      "label": "100 metres",
+      "label": "100 Metres",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time_wind",
@@ -1186,7 +1186,7 @@
     },
     {
       "slug": "w_200no",
-      "label": "200 metres",
+      "label": "200 Metres",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time_wind",
@@ -1197,7 +1197,7 @@
     },
     {
       "slug": "w_100hno",
-      "label": "100m hurdles",
+      "label": "100m Hurdles",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time_wind",
@@ -1208,7 +1208,7 @@
     },
     {
       "slug": "w60mno",
-      "label": "60 metres",
+      "label": "60 Metres",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time_wind",
@@ -1219,7 +1219,7 @@
     },
     {
       "slug": "w_60mhno",
-      "label": "60m hurdles",
+      "label": "60m Hurdles",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time_wind",
@@ -1230,7 +1230,7 @@
     },
     {
       "slug": "w_400ok",
-      "label": "400 metres",
+      "label": "400 Metres",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1241,7 +1241,7 @@
     },
     {
       "slug": "w_800ok",
-      "label": "800 metres",
+      "label": "800 Metres",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1252,7 +1252,7 @@
     },
     {
       "slug": "w_1500ok",
-      "label": "1500 metres",
+      "label": "1500 Metres",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1274,7 +1274,7 @@
     },
     {
       "slug": "w_3000ok",
-      "label": "3000 metres",
+      "label": "3000 Metres",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1285,7 +1285,7 @@
     },
     {
       "slug": "w_5000ok",
-      "label": "5000 metres",
+      "label": "5000 Metres",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1296,7 +1296,7 @@
     },
     {
       "slug": "w_10kok",
-      "label": "10000 metres",
+      "label": "10000 Metres",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1307,7 +1307,7 @@
     },
     {
       "slug": "whmaraok",
-      "label": "half-marathon",
+      "label": "Half-Marathon",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1318,7 +1318,7 @@
     },
     {
       "slug": "wmaraok",
-      "label": "marathon",
+      "label": "Marathon",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1329,7 +1329,7 @@
     },
     {
       "slug": "w3000hok",
-      "label": "3000m steeplechase",
+      "label": "3000m Steeplechase",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1342,7 +1342,7 @@
     },
     {
       "slug": "w_400hok",
-      "label": "400m hurdles",
+      "label": "400m Hurdles",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1353,7 +1353,7 @@
     },
     {
       "slug": "w_300ok",
-      "label": "300 metres",
+      "label": "300 Metres",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1364,7 +1364,7 @@
     },
     {
       "slug": "w_600ok",
-      "label": "600 metres",
+      "label": "600 Metres",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1375,7 +1375,7 @@
     },
     {
       "slug": "w_1000ok",
-      "label": "1000 metres",
+      "label": "1000 Metres",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1386,7 +1386,7 @@
     },
     {
       "slug": "w_2000ok",
-      "label": "2000 metres",
+      "label": "2000 Metres",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1410,7 +1410,7 @@
     },
     {
       "slug": "w10kroad",
-      "label": "10km road",
+      "label": "10km Road",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1421,7 +1421,7 @@
     },
     {
       "slug": "w15kroad",
-      "label": "15km road",
+      "label": "15km Road",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1432,7 +1432,7 @@
     },
     {
       "slug": "w10milesroad",
-      "label": "10 miles road",
+      "label": "10 Miles Road",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1443,7 +1443,7 @@
     },
     {
       "slug": "w20kroad",
-      "label": "20km road",
+      "label": "20km Road",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1454,7 +1454,7 @@
     },
     {
       "slug": "w30kroad",
-      "label": "30km road",
+      "label": "30km Road",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1465,7 +1465,7 @@
     },
     {
       "slug": "w2000hok",
-      "label": "2000m steeplechase",
+      "label": "2000m Steeplechase",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1476,7 +1476,7 @@
     },
     {
       "slug": "w20kwok",
-      "label": "20km race walk",
+      "label": "20km Race Walk",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1487,7 +1487,7 @@
     },
     {
       "slug": "wHalf-Marathonwok",
-      "label": "Half-marathon walk",
+      "label": "Half-Marathon Walk",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1498,7 +1498,7 @@
     },
     {
       "slug": "w35kwok",
-      "label": "35km race walk",
+      "label": "35km Race Walk",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1509,7 +1509,7 @@
     },
     {
       "slug": "w50kwok",
-      "label": "50km race walk",
+      "label": "50km Race Walk",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1520,7 +1520,7 @@
     },
     {
       "slug": "wMarathonwok",
-      "label": "Marathon walk",
+      "label": "Marathon Walk",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1531,7 +1531,7 @@
     },
     {
       "slug": "w5kwok",
-      "label": "5000m track walk",
+      "label": "5000m Track Walk",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1542,7 +1542,7 @@
     },
     {
       "slug": "w10kwok",
-      "label": "10km race walk",
+      "label": "10km Race Walk",
       "sex": "women",
       "legality": "legal",
       "family": "track_time",
@@ -1555,7 +1555,7 @@
     },
     {
       "slug": "w_400no",
-      "label": "400 metres",
+      "label": "400 Metres",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1566,7 +1566,7 @@
     },
     {
       "slug": "w_800no",
-      "label": "800 metres",
+      "label": "800 Metres",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1577,7 +1577,7 @@
     },
     {
       "slug": "w_1500no",
-      "label": "1500 metres",
+      "label": "1500 Metres",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1599,7 +1599,7 @@
     },
     {
       "slug": "w_3000no",
-      "label": "3000 metres",
+      "label": "3000 Metres",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1610,7 +1610,7 @@
     },
     {
       "slug": "w_5000no",
-      "label": "5000 metres",
+      "label": "5000 Metres",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1621,7 +1621,7 @@
     },
     {
       "slug": "w_10kno",
-      "label": "10000 metres",
+      "label": "10000 Metres",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1632,7 +1632,7 @@
     },
     {
       "slug": "whmarano",
-      "label": "half-marathon",
+      "label": "Half-Marathon",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1643,7 +1643,7 @@
     },
     {
       "slug": "wmarano",
-      "label": "marathon",
+      "label": "Marathon",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1654,7 +1654,7 @@
     },
     {
       "slug": "w3000hno",
-      "label": "3000m steeplechase",
+      "label": "3000m Steeplechase",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1665,7 +1665,7 @@
     },
     {
       "slug": "w_400hno",
-      "label": "400m hurdles",
+      "label": "400m Hurdles",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1676,7 +1676,7 @@
     },
     {
       "slug": "w_300no",
-      "label": "300 metres",
+      "label": "300 Metres",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1687,7 +1687,7 @@
     },
     {
       "slug": "w_1000no",
-      "label": "1000 metres",
+      "label": "1000 Metres",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1698,7 +1698,7 @@
     },
     {
       "slug": "w_2000no",
-      "label": "2000 metres",
+      "label": "2000 Metres",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1720,7 +1720,7 @@
     },
     {
       "slug": "w10kroadno",
-      "label": "10km road",
+      "label": "10km Road",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1731,7 +1731,7 @@
     },
     {
       "slug": "w15kroadno",
-      "label": "15km road",
+      "label": "15km Road",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1742,7 +1742,7 @@
     },
     {
       "slug": "w20kroadno",
-      "label": "20km road",
+      "label": "20km Road",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1753,7 +1753,7 @@
     },
     {
       "slug": "w30kroadno",
-      "label": "30km road",
+      "label": "30km Road",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1764,7 +1764,7 @@
     },
     {
       "slug": "w2000hno",
-      "label": "2000m steeplechase",
+      "label": "2000m Steeplechase",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1775,7 +1775,7 @@
     },
     {
       "slug": "w20kwno",
-      "label": "20km race walk",
+      "label": "20km Race Walk",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1786,7 +1786,7 @@
     },
     {
       "slug": "w5kwno",
-      "label": "5000m track walk",
+      "label": "5000m Track Walk",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1797,7 +1797,7 @@
     },
     {
       "slug": "w10kwno",
-      "label": "10km race walk",
+      "label": "10km Race Walk",
       "sex": "women",
       "legality": "non-legal",
       "family": "track_time",
@@ -1808,7 +1808,7 @@
     },
     {
       "slug": "wlongok",
-      "label": "Long jump",
+      "label": "Long Jump",
       "sex": "women",
       "legality": "legal",
       "family": "field_distance_wind",
@@ -1819,7 +1819,7 @@
     },
     {
       "slug": "wtripleok",
-      "label": "Triple jump",
+      "label": "Triple Jump",
       "sex": "women",
       "legality": "legal",
       "family": "field_distance_wind",
@@ -1830,7 +1830,7 @@
     },
     {
       "slug": "wlongno",
-      "label": "Long jump",
+      "label": "Long Jump",
       "sex": "women",
       "legality": "non-legal",
       "family": "field_distance_wind",
@@ -1841,7 +1841,7 @@
     },
     {
       "slug": "wtripleno",
-      "label": "Triple jump",
+      "label": "Triple Jump",
       "sex": "women",
       "legality": "non-legal",
       "family": "field_distance_wind",
@@ -1852,7 +1852,7 @@
     },
     {
       "slug": "whighok",
-      "label": "High jump",
+      "label": "High Jump",
       "sex": "women",
       "legality": "legal",
       "family": "field_distance",
@@ -1863,7 +1863,7 @@
     },
     {
       "slug": "wpoleok",
-      "label": "Pole vault",
+      "label": "Pole Vault",
       "sex": "women",
       "legality": "legal",
       "family": "field_distance",
@@ -1874,7 +1874,7 @@
     },
     {
       "slug": "wshotok",
-      "label": "Shot put",
+      "label": "Shot Put",
       "sex": "women",
       "legality": "legal",
       "family": "field_distance",
@@ -1885,7 +1885,7 @@
     },
     {
       "slug": "wdiscok",
-      "label": "Discus throw",
+      "label": "Discus Throw",
       "sex": "women",
       "legality": "legal",
       "family": "field_distance",
@@ -1896,7 +1896,7 @@
     },
     {
       "slug": "whammok",
-      "label": "Hammer throw",
+      "label": "Hammer Throw",
       "sex": "women",
       "legality": "legal",
       "family": "field_distance",
@@ -1907,7 +1907,7 @@
     },
     {
       "slug": "wjaveok",
-      "label": "Javelin throw",
+      "label": "Javelin Throw",
       "sex": "women",
       "legality": "legal",
       "family": "field_distance",
@@ -1918,7 +1918,7 @@
     },
     {
       "slug": "wjaveoldok",
-      "label": "Javelin throw (old specs)",
+      "label": "Javelin Throw (Old Specs)",
       "sex": "women",
       "legality": "legal",
       "family": "field_distance",
@@ -1932,7 +1932,7 @@
     },
     {
       "slug": "whighno",
-      "label": "High jump",
+      "label": "High Jump",
       "sex": "women",
       "legality": "non-legal",
       "family": "field_distance",
@@ -1943,7 +1943,7 @@
     },
     {
       "slug": "wpoleno",
-      "label": "Pole vault",
+      "label": "Pole Vault",
       "sex": "women",
       "legality": "non-legal",
       "family": "field_distance",
@@ -1954,7 +1954,7 @@
     },
     {
       "slug": "wshotno",
-      "label": "Shot put",
+      "label": "Shot Put",
       "sex": "women",
       "legality": "non-legal",
       "family": "field_distance",
@@ -1965,7 +1965,7 @@
     },
     {
       "slug": "wdiscno",
-      "label": "Discus throw",
+      "label": "Discus Throw",
       "sex": "women",
       "legality": "non-legal",
       "family": "field_distance",
@@ -1976,7 +1976,7 @@
     },
     {
       "slug": "whammno",
-      "label": "Hammer throw",
+      "label": "Hammer Throw",
       "sex": "women",
       "legality": "non-legal",
       "family": "field_distance",
@@ -1987,7 +1987,7 @@
     },
     {
       "slug": "wjaveno",
-      "label": "Javelin throw",
+      "label": "Javelin Throw",
       "sex": "women",
       "legality": "non-legal",
       "family": "field_distance",
@@ -2020,7 +2020,7 @@
     },
     {
       "slug": "w4x100ok",
-      "label": "4x100m relay",
+      "label": "4x100m Relay",
       "sex": "women",
       "legality": "legal",
       "family": "relay",
@@ -2031,7 +2031,7 @@
     },
     {
       "slug": "w4x400ok",
-      "label": "4x400m relay",
+      "label": "4x400m Relay",
       "sex": "women",
       "legality": "legal",
       "family": "relay",
@@ -2044,7 +2044,7 @@
     },
     {
       "slug": "w4x800ok",
-      "label": "4x800m relay",
+      "label": "4x800m Relay",
       "sex": "women",
       "legality": "legal",
       "family": "relay",
@@ -2055,7 +2055,7 @@
     },
     {
       "slug": "w4x1500ok",
-      "label": "4x1500m relay",
+      "label": "4x1500m Relay",
       "sex": "women",
       "legality": "legal",
       "family": "relay",
@@ -2066,7 +2066,7 @@
     },
     {
       "slug": "w4x100no",
-      "label": "4x100m relay",
+      "label": "4x100m Relay",
       "sex": "women",
       "legality": "non-legal",
       "family": "relay",
@@ -2079,7 +2079,7 @@
     },
     {
       "slug": "w4x400no",
-      "label": "4x400m relay",
+      "label": "4x400m Relay",
       "sex": "women",
       "legality": "non-legal",
       "family": "relay",
@@ -2090,7 +2090,7 @@
     },
     {
       "slug": "w4x800no",
-      "label": "4x800m relay",
+      "label": "4x800m Relay",
       "sex": "women",
       "legality": "non-legal",
       "family": "relay",
@@ -2101,7 +2101,7 @@
     },
     {
       "slug": "x4x400ok",
-      "label": "4x400m relay",
+      "label": "4x400m Relay",
       "sex": "mixed",
       "legality": "legal",
       "family": "relay",
@@ -2112,7 +2112,7 @@
     },
     {
       "slug": "x4x400no",
-      "label": "4x400m relay",
+      "label": "4x400m Relay",
       "sex": "mixed",
       "legality": "non-legal",
       "family": "relay",
