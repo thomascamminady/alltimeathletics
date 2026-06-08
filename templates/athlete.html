@@ -94,6 +94,11 @@ function fracYear(dateStr) {
 }
 
 function pctOfWR(entry) {
+  // Only compare canonical (rank-1) section entries — Larsson groups
+  // indoor / altitude / oversized-track marks into separate sub-lists
+  // that share the same event_slug. Comparing those against the
+  // canonical (e.g. outdoor) WR would be apples-to-oranges, so skip them.
+  if (!entry.is_main) return null;
   const wr = WR_VALUES[entry.event_slug];
   if (wr == null || entry.mark_value == null) return null;
   return EVENT_DESCENDING[entry.event_slug]
