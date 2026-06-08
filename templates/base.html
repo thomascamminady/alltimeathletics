@@ -86,8 +86,10 @@
                 derivative view; please visit the source for canonical lists.
             </p>
             <p>
-                Site last rebuilt {{ built_at }}. Source data last scraped
-                {{ scraped_at }}.
+                Site last rebuilt {{ built_at }}{% if built_commit %} (<a
+                    href="https://github.com/thomascamminady/alltimeathletics/commit/{{ built_commit }}"
+                    >{{ built_commit }}</a
+                >){% endif %}. Source data last scraped {{ scraped_at }}.
             </p>
         </footer>
     </body>

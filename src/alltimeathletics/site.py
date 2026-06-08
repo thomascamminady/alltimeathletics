@@ -30,6 +30,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import unicodedata
 from collections import Counter, defaultdict
 from collections.abc import Mapping
@@ -108,6 +109,30 @@ def _hash_static_assets(static_dir: Path) -> str:
     """
     css = (static_dir / "style.css").read_bytes()
     return hashlib.sha256(css).hexdigest()[:8]
+
+
+def _git_commit_hash() -> str | None:
+    """Short SHA of the commit being built, or ``None`` if unavailable.
+
+    Tries the GitHub Actions ``GITHUB_SHA`` env var first (always present
+    in CI, doesn't require git to be installed), then falls back to
+    ``git rev-parse HEAD`` for local builds. Returns 7 hex chars to match
+    GitHub's default short-SHA convention.
+    """
+    sha = os.environ.get("GITHUB_SHA")
+    if sha:
+        return sha[:7]
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=True,
+        )
+        return result.stdout.strip()[:7]
+    except (subprocess.SubprocessError, FileNotFoundError, OSError):
+        return None
 
 
 def _build_example_queries() -> list[dict[str, str]]:
@@ -557,6 +582,7 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
     common: dict[str, Any] = {
         "scraped_at": manifest["scraped_at"][:10],
         "built_at": datetime.now(UTC).date().isoformat(),
+        "built_commit": _git_commit_hash(),
         "site_root": site_root,
         "static_root": f"{site_root}static/",
         "static_version": static_version,
