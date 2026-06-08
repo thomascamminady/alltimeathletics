@@ -219,6 +219,35 @@ def test_stale_nav_still_prefers_inline_title() -> None:
     assert anchor == "3"
 
 
+# A wind-legal 200m block where Larsson omitted the '+' on the wind reading
+# of the first row ("1.4") but kept it on the second ("+0.9"). The unsigned
+# value must still be read as wind, not absorbed into the athlete name.
+_UNSIGNED_WIND_HTML = """\
+<TD>Jump to:<BR>
+<A HREF="#1">main list</a><br>
+</TD>
+<H1>All-time men's best 200 metres</H1>
+<A name="1"><H3>main list</H3></A>
+<PRE>
+   1   20.27   1.4    Leon Reid     GBR   26.07.94   1h2   Birmingham   01.07.2018
+   2   20.31   +0.9   Andre Ewers   JAM   07.06.95   1     Charlottesville   11.05.2019
+</PRE>
+"""
+
+
+def test_unsigned_wind_is_not_absorbed_into_name() -> None:
+    event = by_slug("m_200ok")
+    rows = parse_page(_UNSIGNED_WIND_HTML, event).rows
+    assert len(rows) == 2
+    first, second = rows
+    # Unsigned wind read correctly; name is clean (no leading "1.4").
+    assert first["wind"] == 1.4
+    assert first["name"] == "Leon Reid"
+    # Signed wind still works.
+    assert second["wind"] == 0.9
+    assert second["name"] == "Andre Ewers"
+
+
 @pytest.mark.parametrize("slug", [s for s, _, _ in FIXTURE_EXPECTATIONS])
 def test_diagnostics_are_well_formed(slug: str) -> None:
     """Every parse failure carries a step name + reason we can aggregate by."""

@@ -85,6 +85,11 @@ _DOB_YEAR_ONLY_RE = re.compile(r"^\d{2}$")
 # mixed case to tolerate Larsson typos like 'BEl' for 'BEL'.
 _COUNTRY_RE = re.compile(r"^[A-Za-z]{2,3}\d?$")
 _WIND_RE = re.compile(r"^[+\-±]\d+[.,]\d+$")
+# Larsson occasionally writes a positive wind reading WITHOUT a leading sign
+# (e.g. '1.4' instead of '+1.4'). At the wind-cursor position the only
+# alternative token is the first name token, which is never a bare decimal, so
+# accepting an unsigned decimal there is safe (an unsigned value is positive).
+_WIND_CURSOR_RE = re.compile(r"^[+\-±]?\d+[.,]\d+$")
 _TOTAL_LINE_RE = re.compile(r"^\s*\d[\d\s,]*\s*total\s*$", re.IGNORECASE)
 # A "pure" mark token: digits, colons, dots, commas, optional trailing
 # annotation char. Used to detect when a long athlete name has been fused
@@ -440,7 +445,7 @@ def _heal_mark_name_fusion(tokens: list[str]) -> list[str]:
 
 def _maybe_extract_wind(tokens: list[str], idx: int) -> tuple[float | None, int]:
     """Optional wind reading at ``tokens[idx]``; returns (wind, new_cursor)."""
-    if idx < len(tokens) and _WIND_RE.match(tokens[idx]):
+    if idx < len(tokens) and _WIND_CURSOR_RE.match(tokens[idx]):
         return _parse_wind(tokens[idx]), idx + 1
     return None, idx
 

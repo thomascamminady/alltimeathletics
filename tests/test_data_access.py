@@ -239,6 +239,15 @@ def test_name_is_never_empty(df: pl.DataFrame) -> None:
     assert df.filter(pl.col("name").str.strip_chars() == "").is_empty()
 
 
+def test_name_never_starts_with_a_decimal(df: pl.DataFrame) -> None:
+    """A leading "1.4 " means an unsigned wind reading bled into the name."""
+    bad = df.filter(pl.col("name").str.contains(r"^\d+[.,]\d+\s"))
+    assert bad.is_empty(), (
+        f"{len(bad)} names look like they swallowed a wind value; sample: "
+        f"{bad.select('event_slug', 'name').head(5).to_dicts()}"
+    )
+
+
 def test_country_codes_are_2_or_3_chars(df: pl.DataFrame) -> None:
     bad = df.filter(
         pl.col("country").is_not_null() & ~pl.col("country").str.contains(r"^[A-Z]{2,3}\d?$")
