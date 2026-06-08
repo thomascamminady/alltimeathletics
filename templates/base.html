@@ -8,6 +8,19 @@
         <title>
             {% block title %}All-Time Athletics — data view{% endblock %}
         </title>
+        <meta
+            name="description"
+            content="{% block meta_description %}A fast, sortable, data-analysis-friendly mirror of Peter Larsson's all-time athletics performance lists.{% endblock %}"
+        />
+        <meta
+            property="og:title"
+            content="{% block og_title %}All-Time Athletics{% endblock %}"
+        />
+        <meta
+            property="og:description"
+            content="{% block og_description %}A fast, sortable, data-analysis-friendly mirror of Peter Larsson's all-time athletics performance lists.{% endblock %}"
+        />
+        <meta property="og:type" content="website" />
         <link
             rel="stylesheet"
             href="{{ static_root }}uplot.min.css?v={{ static_version }}"
@@ -31,6 +44,7 @@
         </script>
     </head>
     <body>
+        <a class="skip-link" href="#main">Skip to main content</a>
         <a
             href="https://github.com/thomascamminady/alltimeathletics"
             class="github-corner"
@@ -74,7 +88,7 @@
             </div>
         </nav>
 
-        <main>{% block main %}{% endblock %}</main>
+        <main id="main" tabindex="-1">{% block main %}{% endblock %}</main>
 
         <footer>
             <p>

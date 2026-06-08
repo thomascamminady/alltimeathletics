@@ -88,7 +88,16 @@
 
             if (col.sortable !== false) {
                 th.classList.add("lt-sortable");
+                th.tabIndex = 0;
+                th.setAttribute("role", "button");
+                th.setAttribute("aria-sort", "none");
                 th.addEventListener("click", function () { self._toggleSort(col.field); });
+                th.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+                        e.preventDefault();
+                        self._toggleSort(col.field);
+                    }
+                });
             }
             titleRow.appendChild(th);
 
@@ -260,6 +269,14 @@
             var on = c.field === this.sortField;
             ths[i].classList.toggle("lt-sort-asc", on && this.sortDir === "asc");
             ths[i].classList.toggle("lt-sort-desc", on && this.sortDir === "desc");
+            // Keep aria-sort in sync for sortable headers so screen readers
+            // announce the current sort state.
+            if (c.sortable !== false) {
+                ths[i].setAttribute(
+                    "aria-sort",
+                    on ? (this.sortDir === "desc" ? "descending" : "ascending") : "none"
+                );
+            }
         }
 
         if (this.page * this.pageSize >= rows.length) this.page = 0;

@@ -97,6 +97,25 @@ p { margin: var(--space-2) 0; }
   clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
 
+/* Skip link: off-screen until focused, then pinned to the top-left. */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  z-index: 100;
+  padding: var(--space-2) var(--space-3);
+  background: var(--accent);
+  color: var(--bg);
+  text-decoration: none;
+  border: 1px solid var(--accent);
+}
+.skip-link:focus {
+  left: var(--space-2);
+  top: var(--space-2);
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
+
 /* ---- footer ---------------------------------------------------- */
 
 footer {
@@ -805,6 +824,16 @@ select.btn::-ms-expand { display: none; }
 .lt-filter:focus {
   outline: none;
   border-color: var(--fg);
+}
+
+/* Touch / coarse-pointer screens: thin 1px borders disappear, so bump the
+   filter inputs to a 2px border to keep them visibly tappable. */
+@media (pointer: coarse) {
+  #filter,
+  #athlete-filter,
+  .lt-filter {
+    border-width: 2px;
+  }
 }
 .lt-table tbody tr {
   background: var(--bg);
