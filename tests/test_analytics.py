@@ -15,7 +15,7 @@ from datetime import date
 
 import polars as pl
 
-from alltimeathletics.site import _compute_event_analytics
+from alltimeathletics.analytics import _compute_event_analytics
 
 # Columns the function reads off the canonical frame.
 _SCHEMA: dict[str, pl.DataType] = {
