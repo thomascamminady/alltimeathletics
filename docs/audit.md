@@ -85,17 +85,7 @@ were completed on 2026-06-08 — see the "Resolved" section below.
 
 ## Tier 3 — functionality
 
-3.1–3.5 were completed on 2026-06-08 (see the "Resolved" section below). The
-only remaining Tier 3 item is the optional refactor:
-
-### 3.6 `site.py` is 1,617 lines (still open — deferred)
-It mixes render orchestration, per-event analytics computation, chart-data prep,
-and athlete-page rendering. Not urgent, and explicitly deferred during the
-Tier 3 pass: splitting it is a large, behavior-neutral refactor that would
-conflict with any in-flight change to `site.py`, so it's best done alone when
-nothing else is touching the file. It now has direct coverage
-(`tests/test_analytics.py`, added with the 1.3 fix), which lowers the risk of a
-future split.
+All Tier 3 items (3.1–3.6) are complete — see the "Resolved" section below.
 
 ---
 
@@ -126,7 +116,8 @@ future split.
 - ✅ **3.3** Per-event "Download CSV" button (client-side from per-event JSON).
 - ✅ **3.4** Homepage event grid grouped by category subheadings.
 - ✅ **3.5** Mark-vs-age scatter has a "show all performances" toggle.
-- ⏸️ **3.6** `site.py` split — deferred (large behavior-neutral refactor).
+- ✅ **3.6** `site.py` split (1,642 → 478 lines) into paths / sql_examples /
+  charts / analytics / athletes modules; behavior-neutral, fully tested.
 
 ## Resolved since 2026-04-30
 
