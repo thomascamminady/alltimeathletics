@@ -132,18 +132,23 @@ def _athlete_worker_task(
     analytics = _compute_athlete_analytics(
         entries, _W_EVENT_LABELS, _W_EVENT_FAMILY, _W_EVENT_DESCENDING
     )
+    # sort_keys so these maps serialise identically regardless of dict
+    # iteration order — keeps athlete pages byte-reproducible across builds.
     _athlete_slugs = {e["event_slug"] for e in entries}
     wr_json = json.dumps(
         {s: v for s, v in _W_WR_VALUES.items() if s in _athlete_slugs},
         separators=(",", ":"),
+        sort_keys=True,
     )
     event_family_json = json.dumps(
         {s: f for s, f in _W_EVENT_FAMILY.items() if s in _athlete_slugs},
         separators=(",", ":"),
+        sort_keys=True,
     )
     event_descending_json = json.dumps(
         {s: d for s, d in _W_EVENT_DESCENDING.items() if s in _athlete_slugs},
         separators=(",", ":"),
+        sort_keys=True,
     )
     athlete = {
         **meta,

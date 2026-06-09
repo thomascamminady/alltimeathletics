@@ -346,7 +346,14 @@ def _compute_event_meta(df: pl.DataFrame, slug: str) -> dict[str, Any]:
     main_section = rank1["section"][0] if not rank1.is_empty() else None
 
     # Section catalogue (ordered most-populated first; main section pinned first).
-    sec_counts = sub.group_by("section").len().rename({"len": "n"}).sort("n", descending=True)
+    # Secondary sort on the section name breaks ties deterministically — group_by
+    # order isn't stable, so without it the dropdown order varied between builds.
+    sec_counts = (
+        sub.group_by("section")
+        .len()
+        .rename({"len": "n"})
+        .sort(["n", "section"], descending=[True, False])
+    )
     sections = [{"name": row["section"], "n": int(row["n"])} for row in sec_counts.to_dicts()]
     if main_section is not None:
         sections.sort(key=lambda s: 0 if s["name"] == main_section else 1)
@@ -423,7 +430,8 @@ def _recent_additions(
             pl.len().alias("n_perfs"),
             pl.col("event_slug").n_unique().alias("n_events"),
         )
-        .sort("date", descending=True)
+        # Venue is a deterministic tiebreaker when several meets share a date.
+        .sort(["date", "venue"], descending=[True, False])
         .head(n)
     )
     return [

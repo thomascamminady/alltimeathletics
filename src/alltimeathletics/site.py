@@ -177,8 +177,11 @@ def render(*, out: str = "site", site_root: str = "/") -> None:
     # Per-event meta (sections, WR progression) — used by both the per-event
     # JSON (for client-side rendering) and the template (for server-rendered
     # headlines that show before Tabulator boots).
+    # Sort the slugs so event_meta (and everything derived from its iteration
+    # order, e.g. the per-athlete WR_VALUES map) is insertion-stable across
+    # builds — polars `unique()` order is not guaranteed.
     event_meta: dict[str, dict[str, Any]] = {
-        slug: _compute_event_meta(df, slug) for slug in df["event_slug"].unique().to_list()
+        slug: _compute_event_meta(df, slug) for slug in sorted(df["event_slug"].unique().to_list())
     }
     _write_per_event_json(df, out_data / "events", event_meta)
 
