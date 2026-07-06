@@ -68,6 +68,24 @@ KNOWN_BAD_AGE_ROWS: set[tuple[str, str, date]] = {
     ("w_400ok", "Henriette Jæger", date(2005, 3, 8)),
     ("w_5000ok", "Mercy Mageso", date(2011, 5, 15)),
     ("wmaraok", "Hawi Alemu", date(2002, 1, 26)),
+    # A block of 300m/400m en-route splits from an Oslo meet is dated
+    # ``10.06.2002`` upstream — a Larsson year typo (these are 2024/25-era
+    # athletes; a 2002 date makes them 1-4 years old). The real date is
+    # unknowable from the source, so we mirror it faithfully and catalogue the
+    # impossible ages. The same typo also drives the 1903/1905 century-pivot
+    # DOBs Larsson's page shows for two of them.
+    ("w_300ok", "Amber Anning", date(2002, 6, 10)),
+    ("w_300ok", "Henriette Jæger", date(2002, 6, 10)),
+    ("w_300ok", "Lieke Klaver", date(2002, 6, 10)),
+    ("w_300ok", "Lurdes Gloria Manuel", date(2002, 6, 10)),
+    ("w_300ok", "Natalia Bukowiecka", date(2002, 6, 10)),
+    ("w_300ok", "Nickisha Pryce", date(2002, 6, 10)),
+    ("w_400ok", "Amber Anning", date(2002, 6, 10)),
+    ("w_400ok", "Henriette Jæger", date(2002, 6, 10)),
+    ("w_400ok", "Lieke Klaver", date(2002, 6, 10)),
+    ("w_400ok", "Lurdes Gloria Manuel", date(2002, 6, 10)),
+    ("w_400ok", "Natalia Bukowiecka", date(2002, 6, 10)),
+    ("w_400ok", "Nickisha Pryce", date(2002, 6, 10)),
 }
 
 # Annotations Larsson uses on marks. New entries here = test failure prompting

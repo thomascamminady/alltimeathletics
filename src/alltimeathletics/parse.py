@@ -301,12 +301,35 @@ def _is_section_anchor(text: str, anchor_end: int) -> bool:
 # --- block-level orchestrator ----------------------------------------------------------
 
 
+def _is_wrap_head(tokens: list[str]) -> bool:
+    """Detect the first physical line of a two-line-wrapped individual row.
+
+    Larsson's columns are fixed-width; when an athlete's name is unusually
+    long (e.g. 'Femke Bol-Broeders') the row wraps — rank/mark/name land on
+    one physical line and country/dob/position/venue/date spill onto the
+    next. A wrap head has a leading integer rank, a mark, 1-3 name tokens,
+    and — crucially — NO country code and NO date (both live on the
+    continuation line). The caller stashes such a line and merges it with the
+    following continuation line before parsing.
+    """
+    if not 3 <= len(tokens) <= 5:
+        return False
+    if not tokens[0].isdigit():
+        return False
+    rest = tokens[2:]
+    return not any(_COUNTRY_RE.match(t) or _DATE_RE.match(t) for t in rest)
+
+
 def _parse_block(
     block: str, event: Event, section: str, anchor: str | None
 ) -> tuple[list[dict[str, Any]], list[ParseDiagnostic]]:
     rows: list[dict[str, Any]] = []
     diagnostics: list[ParseDiagnostic] = []
     pending_relay_row: dict[str, Any] | None = None
+    # Holds the first physical line of a two-line-wrapped individual row until
+    # its continuation line arrives (see _is_wrap_head).
+    pending_wrap: list[str] | None = None
+    pending_wrap_line: str = ""
     source_url = f"{event.url}#{anchor}" if anchor else event.url
 
     for raw in block.splitlines():
@@ -360,6 +383,44 @@ def _parse_block(
             pending_relay_row = row
             continue
 
+        # Two-line-wrap handling. A stashed wrap head is completed by the next
+        # line iff that line has no leading rank (it starts with the country
+        # code that spilled over). Otherwise the stash was a genuinely short
+        # broken line: report it and process the current line normally.
+        if pending_wrap is not None:
+            if not (tokens and tokens[0].isdigit()):
+                merged = [*pending_wrap, *tokens]
+                # Provenance spans both physical lines; join them so the
+                # source_line still contains the mark (which lives on the head
+                # line) for downstream invariants.
+                merged_line = f"{pending_wrap_line.rstrip()}  {line.strip()}"
+                pending_wrap = None
+                try:
+                    rows.append(
+                        _parse_individual_line(merged, event, section, source_url, merged_line)
+                    )
+                except _StepError as exc:
+                    diagnostics.append(
+                        ParseDiagnostic(
+                            section=section, line=merged_line, step=exc.step, reason=exc.reason
+                        )
+                    )
+                continue
+            diagnostics.append(
+                ParseDiagnostic(
+                    section=section,
+                    line=pending_wrap_line,
+                    step="tail",
+                    reason="wrap head with no continuation line",
+                )
+            )
+            pending_wrap = None
+
+        if _is_wrap_head(tokens):
+            pending_wrap = tokens
+            pending_wrap_line = line
+            continue
+
         try:
             row = _parse_individual_line(tokens, event, section, source_url, line)
         except _StepError as exc:
@@ -376,6 +437,15 @@ def _parse_block(
 
     if pending_relay_row is not None:
         rows.append(pending_relay_row)
+    if pending_wrap is not None:
+        diagnostics.append(
+            ParseDiagnostic(
+                section=section,
+                line=pending_wrap_line,
+                step="tail",
+                reason="wrap head with no continuation line",
+            )
+        )
 
     return rows, diagnostics
 
@@ -490,13 +560,32 @@ def _extract_tail(tokens: list[str], idx: int) -> tuple[list[str], date | None, 
         if m is not None:
             tokens = [*tokens[:-1], last[: m.start()].rstrip(), m.group(1)]
     date_str = tokens[-1]
-    if not _DATE_RE.match(date_str):
-        raise _StepError("date", f"last token {date_str!r} does not match dd.mm.yyyy")
-    venue = tokens[-2]
-    middle = tokens[idx:-2]
+    if _DATE_RE.match(date_str):
+        venue = tokens[-2]
+        middle = tokens[idx:-2]
+        parsed_date: date | None = _parse_date(date_str)
+    else:
+        # No trailing date: Larsson sometimes lists a mark with only a venue
+        # and no date at all (historical performances whose exact date he
+        # never recorded — e.g. a batch of 'Köln'/'København'/'Sofia' rows).
+        # Keep the row with date=None rather than dropping a real mark, but
+        # only under two guards:
+        #   1. the last token is venue-shaped (contains a letter). A last
+        #      token of pure digits/dots is a *malformed* date fragment
+        #      ('07.03.198', '. .1996'), not a venue — those rows are left to
+        #      fail so they stay catalogued as upstream junk rather than being
+        #      recovered with a date-fragment sitting in the venue column.
+        #   2. a country code is still present in the middle, distinguishing a
+        #      genuine dateless row from a misaligned line or a wrapped-row
+        #      fragment (which have no country here).
+        venue = tokens[-1]
+        middle = tokens[idx:-1]
+        if not re.search(r"[A-Za-z]", venue) or not any(_COUNTRY_RE.match(t) for t in middle):
+            raise _StepError("date", f"last token {date_str!r} does not match dd.mm.yyyy")
+        parsed_date = None
     if not middle:
         raise _StepError("name", "no tokens between mark/wind and venue")
-    return middle, _parse_date(date_str), venue
+    return middle, parsed_date, venue
 
 
 def _extract_country(middle: list[str]) -> tuple[str, list[str], list[str]]:
@@ -623,18 +712,29 @@ def _try_parse_relay_line(
     mark_raw = tokens[1]
 
     date_str = tokens[-1]
-    if not _DATE_RE.match(date_str):
-        return None
-    venue = tokens[-2]
+    if _DATE_RE.match(date_str):
+        parsed_date = _parse_date(date_str)
+        venue = tokens[-2]
+        tail_len = 2  # date + venue occupy the last two columns
+    else:
+        # Relay row with no trailing date (venue is the last column). Keep it
+        # with date=None instead of dropping a real team performance — but
+        # only when the last token is venue-shaped (contains a letter), so we
+        # don't swallow a misrouted member line or stray numeric debris.
+        if not re.search(r"[A-Za-z]", date_str):
+            return None
+        parsed_date = None
+        venue = tokens[-1]
+        tail_len = 1
 
     # Position is optional on relay pages — many non-legal listings omit it.
-    after_team = tokens[-3]
-    if _is_position(after_team) and len(tokens) >= 5:
+    after_team = tokens[-(tail_len + 1)]
+    if _is_position(after_team) and len(tokens) >= tail_len + 3:
         position = after_team
-        team_tokens = tokens[2:-3]
+        team_tokens = tokens[2 : -(tail_len + 1)]
     else:
         position = ""
-        team_tokens = tokens[2:-2]
+        team_tokens = tokens[2:-tail_len]
 
     if not team_tokens:
         return None
@@ -661,7 +761,7 @@ def _try_parse_relay_line(
         "dob_precision": None,
         "position": position,
         "venue": venue,
-        "date": _parse_date(date_str),
+        "date": parsed_date,
         "members": [],
         "source_url": source_url,
         "source_line": source_line,

@@ -89,6 +89,29 @@ All Tier 3 items (3.1–3.6) are complete — see the "Resolved" section below.
 
 ---
 
+## Resolved 2026-07-06 (weekly-cron fix)
+
+The weekly update cron went red on this week's fresh scrape. Three distinct
+upstream additions were behind it; the parser now recovers the real data
+rather than dropping it, and the one unfixable typo is catalogued.
+
+- ✅ **Dateless rows recovered.** Larsson added a batch of historical marks
+  with only a venue and no date (e.g. Harry Reynolds' 44.64 at `Köln`). The
+  parser dropped the whole row; it now keeps it with `date=None`, guarded so a
+  *malformed* date fragment (`07.03.198`, `. .1996`) still fails rather than
+  landing in the venue column. Recovered ~40 individual rows across
+  `m_400ok`, `m10kroad`, `mpoleok`, `m_400hok`, `mhighok`, `m3000hok`,
+  `mhammok`, `mjaveok`, plus the relay path (`m4x100ok`).
+- ✅ **Two-line-wrapped rows reassembled.** Femke Bol's newly-hyphenated name
+  ('Femke Bol-Broeders') overflows the fixed-width name column, wrapping
+  country/dob/venue/date onto a second physical line. `_parse_block` now
+  stashes the head line and merges it with its continuation (19 rows in
+  `w_400ok` recovered).
+- ✅ **Oslo `10.06.2002` date typo catalogued.** A block of 300m/400m en-route
+  splits for 2024/25-era athletes is dated 2002 upstream (impossible ages 1–4;
+  also drives two 1903/1905 century-pivot DOBs). The real date is unknowable,
+  so the 12 rows are mirrored faithfully and added to `KNOWN_BAD_AGE_ROWS`.
+
 ## Resolved 2026-06-08 (this pass)
 
 - ✅ **1.1** mhmaraok main list no longer mislabeled from a footnote `<H3>`

@@ -260,3 +260,117 @@ def test_diagnostics_are_well_formed(slug: str) -> None:
         assert d.step in KNOWN_STEPS, f"unknown step name {d.step!r} in {slug}"
     # Backward-compat view: unparsed lines == diagnostic lines, in order.
     assert result.unparsed == [d.line for d in result.diagnostics]
+
+
+# --- date/layout recovery (2026-07 regressions) ---------------------------------------
+
+# A track-time block where Larsson recorded a mark with only a venue and no
+# date at all (the 'Köln' column is the last one). The row must survive with
+# date=None rather than being dropped, and the venue must be the real place —
+# not a date fragment. The second row is a normal dated row for contrast.
+_MISSING_DATE_HTML = """\
+<TD>Jump to:<BR>
+<A HREF="#1">main list</a><br>
+</TD>
+<H1>All-time men's best 400 metres</H1>
+<A name="1"><H3>main list</H3></A>
+<PRE>
+   4   44.64   Harry Reynolds   USA   08.06.64   2   Köln
+   1   43.29   Butch Reynolds   USA   08.06.63   1   Zürich   17.08.1988
+</PRE>
+"""
+
+
+def test_missing_date_row_is_recovered_with_null_date() -> None:
+    event = by_slug("m_400ok")
+    rows = parse_page(_MISSING_DATE_HTML, event).rows
+    assert len(rows) == 2
+    dateless = next(r for r in rows if r["name"] == "Harry Reynolds")
+    assert dateless["date"] is None
+    assert dateless["venue"] == "Köln"
+    assert dateless["mark_raw"] == "44.64"
+    # The dated row is unaffected.
+    dated = next(r for r in rows if r["name"] == "Butch Reynolds")
+    assert dated["date"] == date(1988, 8, 17)
+    assert dated["venue"] == "Zürich"
+
+
+# A row whose last column is a *malformed* date fragment (truncated year,
+# no venue) must NOT be recovered — otherwise the fragment lands in the venue
+# column. These stay catalogued as upstream junk instead.
+_MALFORMED_DATE_HTML = """\
+<TD>Jump to:<BR>
+<A HREF="#1">main list</a><br>
+</TD>
+<H1>All-time men's best 60 metres</H1>
+<A name="1"><H3>main list</H3></A>
+<PRE>
+   3143   6.60   Vincent Henderson   USA   20.10.72                . .1996
+   1      6.39   Christian Coleman   USA   06.03.96   1   Albuquerque   18.02.2018
+</PRE>
+"""
+
+
+def test_malformed_date_fragment_row_is_not_recovered() -> None:
+    event = by_slug("m60mok")
+    result = parse_page(_MALFORMED_DATE_HTML, event)
+    names = {r["name"] for r in result.rows}
+    assert "Vincent Henderson" not in names, "date-fragment row must not become a row"
+    # No surviving row carries a digit-bearing venue (the fragment leaking in).
+    assert all(not any(c.isdigit() for c in r["venue"]) for r in result.rows)
+    assert result.diagnostics, "the malformed-date row should be a diagnostic"
+    # The clean row still parses.
+    assert "Christian Coleman" in names
+
+
+# A two-line-wrapped row: an unusually long name pushes country/dob/venue/date
+# onto the next physical line. The parser must reassemble the two lines into a
+# single row.
+_WRAPPED_HTML = """\
+<TD>Jump to:<BR>
+<A HREF="#1">main list</a><br>
+</TD>
+<H1>All-time women's best 400 metres</H1>
+<A name="1"><H3>main list</H3></A>
+<PRE>
+   1   49.17   Femke Bol-Broeders
+              NED   23.02.00   1   Glasgow   02.03.2024
+   2   49.24   Marita Koch   GDR   18.02.57   1   Canberra   06.10.1985
+</PRE>
+"""
+
+
+def test_two_line_wrapped_row_is_reassembled() -> None:
+    event = by_slug("w_400ok")
+    rows = parse_page(_WRAPPED_HTML, event).rows
+    assert len(rows) == 2
+    wrapped = next(r for r in rows if r["mark_raw"] == "49.17")
+    assert wrapped["name"] == "Femke Bol-Broeders"
+    assert wrapped["country"] == "NED"
+    assert wrapped["venue"] == "Glasgow"
+    assert wrapped["date"] == date(2024, 3, 2)
+    assert wrapped["dob"] == date(2000, 2, 23)
+
+
+# A relay team line with only a venue and no date must survive with date=None.
+_RELAY_MISSING_DATE_HTML = """\
+<TD>Jump to:<BR>
+<A HREF="#1">main list</a><br>
+</TD>
+<H1>All-time men's best 4x100 metres relay</H1>
+<A name="1"><H3>main list</H3></A>
+<PRE>
+   935    38.49   Santa Monica Track Club   1   Köln
+   1      36.84   Jamaica   1   London   11.08.2012
+</PRE>
+"""
+
+
+def test_relay_row_without_date_is_recovered() -> None:
+    event = by_slug("m4x100ok")
+    rows = parse_page(_RELAY_MISSING_DATE_HTML, event).rows
+    assert len(rows) == 2
+    dateless = next(r for r in rows if r["name"] == "Santa Monica Track Club")
+    assert dateless["date"] is None
+    assert dateless["venue"] == "Köln"
+    assert dateless["mark_raw"] == "38.49"
