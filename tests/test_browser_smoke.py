@@ -63,6 +63,22 @@ def browser():  # noqa: ANN201 — playwright type
         pytest.skip(f"Playwright failed to start: {e}")
 
 
+def _new_page(browser):  # noqa: ANN001, ANN202 — playwright types
+    """A page with the third-party analytics request stubbed out.
+
+    Every page loads GoatCounter from an external host. These tests run offline
+    and assert that the console is clean, so we fulfil that request with an
+    empty script — otherwise a failed third-party fetch would masquerade as a
+    bug in our own JS.
+    """
+    page = browser.new_page()
+    page.route(
+        "**gc.zgo.at/**",
+        lambda route: route.fulfill(status=200, content_type="application/javascript", body=""),
+    )
+    return page
+
+
 PAGES = [
     pytest.param("/", False, id="home"),
     pytest.param("/event/mmaraok.html", True, id="event-marathon-men"),
@@ -75,7 +91,7 @@ PAGES = [
 
 @pytest.mark.parametrize("path,expects_table", PAGES)
 def test_page_renders(browser, site_server: str, path: str, expects_table: bool) -> None:  # noqa: ANN001
-    page = browser.new_page()
+    page = _new_page(browser)
     errors: list[str] = []
     page.on("pageerror", lambda e: errors.append(f"pageerror: {e}"))
     page.on(
@@ -96,7 +112,7 @@ def test_athlete_page_renders(browser, site_server: str, built_site: Path) -> No
     candidates = [p for p in (built_site / "athlete").glob("*.html") if p.name != "index.html"]
     assert candidates, "no athlete pages built"
     target = candidates[0]
-    page = browser.new_page()
+    page = _new_page(browser)
     errors: list[str] = []
     page.on("pageerror", lambda e: errors.append(f"pageerror: {e}"))
     page.on(
