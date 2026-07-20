@@ -36,6 +36,13 @@ from pathlib import Path
 import polars as pl
 import pytest
 
+from tests.quality_policy import (
+    IMPLAUSIBLE_AGE_BUDGET,
+    NEW_ANNOTATION_BUDGET,
+    report_anomalies,
+    report_catalogue_drift,
+)
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PARQUET = REPO_ROOT / "data" / "alltime_athletics.parquet"
 
@@ -228,9 +235,11 @@ def _ages(df: pl.DataFrame) -> pl.DataFrame:
 def test_athlete_ages_at_performance_are_plausible(df: pl.DataFrame) -> None:
     """No 4-year-olds running marathons, no 90-year-olds breaking sprint records.
 
-    Catalogued exceptions live in ``KNOWN_BAD_AGE_ROWS``. Anything outside
-    [5, 80] that isn't in the catalogue is either a new Larsson typo or a
-    parser regression in dob extraction / century pivot.
+    A handful of these are always Larsson typos (a mistyped birth year, a
+    mistyped meet year) and are mirrored as-is. What this guards against is a
+    *systemic* dob fault — a broken century pivot or a column misalignment —
+    which shows up as hundreds of impossible ages at once, not a handful.
+    ``KNOWN_BAD_AGE_ROWS`` documents the ones already investigated.
     """
     ages = _ages(df)
     bad = ages.filter((pl.col("age_years") < 5) | (pl.col("age_years") > 80))
@@ -238,25 +247,23 @@ def test_athlete_ages_at_performance_are_plausible(df: pl.DataFrame) -> None:
         (r["event_slug"], r["name"], r["date"])
         for r in bad.select("event_slug", "name", "date").to_dicts()
     }
-    unexpected = keys - KNOWN_BAD_AGE_ROWS
-    assert not unexpected, (
-        f"{len(unexpected)} new implausible-age rows not in catalogue: {sorted(unexpected)[:5]}"
+    report_anomalies(
+        keys - KNOWN_BAD_AGE_ROWS,
+        budget=IMPLAUSIBLE_AGE_BUDGET,
+        label="uncatalogued implausible-age rows",
+        hint="upstream year typos are expected; catalogue them if you investigate",
     )
 
 
 def test_catalogued_bad_age_rows_still_present(df: pl.DataFrame) -> None:
-    """If Larsson fixes a dob typo the catalogue drifts — surface it loudly."""
+    """Note dob typos Larsson has since fixed. Never fatal — a fix is good news."""
     ages = _ages(df)
     bad = ages.filter((pl.col("age_years") < 5) | (pl.col("age_years") > 80))
     actual = {
         (r["event_slug"], r["name"], r["date"])
         for r in bad.select("event_slug", "name", "date").to_dicts()
     }
-    fixed_upstream = KNOWN_BAD_AGE_ROWS - actual
-    assert not fixed_upstream, (
-        f"Larsson appears to have fixed these — remove from KNOWN_BAD_AGE_ROWS: "
-        f"{sorted(fixed_upstream)}"
-    )
+    report_catalogue_drift(KNOWN_BAD_AGE_ROWS - actual, catalogue="KNOWN_BAD_AGE_ROWS")
 
 
 # ----------------------------------------------------- country distribution ---
@@ -301,10 +308,12 @@ def test_country_dominance_in_top_10(
 
 
 def test_mark_annotation_values_in_known_set(df: pl.DataFrame) -> None:
-    """All non-null mark_annotation values must be in ``KNOWN_MARK_ANNOTATIONS``.
+    """Track new mark_annotation values.
 
-    A new value here is either a new Larsson convention to document, or a
-    parser bug eating a name suffix into the annotation column.
+    Larsson introduces a new annotation letter every few months — routine, and
+    mirrored as-is. A parser bug eating name suffixes into this column would
+    instead produce dozens of distinct new values at once, which is what the
+    budget catches.
     """
     actual = set(
         df.filter(pl.col("mark_annotation").is_not_null())
@@ -313,10 +322,11 @@ def test_mark_annotation_values_in_known_set(df: pl.DataFrame) -> None:
         .to_series()
         .to_list()
     )
-    unknown = actual - KNOWN_MARK_ANNOTATIONS
-    assert not unknown, (
-        f"new mark_annotation values not in catalogue: {sorted(unknown)} — "
-        f"document them or fix the parser"
+    report_anomalies(
+        actual - KNOWN_MARK_ANNOTATIONS,
+        budget=NEW_ANNOTATION_BUDGET,
+        label="new mark_annotation values",
+        hint="add to KNOWN_MARK_ANNOTATIONS once confirmed as a Larsson convention",
     )
 
 

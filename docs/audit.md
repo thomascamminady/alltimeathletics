@@ -89,6 +89,33 @@ All Tier 3 items (3.1–3.6) are complete — see the "Resolved" section below.
 
 ---
 
+## Resolved 2026-07-20 (stop the maintenance treadmill)
+
+The weekly cron kept going red on routine upstream churn. Root cause was not any
+one bug but the *gate design*: several data-quality tests demanded an exact,
+hand-maintained catalogue entry for every new Larsson quirk, so any new typo
+blocked the data refresh and the deploy until a human catalogued it.
+
+- ✅ **Gates are now budgeted, not exact** — see `tests/quality_policy.py` for
+  the policy and the thresholds. Anomalies are warnings until there are enough
+  of them to mean *our parser broke* rather than *the source page changed*. The
+  asymmetry that makes this safe: a real regression (century pivot, layout
+  change, tokenizer fault) produces anomalies by the hundred; a Larsson typo
+  produces one or two.
+- ✅ **`KNOWN_*` catalogues are documentation, not gates.** They annotate
+  warnings for issues someone already investigated. They never need updating
+  just to make CI pass, and catalogue drift (Larsson fixing a typo) only warns.
+- ✅ **Anomalies stay visible** — the workflow republishes whatever it tolerated
+  into the job summary, so relaxing the gates doesn't mean going blind.
+- ✅ **Scrape address-family fallback.** The IPv4 pin added for GitHub runners
+  is itself a failure mode when a host resolves only AAAA (EAFNOSUPPORT, which
+  retrying never fixes — it took the 2026-07-13 run down). The client chain now
+  falls back to an unpinned client on transport errors.
+
+The real safety net is unchanged and needs no maintenance: the pipeline's
+unparsed-ratio ceiling, the schema tests, frozen/active record bounds, and the
+country-dominance checks all still fail loudly on genuine breakage.
+
 ## Resolved 2026-07-06 (weekly-cron fix)
 
 The weekly update cron went red on this week's fresh scrape. Three distinct

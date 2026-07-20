@@ -87,13 +87,37 @@ jobs:
           exit 1
 
       - name: Validate freshly produced parquet
+        # These gates are budgeted, not exact (see tests/quality_policy.py):
+        # routine upstream quirks are reported as warnings and the refresh
+        # continues; only anomalies large enough to mean the parser broke fail.
         run: |
+          set -o pipefail
           uv run pytest \
             tests/test_pipeline_schema.py \
             tests/test_qoi.py \
             tests/test_data_access.py \
             tests/test_audit.py \
-            -v
+            -v 2>&1 | tee /tmp/validate.log
+
+      - name: Report data-quality anomalies
+        # Relaxing the gates must not mean going blind: whatever the run chose
+        # to tolerate is republished here so it stays reviewable at a glance.
+        if: always()
+        run: |
+          {
+            echo "## Data-quality report"
+            echo
+            if grep -q "warnings summary" /tmp/validate.log; then
+              echo "Anomalies tolerated this run (within budget):"
+              echo
+              echo '```'
+              sed -n '/warnings summary/,/^-- Docs:/p' /tmp/validate.log \
+                | grep -E "UserWarning" | sed 's/^ *//'
+              echo '```'
+            else
+              echo "No anomalies reported."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Detect changes in data/
         id: diff

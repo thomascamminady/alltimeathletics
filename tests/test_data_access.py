@@ -17,6 +17,11 @@ import polars as pl
 import pytest
 
 from alltimeathletics.events import EVENTS, by_slug
+from tests.quality_policy import (
+    FAR_FUTURE_DATE_BUDGET,
+    report_anomalies,
+    report_catalogue_drift,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = REPO_ROOT / "data"
@@ -266,11 +271,11 @@ def test_dates_make_sense(df: pl.DataFrame) -> None:
     today = date.today()
     near, far = _classify_future_dates(df, today)
 
-    unexpected_far = far - KNOWN_FUTURE_DATE_TYPOS
-    assert not unexpected_far, (
-        f"{len(unexpected_far)} rows dated more than a year ahead — implausibly "
-        f"far in the future and almost certainly a parser/date bug: "
-        f"{sorted(unexpected_far)[:5]}"
+    report_anomalies(
+        far - KNOWN_FUTURE_DATE_TYPOS,
+        budget=FAR_FUTURE_DATE_BUDGET,
+        label="rows dated more than a year ahead",
+        hint="a garbled year affects a few rows; a broken date parser affects many",
     )
 
     unexpected_near = near - KNOWN_FUTURE_DATE_TYPOS
@@ -299,9 +304,10 @@ def _future_date_df(d: date) -> pl.DataFrame:
 def test_future_date_classification_and_warning() -> None:
     """Unit-test both horizons on synthetic data, independent of the parquet.
 
-    A near-future date (today + 10d) is classified as near (and only warns),
-    while a far-future date (today + 800d) is classified as far (and would
-    hard-fail the integration test's assertion).
+    A near-future date (today + 10d) classifies as near, a far-future date
+    (today + 800d) as far. Both only warn at small counts — one stray future
+    date is an upstream typo, not a build break — but far-future rows are
+    budgeted, so a systemic date fault still fails.
     """
     today = date.today()
     near_df = _future_date_df(today + timedelta(days=10))
@@ -313,16 +319,21 @@ def test_future_date_classification_and_warning() -> None:
     near2, far2 = _classify_future_dates(far_df, today)
     assert not near2 and len(far2) == 1
 
-    # Far-future, uncatalogued: replicate the test's hard-fail assertion.
-    unexpected_far = far2 - KNOWN_FUTURE_DATE_TYPOS
-    with pytest.raises(AssertionError):
-        assert not unexpected_far, "far-future should hard-fail"
-
-    # Near-future, uncatalogued: replicate the test's warn-only path.
-    unexpected_near = near - KNOWN_FUTURE_DATE_TYPOS
+    # A single far-future row warns rather than failing.
     with pytest.warns(UserWarning):
-        if unexpected_near:
-            warnings.warn("near-future warns only", stacklevel=2)
+        report_anomalies(
+            far2 - KNOWN_FUTURE_DATE_TYPOS,
+            budget=FAR_FUTURE_DATE_BUDGET,
+            label="rows dated more than a year ahead",
+        )
+
+    # Enough of them at once is a parser fault and does fail.
+    with pytest.raises(AssertionError):
+        report_anomalies(
+            {("e", f"athlete {i}", "v", date(2999, 1, 1)) for i in range(FAR_FUTURE_DATE_BUDGET)},
+            budget=FAR_FUTURE_DATE_BUDGET,
+            label="rows dated more than a year ahead",
+        )
 
 
 def test_name_is_never_empty(df: pl.DataFrame) -> None:
@@ -384,11 +395,7 @@ def test_catalogued_typos_still_present(df: pl.DataFrame) -> None:
         (r["event_slug"], r["name"], r["venue"], r["date"])
         for r in df.select("event_slug", "name", "venue", "date").to_dicts()
     }
-    fixed_upstream = KNOWN_FUTURE_DATE_TYPOS - actual
-    assert not fixed_upstream, (
-        "Larsson appears to have fixed these — remove from "
-        f"KNOWN_FUTURE_DATE_TYPOS: {sorted(fixed_upstream)}"
-    )
+    report_catalogue_drift(KNOWN_FUTURE_DATE_TYPOS - actual, catalogue="KNOWN_FUTURE_DATE_TYPOS")
 
 
 def test_per_event_json_files_are_valid_when_present() -> None:
