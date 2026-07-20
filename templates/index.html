@@ -106,11 +106,30 @@
     const filter = document.getElementById("filter");
     filter.addEventListener("input", () => {
         const q = filter.value.toLowerCase().trim();
-        document.querySelectorAll(".event-list li").forEach((li) => {
-            const link = li.querySelector("a");
-            if (!link) return; // category subheadings have no link
-            const label = link.dataset.label.toLowerCase();
-            li.hidden = q && !label.includes(q);
+        // The list is flat: a category heading <li> followed by its event <li>s.
+        // Walk it in order so each heading can be hidden when everything under
+        // it filtered out — otherwise a search for "mile" leaves a bare
+        // "Sprints" subheading with nothing beneath it.
+        document.querySelectorAll(".event-list").forEach((ul) => {
+            let heading = null;
+            let shown = 0;
+            const settle = () => {
+                if (heading) heading.hidden = shown === 0;
+            };
+            ul.querySelectorAll(":scope > li").forEach((li) => {
+                if (li.classList.contains("event-category")) {
+                    settle();
+                    heading = li;
+                    shown = 0;
+                    return;
+                }
+                const link = li.querySelector("a");
+                if (!link) return;
+                const hide = Boolean(q) && !link.dataset.label.toLowerCase().includes(q);
+                li.hidden = hide;
+                if (!hide) shown += 1;
+            });
+            settle(); // the final category has no heading after it to trigger the flush
         });
     });
     document.querySelectorAll(".legality-tabs").forEach((tabs) => {

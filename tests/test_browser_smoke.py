@@ -125,3 +125,67 @@ def test_athlete_page_renders(browser, site_server: str, built_site: Path) -> No
     assert rows > 0
     page.close()
     assert not errors, f"{target.name}: console / page errors: {errors}"
+
+
+def test_event_filter_hides_empty_categories(browser, site_server: str) -> None:  # noqa: ANN001
+    """Filtering must not leave a category subheading with nothing under it.
+
+    The event list is flat — a heading ``<li>`` followed by its event ``<li>``s
+    — so hiding only the events used to strand headings like "Sprints" above an
+    empty gap when searching for "mile".
+    """
+    page = _new_page(browser)
+    page.goto(site_server + "/", wait_until="domcontentloaded", timeout=30_000)
+
+    # Every category is visible before any filtering.
+    assert (
+        page.eval_on_selector_all(
+            ".event-list:not([hidden]) > li.event-category", "els => els.length"
+        )
+        > 0
+    ), "no category headings rendered"
+
+    page.fill("#filter", "mile")
+
+    # Read back, per visible list, each visible heading and how many visible
+    # event rows follow it before the next heading.
+    stranded = page.evaluate("""() => {
+        const bad = [];
+        document.querySelectorAll(".event-list:not([hidden])").forEach((ul) => {
+            let heading = null;
+            let shown = 0;
+            const settle = () => {
+                if (heading && !heading.hidden && shown === 0) {
+                    bad.push(heading.textContent.trim());
+                }
+            };
+            ul.querySelectorAll(":scope > li").forEach((li) => {
+                if (li.classList.contains("event-category")) {
+                    settle();
+                    heading = li;
+                    shown = 0;
+                    return;
+                }
+                if (!li.hidden && li.querySelector("a")) shown += 1;
+            });
+            settle();
+        });
+        return bad;
+    }""")
+    assert not stranded, f"category headings left with no matching events: {stranded}"
+
+    # The filter still works: matching events remain, non-matching are gone.
+    labels = page.eval_on_selector_all(
+        ".event-list:not([hidden]) > li:not([hidden]) a",
+        "els => els.map(e => e.dataset.label.toLowerCase())",
+    )
+    assert labels, "filter hid everything — expected the mile events to survive"
+    assert all("mile" in x for x in labels), f"non-matching events still shown: {labels}"
+
+    # Clearing the box restores every category.
+    page.fill("#filter", "")
+    restored = page.eval_on_selector_all(
+        ".event-list:not([hidden]) > li.event-category:not([hidden])", "els => els.length"
+    )
+    assert restored > 0, "categories not restored after clearing the filter"
+    page.close()
