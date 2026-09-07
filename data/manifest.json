@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-08-31T10:26:20.197949+00:00",
-  "n_rows": 384734,
+  "scraped_at": "2026-09-07T08:53:59.474144+00:00",
+  "n_rows": 384834,
   "n_events": 190,
   "unparsed_by_step": {
     "date": 44,
@@ -275,7 +275,7 @@
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 11357,
+      "n_rows": 11358,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m3000hok.htm"
@@ -286,7 +286,7 @@
       "sex": "men",
       "legality": "legal",
       "family": "track_time",
-      "n_rows": 4666,
+      "n_rows": 4762,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_400hok.htm"
@@ -638,7 +638,7 @@
       "sex": "men",
       "legality": "non-legal",
       "family": "track_time",
-      "n_rows": 26,
+      "n_rows": 29,
       "n_unparsed": 0,
       "unparsed_by_step": {},
       "source_url": "https://www.alltime-athletics.com/m_400hno.htm"
